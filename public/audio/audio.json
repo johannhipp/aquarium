@@ -1,0 +1,102 @@
+{
+  "dourada-catfish": {
+    "file": "audio/dourada-catfish.mp3",
+    "durationSec": 18.0,
+    "loop": true
+  },
+  "ganges-river-dolphin": {
+    "file": "audio/ganges-river-dolphin.mp3",
+    "durationSec": 18.0,
+    "loop": true
+  },
+  "chinook-salmon": {
+    "file": "audio/chinook-salmon.mp3",
+    "durationSec": 18.0,
+    "loop": true
+  },
+  "beluga-sturgeon": {
+    "file": "audio/beluga-sturgeon.mp3",
+    "durationSec": 18.0,
+    "loop": true
+  },
+  "zambezi-shark": {
+    "file": "audio/zambezi-shark.mp3",
+    "durationSec": 18.0,
+    "loop": true
+  },
+  "yangtze-finless-porpoise": {
+    "file": "audio/yangtze-finless-porpoise.mp3",
+    "durationSec": 18.0,
+    "loop": true
+  },
+  "irrawaddy-dolphin": {
+    "file": "audio/irrawaddy-dolphin.mp3",
+    "durationSec": 18.0,
+    "loop": true
+  },
+  "european-eel": {
+    "file": "audio/european-eel.mp3",
+    "durationSec": 18.0,
+    "loop": true
+  },
+  "atlantic-salmon": {
+    "file": "audio/atlantic-salmon.mp3",
+    "durationSec": 18.0,
+    "loop": true
+  },
+  "pacific-lamprey": {
+    "file": "audio/pacific-lamprey.mp3",
+    "durationSec": 18.0,
+    "loop": true
+  },
+  "mississippi-paddlefish": {
+    "file": "audio/mississippi-paddlefish.mp3",
+    "durationSec": 18.0,
+    "loop": true
+  },
+  "amazon-river-dolphin": {
+    "file": "audio/amazon-river-dolphin.mp3",
+    "durationSec": 18.0,
+    "loop": true
+  },
+  "amazonian-manatee": {
+    "file": "audio/amazonian-manatee.mp3",
+    "durationSec": 18.0,
+    "loop": true
+  },
+  "arapaima": {
+    "file": "audio/arapaima.mp3",
+    "durationSec": 18.0,
+    "loop": true
+  },
+  "murray-cod": {
+    "file": "audio/murray-cod.mp3",
+    "durationSec": 18.0,
+    "loop": true
+  },
+  "goliath-tigerfish": {
+    "file": "audio/goliath-tigerfish.mp3",
+    "durationSec": 18.0,
+    "loop": true
+  },
+  "golden-dorado": {
+    "file": "audio/golden-dorado.mp3",
+    "durationSec": 18.0,
+    "loop": true
+  },
+  "gharial": {
+    "file": "audio/gharial.mp3",
+    "durationSec": 18.0,
+    "loop": true
+  },
+  "nile-crocodile": {
+    "file": "audio/nile-crocodile.mp3",
+    "durationSec": 18.0,
+    "loop": true
+  },
+  "mekong-giant-catfish": {
+    "file": "audio/mekong-giant-catfish.mp3",
+    "durationSec": 18.0,
+    "loop": true
+  }
+}

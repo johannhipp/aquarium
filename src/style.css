@@ -1,0 +1,686 @@
+/*
+ * Type and palette follow madebygray.co: Inter, near-black #0B0B0B, muted #6F6F6F.
+ * The page itself stays pure white: the only things drawn are the rivers, the sprites
+ * and the river-name notes.
+ */
+:root {
+  --text: #0b0b0b;
+  --muted: #6f6f6f;
+  --font: Inter, system-ui, -apple-system, 'Segoe UI', 'Noto Sans', 'Noto Sans Devanagari',
+    'Noto Sans Bengali', 'Noto Sans Arabic', 'Noto Sans SC', sans-serif;
+  /* Emil Kowalski's strong curves: the built-in CSS easings are too weak. */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  /* Sprites are an 80x80 pixel grid upscaled 4x. 40 CSS px is exactly 1 device px per sprite pixel on a 2x screen. */
+  --sprite: 40px;
+  --pad: 4px;
+  --gap-x: 8px;
+  --gap-y: 14px;
+  --edge: 8px;
+  /* tile = sprite + padding on both sides + 2px border on both sides */
+  --tile: calc(var(--sprite) + 2 * var(--pad) + 4px);
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  background: #fff;
+  overflow: hidden;
+}
+
+canvas {
+  display: block;
+  touch-action: none;
+  cursor: grab;
+}
+canvas:active {
+  cursor: grabbing;
+}
+
+/* ---- Index: sprites only -------------------------------------------------------------- */
+
+.dex {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2;
+  display: flex;
+  justify-content: center;
+  padding: 0 12px max(16px, env(safe-area-inset-bottom));
+  /* The index never blocks the globe; only the tiles themselves take pointer events. */
+  pointer-events: none;
+}
+
+/*
+ * A Game Boy-style select grid: up to 10 tiles a row, wrapping on narrow screens. If it ever
+ * gets taller than 40% of the screen it scrolls (wheel or touch over a tile); the scrollbar is
+ * hidden. Padding leaves room for each tile's hard shadow and the cursor above it.
+ */
+.dex-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, var(--tile));
+  justify-content: center;
+  gap: var(--gap-y) var(--gap-x);
+  max-width: min(calc(100vw - 24px), calc(10 * var(--tile) + 9 * var(--gap-x) + 2 * var(--edge)));
+  max-height: 40vh;
+  padding: 16px var(--edge) var(--edge);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+  pointer-events: none;
+}
+.dex-grid::-webkit-scrollbar {
+  display: none;
+}
+
+.dex-item {
+  visibility: hidden;
+}
+.dex[data-ready] .dex-item {
+  visibility: visible;
+  /* Stagger entrance: each tile rises, sharpens and fades in 28ms after the previous one. */
+  animation: dex-in 560ms var(--ease-out) calc(var(--i) * 28ms) backwards;
+}
+
+@keyframes dex-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.96);
+    filter: blur(4px);
+  }
+}
+
+.tile {
+  position: relative;
+  display: block;
+  margin: 0;
+  padding: var(--pad);
+  border: 2px solid var(--text);
+  border-radius: 0;
+  background: #fff;
+  box-shadow: 3px 3px 0 var(--text);
+  line-height: 0;
+  cursor: pointer;
+  pointer-events: auto;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    transform 160ms var(--ease-out),
+    box-shadow 160ms var(--ease-out),
+    background-color 160ms var(--ease-out);
+}
+
+.tile img {
+  display: block;
+  width: var(--sprite);
+  height: var(--sprite);
+  image-rendering: pixelated;
+  user-select: none;
+  -webkit-user-drag: none;
+  transition: filter 160ms ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .tile:hover:not([aria-pressed='true']) {
+    transform: translate(-1px, -1px);
+    box-shadow: 4px 4px 0 var(--text);
+  }
+}
+
+/* Press feedback: the tile sinks into its shadow like a hardware button. */
+.tile:active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0 var(--text);
+}
+
+.tile:focus-visible {
+  outline: 2px dashed var(--text);
+  outline-offset: 4px;
+}
+
+/* Selected: pressed in, inverted, sprite bobbing in two steps, blinking cursor above. */
+.tile[aria-pressed='true'] {
+  transform: translate(3px, 3px);
+  box-shadow: 0 0 0 var(--text);
+  background: var(--text);
+}
+.tile[aria-pressed='true'] img {
+  filter: invert(1);
+  animation: bob 900ms steps(1, jump-end) infinite;
+}
+
+.tile::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: -13px;
+  width: 10px;
+  height: 7px;
+  margin-left: -5px;
+  background: var(--text);
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+  opacity: 0;
+  translate: 0 -4px;
+  transition:
+    opacity 160ms var(--ease-out),
+    translate 160ms var(--ease-out);
+}
+.tile[aria-pressed='true']::after {
+  opacity: 1;
+  translate: 0 0;
+  animation: blink 1200ms steps(1, jump-end) infinite;
+}
+
+@keyframes bob {
+  50% {
+    translate: 0 -2px;
+  }
+}
+@keyframes blink {
+  70% {
+    opacity: 0;
+  }
+}
+
+/* ---- River-name note ------------------------------------------------------------------- */
+
+.note {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 3; /* above the index, so a river-name is never hidden behind a tile */
+  pointer-events: none;
+  will-change: transform;
+}
+
+.note-dot {
+  position: absolute;
+  left: -2.5px;
+  top: -2.5px;
+  width: 5px;
+  height: 5px;
+  background: var(--text);
+  opacity: 0;
+  scale: 0.6;
+  transition:
+    opacity 140ms ease-out,
+    scale 140ms ease-out;
+}
+.note-dot::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border: 1px solid var(--text);
+  border-radius: 50%;
+  opacity: 0;
+}
+
+.note-body {
+  position: absolute;
+  top: 0;
+  left: 14px;
+  translate: 0 calc(-100% - 6px);
+  white-space: nowrap;
+  font-family: var(--font);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.45;
+  color: rgb(11 11 11 / 0.7);
+  /* A soft white halo keeps the text legible over the river lines; echoes the site's blur. */
+  text-shadow:
+    0 0 6px #fff,
+    0 0 2px #fff;
+  -webkit-font-smoothing: antialiased;
+  user-select: none;
+}
+.note[data-side='left'] .note-body {
+  left: auto;
+  right: 14px;
+  text-align: right;
+}
+
+/* Exit: quick (200ms) and subtle. Each name leaves the way it came in. */
+.note-body p {
+  margin: 0;
+  opacity: 0;
+  translate: -8px 0;
+  filter: blur(3px);
+  transition:
+    opacity 180ms ease-out,
+    translate 180ms ease-out,
+    filter 180ms ease-out;
+}
+.note[data-side='left'] .note-body p {
+  translate: 8px 0;
+}
+
+/* Enter: origin-aware, the names slip out of the dot one after another (stagger). */
+.note[data-open='true'][data-facing='true'] .note-dot {
+  opacity: 1;
+  scale: 1;
+  transition-duration: 240ms;
+}
+.note[data-open='true'][data-facing='true'] .note-dot::after {
+  animation: ping 1000ms var(--ease-out) 120ms backwards;
+}
+.note[data-open='true'][data-facing='true'] .note-body p {
+  opacity: 1;
+  translate: 0 0;
+  filter: blur(0);
+  transition-duration: 560ms;
+  transition-timing-function: var(--ease-out);
+  transition-delay: calc(140ms + var(--i) * 90ms);
+}
+
+@keyframes ping {
+  from {
+    opacity: 0.5;
+    scale: 0.5;
+  }
+  to {
+    opacity: 0;
+    scale: 2.6;
+  }
+}
+
+/* ---- Reduced motion: keep the fades, drop the movement ---------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .dex[data-ready] .dex-item {
+    animation: fade-in 300ms ease-out calc(var(--i) * 15ms) backwards;
+  }
+  .tile,
+  .tile::after,
+  .tile[aria-pressed='true'],
+  .tile:active {
+    transition-property: opacity, background-color;
+  }
+  .tile:active,
+  .tile[aria-pressed='true'] {
+    transform: none;
+  }
+  .tile::after {
+    translate: 0 0;
+  }
+  .tile[aria-pressed='true'] img,
+  .tile[aria-pressed='true']::after {
+    animation: none;
+  }
+  .note-dot {
+    scale: 1;
+  }
+  .note-dot::after {
+    display: none;
+  }
+  .note-body p,
+  .note[data-side='left'] .note-body p {
+    translate: 0 0;
+    filter: none;
+  }
+  .note[data-open='true'][data-facing='true'] .note-body p {
+    transition-delay: 0ms;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+/* ---- Sound gate: a pixel speaker and a face, no text ---------------------------------- */
+
+/* Like the ? dialog, a transparent full-viewport layer holding one card. */
+.gate[open] {
+  display: grid;
+  place-items: center;
+  box-sizing: border-box;
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 16px;
+  border: 0;
+  background: transparent;
+  overflow: hidden;
+}
+/* Already allowed: just a greeting; it never takes a click. */
+.gate[data-modal='false'] {
+  pointer-events: none;
+}
+.gate::backdrop {
+  background: rgb(255 255 255 / 0.6);
+  backdrop-filter: blur(6px);
+  opacity: 0;
+  transition: opacity 200ms ease-out;
+}
+.gate[data-open='true']::backdrop {
+  opacity: 1;
+  transition-duration: 460ms;
+}
+
+.gate-card {
+  display: grid;
+  margin: 0;
+  padding: 20px 26px;
+  border: 2px solid var(--text);
+  border-radius: 0;
+  background: #fff;
+  box-shadow: 4px 4px 0 var(--text);
+  line-height: 0;
+  cursor: default;
+  -webkit-tap-highlight-color: transparent;
+  /* Exit: quick, mirrors the entrance. */
+  opacity: 0;
+  transform: translateY(8px) scale(0.97);
+  filter: blur(4px);
+  transition:
+    opacity 200ms ease-out,
+    transform 200ms ease-out,
+    filter 200ms ease-out,
+    box-shadow 160ms var(--ease-out);
+}
+.gate[data-open='true'] .gate-card {
+  opacity: 1;
+  transform: none;
+  filter: blur(0);
+  transition-duration: 460ms, 460ms, 460ms, 160ms;
+  transition-timing-function: var(--ease-out);
+}
+.gate[data-state='blocked'] .gate-card {
+  cursor: pointer;
+}
+/* Press feedback: sinks into its shadow like the tiles. */
+.gate[data-state='blocked'][data-open='true'] .gate-card:active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0 var(--text);
+  transition-duration: 160ms;
+}
+.gate[data-state='blocked'] .gate-card:focus-visible {
+  outline: 2px dashed var(--text);
+  outline-offset: 4px;
+}
+
+/* Both states sit in one grid cell; the inactive one is blurred out, a crossfade with blur. */
+.gate-pair {
+  grid-area: 1 / 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  transition:
+    opacity 260ms ease-out,
+    filter 260ms ease-out,
+    scale 260ms ease-out;
+}
+.gate-pair svg {
+  display: block;
+  fill: var(--text);
+}
+.gate[data-state='blocked'] .gate-pair[data-kind='enabled'],
+.gate[data-state='enabled'] .gate-pair[data-kind='blocked'] {
+  opacity: 0;
+  filter: blur(3px);
+  scale: 0.94;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gate-card,
+  .gate[data-open='true'] .gate-card {
+    transform: none;
+    filter: none;
+  }
+  .gate[data-state='blocked'][data-open='true'] .gate-card:active {
+    transform: none;
+  }
+  .gate[data-state='blocked'] .gate-pair[data-kind='enabled'],
+  .gate[data-state='enabled'] .gate-pair[data-kind='blocked'] {
+    filter: none;
+    scale: 1;
+  }
+}
+
+/* ---- Pixel question mark and its one sentence ----------------------------------------- */
+
+.corner {
+  position: fixed;
+  top: max(14px, env(safe-area-inset-top));
+  right: max(14px, env(safe-area-inset-right));
+  z-index: 2;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.corner-icon {
+  display: block;
+  margin: 0;
+  padding: 5px 6px;
+  border: 2px solid var(--text);
+  border-radius: 0;
+  background: #fff;
+  box-shadow: 2px 2px 0 var(--text);
+  line-height: 0;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  visibility: hidden;
+  transition:
+    transform 160ms var(--ease-out),
+    box-shadow 160ms var(--ease-out);
+}
+.corner-icon[data-ready] {
+  visibility: visible;
+  animation: dex-in 560ms var(--ease-out) 300ms backwards;
+}
+/* 7x8 grid shown at 2 CSS px per pixel: whole device pixels on 1x, 2x and 3x screens. */
+.corner-icon svg {
+  display: block;
+  width: 14px;
+  height: 16px;
+  fill: var(--text);
+}
+@media (hover: hover) and (pointer: fine) {
+  .corner-icon:hover {
+    transform: translate(-1px, -1px);
+    box-shadow: 3px 3px 0 var(--text);
+  }
+}
+.corner-icon:active {
+  transform: translate(2px, 2px);
+  box-shadow: 0 0 0 var(--text);
+}
+.corner-icon:focus-visible {
+  outline: 2px dashed var(--text);
+  outline-offset: 4px;
+}
+
+/* The dialog is a transparent full-viewport layer, so any click that lands on it is "outside". */
+.about[open] {
+  display: grid;
+  place-items: center;
+  box-sizing: border-box;
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 16px;
+  border: 0;
+  background: transparent;
+  overflow: hidden;
+}
+.about::backdrop {
+  background: rgb(255 255 255 / 0.6);
+  backdrop-filter: blur(6px);
+  opacity: 0;
+  transition: opacity 200ms ease-out;
+}
+.about[data-open='true']::backdrop {
+  opacity: 1;
+  transition-duration: 460ms;
+}
+
+.about-card {
+  box-sizing: border-box;
+  max-width: 100%;
+  padding: 10px;
+  /* the tilting picture must never paint over the frame */
+  overflow: hidden;
+  border: 2px solid var(--text);
+  background: #fff;
+  box-shadow: 4px 4px 0 var(--text);
+  font-family: var(--font);
+  -webkit-font-smoothing: antialiased;
+  opacity: 0;
+  transform: translateY(8px) scale(0.97);
+  transform-origin: 100% 0; /* grows out of the icon's corner */
+  filter: blur(4px);
+  transition:
+    opacity 200ms ease-out,
+    transform 200ms ease-out,
+    filter 200ms ease-out;
+}
+.about[data-open='true'] .about-card {
+  opacity: 1;
+  transform: none;
+  filter: blur(0);
+  transition-duration: 460ms;
+  transition-timing-function: var(--ease-out);
+}
+/*
+ * The sprite is an 80x80 grid shown at 3 CSS px per pixel. Its fish occupies rows 21-53, so the
+ * frame shows rows 0-59 and clips the empty bottom: the picture is a tight box, the rows above
+ * the fish are room for the music notes, and the bop (6 px of travel) and the notes (clipped
+ * by the frame as they leave) never paint over the card's border.
+ */
+.about-frame {
+  --px: 3px;
+  position: relative;
+  width: calc(80 * var(--px));
+  height: calc(60 * var(--px));
+  overflow: hidden;
+}
+.about-frame img {
+  display: block;
+  width: calc(80 * var(--px));
+  height: calc(80 * var(--px));
+  image-rendering: pixelated;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+/*
+ * Music notes: pixel art that rises from the headphones in whole-pixel steps and flickers out,
+ * four beats (2180 ms) per rise, each note starting on its own beat, in time with the bop.
+ */
+.note-rise {
+  position: absolute;
+  left: calc(var(--col) * var(--px));
+  top: calc(var(--row) * var(--px));
+  line-height: 0;
+  opacity: 0;
+}
+.note-rise svg {
+  display: block;
+  width: calc(var(--cols) * var(--px));
+  height: calc(var(--rows) * var(--px));
+  fill: var(--text);
+}
+.about[data-open='true'] .note-rise {
+  animation: note-rise 2180ms calc(360ms + var(--beat) * 545ms) step-end infinite backwards;
+}
+.about[data-open='true'] .note-rise svg {
+  animation: note-sway 2180ms calc(360ms + var(--beat) * 545ms) step-end infinite backwards;
+}
+/* 11 steps of 2 art pixels (66 px): the note climbs, holds, then flickers out near the top. */
+@keyframes note-rise {
+  0% { opacity: 0; translate: 0 0; }
+  4% { opacity: 1; translate: 0 0; }
+  12% { translate: 0 calc(-2 * var(--px)); }
+  20% { translate: 0 calc(-4 * var(--px)); }
+  28% { translate: 0 calc(-6 * var(--px)); }
+  36% { translate: 0 calc(-8 * var(--px)); }
+  44% { translate: 0 calc(-10 * var(--px)); }
+  52% { translate: 0 calc(-12 * var(--px)); }
+  60% { translate: 0 calc(-14 * var(--px)); }
+  68% { translate: 0 calc(-16 * var(--px)); opacity: 1; }
+  76% { translate: 0 calc(-18 * var(--px)); opacity: 0.5; }
+  84% { translate: 0 calc(-20 * var(--px)); opacity: 0.25; }
+  92% { translate: 0 calc(-22 * var(--px)); opacity: 0; }
+}
+@keyframes note-sway {
+  25% { translate: var(--px) 0; }
+  50% { translate: 0 0; }
+  75% { translate: calc(-1 * var(--px)) 0; }
+}
+@media (max-width: 340px) {
+  .about-frame {
+    --px: 2px;
+  }
+}
+/*
+ * Bop at 110 BPM: one beat is 545 ms, down on the beat and up off it. Only vertical, and snapped
+ * to whole sprite pixels (hard steps, like a Game Boy sprite). The uneven key times give the
+ * ease-in-out: it lingers at both ends and moves quickly through the middle.
+ * Starts once the card has finished entering.
+ */
+.about[data-open='true'] .about-frame img {
+  animation: bop 545ms 360ms step-end infinite backwards;
+}
+@keyframes bop {
+  0% {
+    translate: 0 0;
+  }
+  10% {
+    translate: 0 calc(-1 * var(--px));
+  }
+  25% {
+    translate: 0 calc(-2 * var(--px));
+  }
+  55% {
+    translate: 0 calc(-2 * var(--px));
+  }
+  70% {
+    translate: 0 calc(-1 * var(--px));
+  }
+  85% {
+    translate: 0 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .corner-icon[data-ready] {
+    animation: fade-in 300ms ease-out backwards;
+  }
+  .corner-icon:hover,
+  .corner-icon:active {
+    transform: none;
+  }
+  .about-card,
+  .about[data-open='true'] .about-card {
+    transform: none;
+    filter: none;
+  }  /* The fish just listens, and the notes hang still beside the headphones. */
+  .about[data-open='true'] .about-frame img,
+  .about[data-open='true'] .note-rise,
+  .about[data-open='true'] .note-rise svg {
+    animation: none;
+  }
+  .note-rise {
+    opacity: 1;
+  }
+}
+
+/* Phones: slightly tighter tiles so six fit a row. */
+@media (max-width: 520px) {
+  :root {
+    --pad: 3px;
+    --gap-x: 6px;
+    --gap-y: 12px;
+  }
+}

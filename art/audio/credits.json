@@ -1,0 +1,576 @@
+{
+  "dourada-catfish": {
+    "file": "audio/dourada-catfish.mp3",
+    "durationSec": 18.0,
+    "loop": true,
+    "note": "Amazon main stem: night ambience at Parintins plus water against a cargo-boat hull on the Manaus-Tabatinga run. The dourada makes no known sound, so there is no creature layer.",
+    "layers": [
+      {
+        "kind": "river",
+        "title": "night_on_the_river.WAV",
+        "source": "https://freesound.org/people/WilliamDauricio/sounds/658081/",
+        "author": "WilliamDauricio",
+        "license": "CC BY 4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+        "note": "Night on the Amazon at Parintins, Amazonas, Brazil (ambisonics recording): water, frogs and insects on the main stem."
+      },
+      {
+        "kind": "river",
+        "title": "Amazon River Cargo Boat- Water against Hull",
+        "source": "https://freesound.org/people/edfrederick/sounds/871472/",
+        "author": "edfrederick",
+        "license": "CC0 1.0",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "note": "Water against the bow of a slow cargo boat on the Amazon (Solimoes) between Manaus and Tabatinga, Brazil, 2002."
+      }
+    ]
+  },
+  "ganges-river-dolphin": {
+    "file": "audio/ganges-river-dolphin.mp3",
+    "durationSec": 18.0,
+    "loop": true,
+    "note": "Ganges at Varanasi (upstream of the dolphin's Bihar stretch). No open recording of the Ganges river dolphin (Platanista gangetica) was found, so the creature layer is the Amazon river dolphin (boto, Inia geoffrensis), another obligate freshwater echolocating dolphin; its click and whistle character is similar but not identical.",
+    "layers": [
+      {
+        "kind": "river",
+        "title": "BR_049_India_GangesRiver.mp3",
+        "source": "https://freesound.org/people/kevp888/sounds/578754/",
+        "author": "kevp888 (Kevin Luce)",
+        "license": "CC BY 4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+        "note": "Boats meeting on the Ganges near Varanasi, India: wavelets, birds, temple bells, voices from other boats."
+      },
+      {
+        "kind": "river",
+        "title": "BR_041_India_GangesRiver.mp3",
+        "source": "https://freesound.org/people/kevp888/sounds/578753/",
+        "author": "kevp888 (Kevin Luce)",
+        "license": "CC BY 4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+        "note": "Early morning on the Ganges from a wooden boat near Varanasi, India: wavelets, temple bells, distant voices, birds."
+      },
+      {
+        "kind": "creature",
+        "title": "Amazonian Dolphins",
+        "source": "https://freesound.org/people/felix.blume/sounds/408555/",
+        "author": "Felix Blume",
+        "license": "CC0 1.0",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "note": "Hydrophone recording (Aquarian H2a) of Amazon river dolphins (boto, Inia geoffrensis) in the Rio Tefe, Brazil, 2017. Amazon river dolphin (Inia geoffrensis), the closest open hydrophone recording of a freshwater river dolphin."
+      }
+    ]
+  },
+  "chinook-salmon": {
+    "file": "audio/chinook-salmon.mp3",
+    "durationSec": 18.0,
+    "loop": true,
+    "note": "Upper Yukon at Whitehorse, in the chinook's Canadian spawning reaches. Salmon make no sound, so there is no creature layer; the two bird accents are riverbank ambience.",
+    "layers": [
+      {
+        "kind": "river",
+        "title": "Yukon River by KDCC - with drumming",
+        "source": "https://freesound.org/people/SoundsLikeYukon/sounds/865260/",
+        "author": "SoundsLikeYukon",
+        "license": "CC0 1.0",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "note": "The Yukon River running over a rocky shallow at Whitehorse, Yukon (with faint drumming far behind the recordist), 2026."
+      },
+      {
+        "kind": "river",
+        "title": "Raven pair on Yukon River bank",
+        "source": "https://freesound.org/people/SoundsLikeYukon/sounds/824995/",
+        "author": "SoundsLikeYukon",
+        "license": "CC0 1.0",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "note": "Two ravens on the bank of the Yukon River in Whitehorse. Ravens on the riverbank."
+      },
+      {
+        "kind": "river",
+        "title": "Alder Flycatchers Yukon River",
+        "source": "https://commons.wikimedia.org/wiki/File:Alder_Flycatchers_Yukon_River.ogg",
+        "author": "National Park Service",
+        "license": "Public domain (US National Park Service)",
+        "licenseUrl": "https://commons.wikimedia.org/wiki/File:Alder_Flycatchers_Yukon_River.ogg",
+        "note": "Alder flycatchers in Yukon-Charley Rivers National Preserve, Alaska. Alder flycatchers, Yukon-Charley Rivers, Alaska."
+      }
+    ]
+  },
+  "beluga-sturgeon": {
+    "file": "audio/beluga-sturgeon.mp3",
+    "durationSec": 18.0,
+    "loop": true,
+    "note": "Volga from an embankment (place not stated; probably Volgograd, where the recordist lives). No recording of the beluga sturgeon exists, so there is no creature layer.",
+    "layers": [
+      {
+        "kind": "river",
+        "title": "Volga River",
+        "source": "https://freesound.org/people/Agnivolok/sounds/840824/",
+        "author": "Agnivolok",
+        "license": "CC0 1.0",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "note": "Soundscape of the Volga recorded from an upper embankment (Zoom H5Studio); place not stated, the recordist's other uploads are from Volgograd."
+      }
+    ]
+  },
+  "zambezi-shark": {
+    "file": "audio/zambezi-shark.mp3",
+    "durationSec": 18.0,
+    "loop": true,
+    "note": "Zambezi at Victoria Falls (the bull shark lives far downstream in Mozambique; no open recording of the lower river was found) with hippo calls from the Kafue tributary. Bull sharks are silent, so there is no creature layer.",
+    "layers": [
+      {
+        "kind": "river",
+        "title": "Vic Falls.mp3",
+        "source": "https://freesound.org/people/toadie/sounds/194869/",
+        "author": "toadie",
+        "license": "CC0 1.0",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "note": "Victoria Falls on the Zambezi, Zambia/Zimbabwe: 'the smoke that thunders'."
+      },
+      {
+        "kind": "river",
+        "title": "hippos.mp3",
+        "source": "https://freesound.org/people/toadie/sounds/194870/",
+        "author": "toadie",
+        "license": "CC0 1.0",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "note": "A group of hippos grunting in the Kafue River, Zambia (the Zambezi's largest Zambian tributary), morning. Hippos on the Kafue, a Zambezi tributary."
+      },
+      {
+        "kind": "river",
+        "title": "hippos 2.mp3",
+        "source": "https://freesound.org/people/toadie/sounds/194871/",
+        "author": "toadie",
+        "license": "CC0 1.0",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "note": "A group of hippos grunting in the Kafue River, Zambia, morning."
+      }
+    ]
+  },
+  "yangtze-finless-porpoise": {
+    "file": "audio/yangtze-finless-porpoise.mp3",
+    "durationSec": 18.0,
+    "loop": true,
+    "note": "Yangtze at Nanjing, about 330 km downstream of the porpoise's Poyang/Dongting reach (no open recording of the middle Yangtze exists). The finless porpoise's own clicks are ultrasonic (about 125 kHz) and inaudible, and no open recording of any porpoise was found, so the creature layer is a stand-in: hydrophone click trains of another small toothed whale, the Atlantic spotted dolphin.",
+    "layers": [
+      {
+        "kind": "river",
+        "title": "Yangtze river.wav",
+        "source": "https://freesound.org/people/gamma1/sounds/328088/",
+        "author": "gamma1",
+        "license": "CC0 1.0",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "note": "Waves washing the bank of the Yangtze at Nanjing, China, with swells from passing cargo boats, 2015."
+      },
+      {
+        "kind": "creature",
+        "title": "Atlantic Spotted Dolphins off the coast of La Gomera, Canary Islands",
+        "source": "https://freesound.org/people/geraldfiebig/sounds/385796/",
+        "author": "geraldfiebig",
+        "license": "CC0 1.0",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "note": "Hydrophone recording of a group of Atlantic spotted dolphins (Stenella frontalis) clicking and whistling off La Gomera. Proxy: click trains of Atlantic spotted dolphins (Stenella frontalis)."
+      }
+    ]
+  },
+  "irrawaddy-dolphin": {
+    "file": "audio/irrawaddy-dolphin.mp3",
+    "durationSec": 18.0,
+    "loop": true,
+    "note": "Irrawaddy near Magway (about 290 km downstream of the dolphin's Katha reach), a river-cruise recording with the engine rumble filtered out; it is the only open Irrawaddy recording found, and it is licensed non-commercial/share-alike. No open recording of the Irrawaddy dolphin (Orcaella brevirostris) exists, so the creature layer is a stand-in: whistles and pulses of a wild Caribbean dolphin.",
+    "layers": [
+      {
+        "kind": "river",
+        "title": "Region de Magway, Myanmar - BINAURAL cruise on Irrawaddy river",
+        "source": "https://archive.org/details/aporee_23701_27551",
+        "author": "Espaces Sonores // Stephane MARIN (radio aporee)",
+        "license": "CC BY-NC-SA 3.0 (non-commercial, share-alike)",
+        "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/3.0/",
+        "note": "Binaural recording on a river cruise on the Irrawaddy in Magway Region, Myanmar, March 2013; a window with only faint distant voices."
+      },
+      {
+        "kind": "creature",
+        "title": "Dolphin screaming underwater in Caribbean Sea (Mexico)",
+        "source": "https://freesound.org/people/felix.blume/sounds/161691/",
+        "author": "Felix Blume",
+        "license": "CC0 1.0",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "note": "Hydrophone recording of a wild dolphin's whistles and pulse trains near Punta Allen, Mexico. Proxy: whistles and pulse trains of a wild dolphin (probably bottlenose) in the Caribbean."
+      }
+    ]
+  },
+  "european-eel": {
+    "file": "audio/european-eel.mp3",
+    "durationSec": 18.0,
+    "loop": true,
+    "note": "Tidal Elbe shore at Ovelgoenne, Hamburg, about 11 km from the eel's Hamburg focus. Eels make no sound, so there is no creature layer.",
+    "layers": [
+      {
+        "kind": "river",
+        "title": "River Elbe near Hamburg",
+        "source": "https://freesound.org/people/inchadney/sounds/75977/",
+        "author": "inchadney",
+        "license": "CC BY 4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+        "note": "Waves lapping the Elbe shore at Ovelgoenne, Hamburg, July 2009."
+      },
+      {
+        "kind": "river",
+        "title": "Elbe near Ovelgoenne",
+        "source": "https://freesound.org/people/inchadney/sounds/75962/",
+        "author": "inchadney",
+        "license": "CC BY 4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+        "note": "Waves and ship wakes on the Elbe at Ovelgoenne, Hamburg."
+      }
+    ]
+  },
+  "atlantic-salmon": {
+    "file": "audio/atlantic-salmon.mp3",
+    "durationSec": 18.0,
+    "loop": true,
+    "note": "Loire at Tours (about 230 km downstream of the salmon's Allier/Nevers focus; no open recording of the upper Loire) plus a second Loire recording whose place is not stated. Salmon make no sound, so there is no creature layer.",
+    "layers": [
+      {
+        "kind": "river",
+        "title": "37000 Tours, France - Loire river",
+        "source": "https://archive.org/details/aporee_37640_43094",
+        "author": "Vincent Duseigne (radio aporee)",
+        "license": "CC BY 3.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by/3.0/",
+        "note": "The Loire at Pont Wilson in Tours, France, with waves from a small weir, August 2017."
+      },
+      {
+        "kind": "river",
+        "title": "River Loire.wav",
+        "source": "https://freesound.org/people/L.Finck/sounds/653535/",
+        "author": "L.Finck",
+        "license": "CC0 1.0",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "note": "Flowing water of the Loire with a few faint birds (binaural, place not stated)."
+      }
+    ]
+  },
+  "pacific-lamprey": {
+    "file": "audio/pacific-lamprey.mp3",
+    "durationSec": 18.0,
+    "loop": true,
+    "note": "Columbia shore between Portland and Vancouver, about 80 km downstream of Bonneville, the lamprey's focus (no clean open recording of the Gorge). Lampreys make no sound, so there is no creature layer.",
+    "layers": [
+      {
+        "kind": "river",
+        "title": "WavesOnTheShore.wav",
+        "source": "https://freesound.org/people/richardemoore/sounds/260263/",
+        "author": "richardemoore",
+        "license": "CC0 1.0",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "note": "Gentle waves lapping a boat-launch dock on the Columbia River in Portland, Oregon."
+      },
+      {
+        "kind": "river",
+        "title": "river and travel sounds.wav",
+        "source": "https://freesound.org/people/aaronhahnmedia/sounds/178652/",
+        "author": "aaronhahnmedia",
+        "license": "CC0 1.0",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "note": "Beside the Columbia River between Portland and Vancouver, Washington (a window with only water)."
+      }
+    ]
+  },
+  "mississippi-paddlefish": {
+    "file": "audio/mississippi-paddlefish.mp3",
+    "durationSec": 18.0,
+    "loop": true,
+    "note": "Mississippi waves against a barge, with a small Missouri-state creek as texture. There is no open recording of the upper Missouri (the paddlefish's Montana/North Dakota reach), which is more than 1,500 km away. Paddlefish make no sound, so there is no creature layer.",
+    "layers": [
+      {
+        "kind": "river",
+        "title": "RiverWavesLappingBargeJune22012.wav",
+        "source": "https://freesound.org/people/kvgarlic/sounds/157370/",
+        "author": "kvgarlic",
+        "license": "CC0 1.0",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "note": "Waves lapping against a barge on the Mississippi River, June 2012."
+      },
+      {
+        "kind": "river",
+        "title": "River flow bubbling with a bird singing behind",
+        "source": "https://freesound.org/people/felix.blume/sounds/655508/",
+        "author": "Felix Blume",
+        "license": "CC0 1.0",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "note": "A small river bubbling over a riffle in Missouri state, USA, May 2013."
+      }
+    ]
+  },
+  "amazon-river-dolphin": {
+    "file": "audio/amazon-river-dolphin.mp3",
+    "durationSec": 18.0,
+    "loop": true,
+    "note": "No open recording of the Madeira exists. The bed is a forest stream at Borba (on the lower Madeira) plus an Amazon igarape stream in Para. The boto layer is a real hydrophone recording of the species, from the Rio Tefe about 700 km from the Madeira focus.",
+    "layers": [
+      {
+        "kind": "river",
+        "title": "water_running_under_the_bridge.WAV",
+        "source": "https://freesound.org/people/WilliamDauricio/sounds/658073/",
+        "author": "WilliamDauricio",
+        "license": "CC BY 4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+        "note": "Forest stream running under a bridge in Borba, Amazonas, Brazil (a town on the lower Madeira)."
+      },
+      {
+        "kind": "river",
+        "title": "Olho d'agua em igarape, grilos e cigarras",
+        "source": "https://freesound.org/people/jose.viana/sounds/667363/",
+        "author": "Jose Viana (Banco Sonoro Amazonico)",
+        "license": "CC BY 4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+        "note": "Spring and stream (igarape) at Apeu, Castanhal, Para, Brazil, with crickets and cicadas."
+      },
+      {
+        "kind": "creature",
+        "title": "Amazonian Dolphins",
+        "source": "https://freesound.org/people/felix.blume/sounds/408555/",
+        "author": "Felix Blume",
+        "license": "CC0 1.0",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "note": "Hydrophone recording (Aquarian H2a) of Amazon river dolphins (boto, Inia geoffrensis) in the Rio Tefe, Brazil, 2017. Wild boto (Inia geoffrensis), recorded in the Rio Tefe, not the Madeira."
+      }
+    ]
+  },
+  "amazonian-manatee": {
+    "file": "audio/amazonian-manatee.mp3",
+    "durationSec": 18.0,
+    "loop": true,
+    "note": "No open recording of the Japura exists: the bed is dawn at Tauary on the Rio Tefe (83 km from the focus, same Solimoes floodplain) with an Amazon igarape stream under it. Manatees do make squeaks, but no open recording of them (or of any manatee) was found, so there is no creature layer.",
+    "layers": [
+      {
+        "kind": "river",
+        "title": "Dawn in a small village, in the Amazonian Rainforest",
+        "source": "https://freesound.org/people/felix.blume/sounds/510179/",
+        "author": "Felix Blume",
+        "license": "CC0 1.0",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "note": "Dawn at Tauary on the Rio Tefe, Amazonas, Brazil: insects, frogs and light water movements made by fish."
+      },
+      {
+        "kind": "river",
+        "title": "Olho d'agua em igarape, grilos e cigarras",
+        "source": "https://freesound.org/people/jose.viana/sounds/667363/",
+        "author": "Jose Viana (Banco Sonoro Amazonico)",
+        "license": "CC BY 4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+        "note": "Spring and stream (igarape) at Apeu, Castanhal, Para, Brazil, with crickets and cicadas."
+      }
+    ]
+  },
+  "arapaima": {
+    "file": "audio/arapaima.mp3",
+    "durationSec": 18.0,
+    "loop": true,
+    "note": "No open recording of the Purus exists: the bed is a night riverbank in Amazonas state (river not stated) with an Amazon igarape stream under it. Juvenile arapaima make low-frequency sounds, but no open recording was found, so there is no creature layer.",
+    "layers": [
+      {
+        "kind": "river",
+        "title": "frogs_insects_night.WAV",
+        "source": "https://freesound.org/people/WilliamDauricio/sounds/659690/",
+        "author": "WilliamDauricio",
+        "license": "CC BY 4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+        "note": "A riverbank at night in Amazonas state, Brazil (river not stated): frogs and insects."
+      },
+      {
+        "kind": "river",
+        "title": "Olho d'agua em igarape, grilos e cigarras",
+        "source": "https://freesound.org/people/jose.viana/sounds/667363/",
+        "author": "Jose Viana (Banco Sonoro Amazonico)",
+        "license": "CC BY 4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+        "note": "Spring and stream (igarape) at Apeu, Castanhal, Para, Brazil, with crickets and cicadas."
+      }
+    ]
+  },
+  "murray-cod": {
+    "file": "audio/murray-cod.mp3",
+    "durationSec": 18.0,
+    "loop": true,
+    "note": "A fast stream in the Cathedral Ranges, Victoria (Goulburn-Murray catchment, about 170 km from the cod's focus) plus a real Murray River bank recording at Tyntynder near Swan Hill. Murray cod make no known sound, so there is no creature layer.",
+    "layers": [
+      {
+        "kind": "river",
+        "title": "Flowing River Cathedral Ranges",
+        "source": "https://freesound.org/people/Sassaby/sounds/427878/",
+        "author": "Sassaby",
+        "license": "CC0 1.0",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "note": "A flowing stream in the Cathedral Ranges, Victoria, Australia (Goulburn-Murray catchment)."
+      },
+      {
+        "kind": "river",
+        "title": "Jacinta Cain Atmos",
+        "source": "https://freesound.org/people/kangaroovindaloo/sounds/193483/",
+        "author": "kangaroovindaloo",
+        "license": "CC BY 4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+        "note": "Atmosphere beside the Murray River at Tyntynder Homestead near Swan Hill, Victoria, Australia: wind, birds, insects."
+      }
+    ]
+  },
+  "goliath-tigerfish": {
+    "file": "audio/goliath-tigerfish.mp3",
+    "durationSec": 18.0,
+    "loop": true,
+    "note": "Rapids on the Tshopo at Kisangani, a Congo-basin river about 1,190 km from the tigerfish's Kinshasa focus (no open recording of the Congo mainstem). Tigerfish make no known sound, so there is no creature layer.",
+    "layers": [
+      {
+        "kind": "river",
+        "title": "Descente de l'eau au pont tshopo",
+        "source": "https://commons.wikimedia.org/wiki/File:Descente_de_l%27eau_au_pont_tshopo.webm",
+        "author": "Yannick Ikombe",
+        "license": "CC0 1.0",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "note": "Water rushing at the Tshopo bridge in Kisangani, DR Congo (audio track of a video), 2025."
+      },
+      {
+        "kind": "river",
+        "title": "Pont de la snel tshopo",
+        "source": "https://commons.wikimedia.org/wiki/File:Pont_de_la_snel_tshopo.webm",
+        "author": "Yannick Ikombe",
+        "license": "CC0 1.0",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "note": "Water at the SNEL bridge on the Tshopo in Kisangani, DR Congo (audio track of a video), 2025."
+      },
+      {
+        "kind": "river",
+        "title": "Pont tshopo kisangani",
+        "source": "https://commons.wikimedia.org/wiki/File:Pont_tshopo_kisangani.webm",
+        "author": "Yannick Ikombe",
+        "license": "CC0 1.0",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "note": "Water at the Tshopo bridge in Kisangani, DR Congo (audio track of a video), 2025."
+      }
+    ]
+  },
+  "golden-dorado": {
+    "file": "audio/golden-dorado.mp3",
+    "durationSec": 18.0,
+    "loop": true,
+    "note": "Iguazu Falls, a tributary of the Parana (about 370 km from the dorado's Corrientes focus); no open recording of the Parana mainstem. Golden dorado make no known sound, so there is no creature layer.",
+    "layers": [
+      {
+        "kind": "river",
+        "title": "20160308_14.iguazu.waterfall.flac",
+        "source": "https://freesound.org/people/dobroide/sounds/339795/",
+        "author": "dobroide",
+        "license": "CC BY 4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+        "note": "Iguazu Falls, Misiones, Argentina (a Parana tributary): the roar of the falls, a few distant footsteps and voices on the walkway."
+      }
+    ]
+  },
+  "gharial": {
+    "file": "audio/gharial.mp3",
+    "durationSec": 18.0,
+    "loop": true,
+    "note": "No open Chambal recording exists; the bed is the Chalakudy River in Kerala, India (about 1,830 km away). No open recording of the gharial's hiss, buzz or jaw-slap exists either, so the creature layers are American alligator sounds.",
+    "layers": [
+      {
+        "kind": "river",
+        "title": "River side ambience in India, water flowing, birds, breeze",
+        "source": "https://freesound.org/people/seventhsamurai/sounds/332419/",
+        "author": "seventhsamurai",
+        "license": "CC0 1.0",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "note": "Slow-flowing water with faint crows on the bank of the Chalakudy River, Kerala, India (phone recording)."
+      },
+      {
+        "kind": "creature",
+        "title": "Alligator (Everglades NP)",
+        "source": "https://www.nps.gov/subjects/sound/sounds-alligator.htm",
+        "author": "National Park Service",
+        "license": "Public domain (US National Park Service work)",
+        "licenseUrl": "https://www.nps.gov/subjects/sound/gallery.htm",
+        "note": "Growls and jaw strikes of an American alligator in Everglades National Park, Florida. Proxy: growl and jaw strikes of an American alligator (Alligator mississippiensis), a crocodilian relative."
+      },
+      {
+        "kind": "creature",
+        "title": "Female alligator bellow and juveniles answer, SMNWR",
+        "source": "https://freesound.org/people/KevinSonger/sounds/689966/",
+        "author": "Kevin Songer",
+        "license": "CC BY 4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+        "note": "A female American alligator and her juveniles grunting in a shallow pond, St. Marks National Wildlife Refuge, Florida, 2023. Proxy for hatchling grunts: juvenile American alligators answering a female."
+      }
+    ]
+  },
+  "nile-crocodile": {
+    "file": "audio/nile-crocodile.mp3",
+    "durationSec": 18.0,
+    "loop": true,
+    "note": "Irrigation water on the Nile at Aswan plus night frogs on Elephantine Island, Aswan, about 100 km from the crocodile's Lake Nasser focus. The creature layer is two real juvenile Nile crocodile calls; no open recording of an adult's roar or bellow was found.",
+    "layers": [
+      {
+        "kind": "river",
+        "title": "SFX_Ext_Water_Irrigation System_Nile River_Aswan_Egypt",
+        "source": "https://freesound.org/people/SolySombraRecordings/sounds/736706/",
+        "author": "SolySombraRecordings",
+        "license": "CC BY 4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+        "note": "Water in an irrigation system fed by the Nile at Aswan, Egypt (mono, Sennheiser 8060)."
+      },
+      {
+        "kind": "river",
+        "title": "elephantine_island_frogs.wav",
+        "source": "https://freesound.org/people/wjoojoo/sounds/472818/",
+        "author": "wjoojoo",
+        "license": "CC BY 4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+        "note": "Frogs at night on the Nile at Elephantine Island, Aswan, Egypt."
+      },
+      {
+        "kind": "creature",
+        "title": "Supplementary Audio 1: juvenile Nile crocodile calls",
+        "source": "https://www.nature.com/articles/srep15547",
+        "author": "Chabert, Mathevon et al. (Scientific Reports 5:15547, 2015)",
+        "license": "CC BY 4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+        "note": "Contact calls of a juvenile Nile crocodile (Crocodylus niloticus); only the first 2.4 s are recorded calls. Real juvenile Nile crocodile contact calls (Crocodylus niloticus); adult roars and bellows have no open recording."
+      }
+    ]
+  },
+  "mekong-giant-catfish": {
+    "file": "audio/mekong-giant-catfish.mp3",
+    "durationSec": 18.0,
+    "loop": true,
+    "note": "The Mekong at Vientiane (about 340 km downstream of the catfish's Chiang Khong focus) and at the Don Det falls in southern Laos, with a night stream from the Chiang Rai hills (not the Mekong) for water body. No open recording from Chiang Khong/Chiang Saen exists. The giant catfish makes no known sound, so there is no creature layer.",
+    "layers": [
+      {
+        "kind": "river",
+        "title": "Mekong River, Vientiane, Laos - Mekong River, early morning 1",
+        "source": "https://archive.org/details/aporee_39453_45100",
+        "author": "lastpedestrian (radio aporee)",
+        "license": "CC BY 3.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by/3.0/",
+        "note": "The Mekong at Vientiane, Laos, early morning: a very quiet, low-frequency recording."
+      },
+      {
+        "kind": "river",
+        "title": "20140212 - Chiang Rai mountains and river at night 01.wav",
+        "source": "https://freesound.org/people/LG/sounds/345144/",
+        "author": "LG",
+        "license": "CC BY 4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+        "note": "A small stream at night in the hills of Chiang Rai province, northern Thailand (not the Mekong itself): water, frogs, insects."
+      },
+      {
+        "kind": "river",
+        "title": "DonDetLaosjungleambience",
+        "source": "https://freesound.org/people/hopflog/sounds/752783/",
+        "author": "hopflog",
+        "license": "CC0 1.0",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "note": "Night insects and the distant Mekong falls at Don Det, Laos."
+      }
+    ]
+  }
+}

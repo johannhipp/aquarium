@@ -1,0 +1,90 @@
+{
+  "002-amazon": [
+    { "lang": "pt", "name": "Rio Amazonas" },
+    { "lang": "es", "name": "Río Amazonas" },
+    { "lang": "qu", "name": "Amarumayu" }
+  ],
+  "035-padma-ganges-alaknanda-ganga": [
+    { "lang": "hi", "name": "गंगा नदी" },
+    { "lang": "bn", "name": "গঙ্গা নদী" },
+    { "lang": "ur", "name": "دریائے گنگا" }
+  ],
+  "022-yukon": [
+    { "lang": "en", "name": "Yukon River" },
+    { "lang": "gwi", "name": "Ųųg Han" },
+    { "lang": "esu", "name": "Kuigpak" }
+  ],
+  "018-volga": [
+    { "lang": "ru", "name": "Волга" },
+    { "lang": "tt", "name": "Идел" },
+    { "lang": "cv", "name": "Атӑл" }
+  ],
+  "033-zambezi-zambesi": [
+    { "lang": "pt", "name": "Rio Zambeze" },
+    { "lang": "sn", "name": "Rwizi Zambezi" },
+    { "lang": "ny", "name": "Mtsinje wa Zambezi" }
+  ],
+  "003-yangtze": [
+    { "lang": "zh-Hans", "name": "长江" },
+    { "lang": "bo", "name": "འབྲི་ཆུ" }
+  ],
+  "004-mississippi": [
+    { "lang": "en", "name": "Missouri River" },
+    { "lang": "lkt", "name": "Mnišóše Wakpá" }
+  ],
+  "012-mekong-lancang-jiang": [
+    { "lang": "th", "name": "แม่น้ำโขง" },
+    { "lang": "lo", "name": "ແມ່ນ້ຳຂອງ" },
+    { "lang": "zh-Hans", "name": "澜沧江" }
+  ],
+  "032-irrawaddy-river": [
+    { "lang": "my", "name": "ဧရာဝတီမြစ်" },
+    { "lang": "shn", "name": "ၼမ်ႉၵဵဝ်" }
+  ],
+  "020-madeira": [
+    { "lang": "pt", "name": "Rio Madeira" },
+    { "lang": "es", "name": "Río Madera" }
+  ],
+  "037-japur-caquet": [
+    { "lang": "pt", "name": "Rio Japurá" },
+    { "lang": "es", "name": "Río Caquetá" }
+  ],
+  "021-pur-s": [
+    { "lang": "pt", "name": "Rio Purus" },
+    { "lang": "es", "name": "Río Purús" }
+  ],
+  "147-elbe": [
+    { "lang": "de", "name": "Elbe" },
+    { "lang": "nds", "name": "Elv" },
+    { "lang": "cs", "name": "Labe" }
+  ],
+  "222-loire": [
+    { "lang": "fr", "name": "Loire" }
+  ],
+  "054-columbia-snake": [
+    { "lang": "en", "name": "Columbia River" },
+    { "lang": "chh", "name": "Wimahl" },
+    { "lang": "yak", "name": "Nch’i-Wàna" }
+  ],
+  "016-murray": [
+    { "lang": "en", "name": "Murray River" },
+    { "lang": "xyy", "name": "Dhungala" }
+  ],
+  "009-congo": [
+    { "lang": "fr", "name": "Fleuve Congo" },
+    { "lang": "ln", "name": "Ebale ya Kongo" },
+    { "lang": "kg", "name": "Nzadi Kongo" }
+  ],
+  "008-r-o-de-la-plata": [
+    { "lang": "es", "name": "Río Paraná" },
+    { "lang": "gn", "name": "Ysyry Parana" },
+    { "lang": "pt", "name": "Rio Paraná" }
+  ],
+  "217-chambal": [
+    { "lang": "hi", "name": "चंबल नदी" }
+  ],
+  "001-nile": [
+    { "lang": "ar", "name": "نهر النيل" },
+    { "lang": "fia", "name": "Áman Dawū" }
+  ]
+}

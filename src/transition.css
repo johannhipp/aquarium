@@ -1,0 +1,40 @@
+/* ---- Cubeworld stage and the dithered iris between worlds ----------------------------------- */
+
+/* The stage sits behind the UI (z-index 2) like the globe canvas does, and takes no input while hidden. */
+.cubeworld {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+.cubeworld[data-active] {
+  visibility: visible;
+  pointer-events: auto;
+}
+.cubeworld canvas {
+  width: 100%;
+  height: 100%;
+}
+
+/* One canvas pixel per 8 CSS pixels, scaled without smoothing: chunky blocks. Swallows clicks while it runs. */
+.world-iris {
+  position: fixed;
+  inset: 0;
+  z-index: 3;
+  display: none;
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+  touch-action: none;
+  cursor: progress;
+}
+.world-iris[data-active] {
+  display: block;
+}
+
+/* Only the globe has a river index and name notes; cubeworld shows just the landscape. */
+html[data-world='cube'] .dex,
+html[data-world='cube'] .note {
+  display: none;
+}

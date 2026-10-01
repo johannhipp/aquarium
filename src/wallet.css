@@ -1,0 +1,162 @@
+/* ---- Wallet: pixel icon in the top-right cluster and its two-item dropdown ------------------ */
+
+/*
+ * The slot takes no room until the wallet is unlocked; then it grows to the icon's 30px (plus the
+ * cluster's 10px gap), so the ? slides left to make room while the wallet fades in.
+ */
+.wallet-slot {
+  position: relative;
+  flex: none;
+  width: 0;
+  height: 30px;
+  margin-left: -10px;
+  transition:
+    width 360ms var(--ease-out),
+    margin-left 360ms var(--ease-out);
+}
+.wallet-slot[data-ready] {
+  width: 30px;
+  margin-left: 0;
+}
+
+/* 9x8 art at 2 CSS px per pixel (18x16) inside the same 30x30 box as the ?. */
+.corner-icon.wallet {
+  padding: 5px 4px;
+}
+.corner-icon.wallet svg {
+  width: 18px;
+  height: 16px;
+}
+
+/* The dropdown grows out of the wallet's corner, like the ? card does. */
+.wallet-menu {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 6px;
+  border: 2px solid var(--text);
+  background: #fff;
+  box-shadow: 3px 3px 0 var(--text);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-4px) scale(0.97);
+  transform-origin: 100% 0;
+  filter: blur(4px);
+  /* exit: quicker than the enter, and the same way it came in */
+  transition:
+    opacity 140ms ease-out,
+    transform 140ms ease-out,
+    filter 140ms ease-out,
+    visibility 0s 140ms;
+}
+.wallet-slot[data-open='true'] .wallet-menu {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+  filter: blur(0);
+  transition:
+    opacity 200ms var(--ease-out),
+    transform 200ms var(--ease-out),
+    filter 200ms var(--ease-out),
+    visibility 0s;
+}
+
+.wallet-item {
+  --px: 2px;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: #fff;
+  line-height: 0;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 160ms var(--ease-out);
+}
+.wallet-item:active {
+  transform: scale(0.97);
+}
+.wallet-item:focus-visible {
+  outline: 2px dashed var(--text);
+  outline-offset: 1px;
+}
+.wallet-art {
+  display: block;
+}
+.wallet-art svg {
+  display: block;
+  fill: var(--text);
+}
+
+/* The world on screen reads like a selected tile: pressed in and inverted. */
+.wallet-item[aria-current='true'] {
+  background: var(--text);
+}
+.wallet-item[aria-current='true'] svg {
+  fill: #fff;
+}
+
+/*
+ * Bob on hover (and keyboard focus): vertical only and snapped to whole art pixels, like the
+ * headphones fish. The uneven key times give the ease-in-out: it lingers at both ends.
+ */
+@media (hover: hover) and (pointer: fine) {
+  .wallet-item:hover .wallet-art {
+    animation: wallet-bob 545ms step-end infinite;
+  }
+}
+.wallet-item:focus-visible .wallet-art {
+  animation: wallet-bob 545ms step-end infinite;
+}
+@keyframes wallet-bob {
+  0% {
+    translate: 0 0;
+  }
+  10% {
+    translate: 0 calc(-1 * var(--px));
+  }
+  25% {
+    translate: 0 calc(-2 * var(--px));
+  }
+  55% {
+    translate: 0 calc(-2 * var(--px));
+  }
+  70% {
+    translate: 0 calc(-1 * var(--px));
+  }
+  85% {
+    translate: 0 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wallet-slot {
+    transition: none;
+  }
+  .wallet-menu,
+  .wallet-slot[data-open='true'] .wallet-menu {
+    transform: none;
+    filter: none;
+    transition:
+      opacity 160ms ease-out,
+      visibility 0s 160ms;
+  }
+  .wallet-slot[data-open='true'] .wallet-menu {
+    transition-delay: 0s;
+  }
+  .wallet-item:active {
+    transform: none;
+  }
+  .wallet-item:hover .wallet-art,
+  .wallet-item:focus-visible .wallet-art {
+    animation: none;
+  }
+}
