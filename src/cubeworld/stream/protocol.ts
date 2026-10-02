@@ -70,6 +70,9 @@ export interface ChunkMesh {
   faces: number;
   /** per interior column (z * 32 + x): cells up to and including the highest terrain cell, for the camera to ride on */
   ground: Uint16Array;
+  /** per interior column: one past the highest non-air cell (trees, poles and roofs count), and that cell's class */
+  top: Uint16Array;
+  topClass: Uint8Array;
   ny: number;
 }
 

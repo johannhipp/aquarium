@@ -239,10 +239,10 @@ as one and is not shown). Aoyama Tunnel sits about 1 km inside the western edge 
 | `art/places/` | full-size images and `places.full.json` (not served) |
 | `public/stream/` | the map: `manifest.json`, `dir.<hash>.bin`, `chunks.<hash>.bin` |
 
-**The map data.** PLATEAU 3D city model, FY2025, 15 central wards from Setagaya (Shimokitazawa) to Koto
-(Morishita), a 14.3 x 8.7 km frame (CityGML 2.0): buildings LOD1-3 (LOD2/3 in the centre, LOD1 in the
+**The map data.** PLATEAU 3D city model, FY2025, 16 central wards from Setagaya (Shimokitazawa) to Koto
+and Sumida (Morishita, Kinshicho, Tatekawa), a 16.4 x 11.3 km frame (CityGML 2.0): buildings LOD1-3 (LOD2/3 in the centre, LOD1 in the
 west), roads LOD1-3 (carriageway, sidewalk, island), city furniture and vegetation (poles and trees where
-the wards publish them, Shimbashi/Toranomon), bridges, water, and the DEM TIN. The 71 MB `chunks.<hash>.bin`
+the wards publish them, Shimbashi/Toranomon), bridges, water, and the DEM TIN. The 104 MB `chunks.<hash>.bin`
 is not in git: rebuild it with `pipeline/cubeworld/stream_build.py` (`research/cubeworld-streaming.md`, section 9;
 the area is `pipeline/cubeworld/stream_area.json`). The script fetches
 only the needed CityGML members by HTTP range request, rasterises 1 m layers, and packs a 7-level
@@ -261,8 +261,8 @@ sleep (silence, note hidden, selection kept) and wakes the other, so returning r
 
 ### Place credits
 
-Map: 出典：国土交通省 3D都市モデル（Project PLATEAU）東京都港区（令和7年度）を加工して作成 / Source: MLIT Project
-PLATEAU, Minato-ku FY2025 3D city model, processed into voxels (Public Data License v1.0, CC BY 4.0
+Map: 出典：国土交通省 3D都市モデル（Project PLATEAU）東京都（千代田区・中央区・港区・新宿区・文京区・台東区・墨田区・江東区・品川区・目黒区・大田区・世田谷区・渋谷区・中野区・杉並区・江戸川区、令和7年度）を加工して作成 / Source: MLIT Project
+PLATEAU, FY2025 3D city models of 16 Tokyo wards, processed into voxels (Public Data License v1.0, CC BY 4.0
 compatible). The app draws no text but the place names, so this notice lives here and bottom-right on `stream.html`.
 Place sprites were generated like the creatures' (see *Credits* above).
 

@@ -5,6 +5,7 @@ import {
 } from './format';
 import type { ChunkMesh, ChunkRef, FromWorker, Throttle, ToWorker } from './protocol';
 import { selectChunks, type SelectParams } from './selection';
+import { Class } from '../voxels';
 
 /** Where a pose looks: what `selectChunks` needs, plus the time (ms from now) the pose is predicted to be current. */
 export interface ViewSample {
@@ -37,6 +38,8 @@ interface Resident {
   bytes: number;
   faces: number;
   ground: Uint16Array;
+  top: Uint16Array;
+  topClass: Uint8Array;
   lastUsed: number;
   /** drawn at least once, i.e. already on the GPU */
   uploaded: boolean;
@@ -62,6 +65,15 @@ interface Batch {
 interface WorkerSlot {
   worker: Worker;
   inflight: number;
+}
+
+/** The point a note about a place is drawn at, in world metres (x east, y up, z south). */
+export interface Anchor {
+  x: number;
+  y: number;
+  z: number;
+  /** on the roof of a building (false: only the ground was found) */
+  building: boolean;
 }
 
 export interface ManagerStats {
@@ -103,6 +115,12 @@ const MAX_INFLIGHT = 6;
 const WARM_SCORE = 1e9;
 /** Boosted chunks sort ahead of everything except the pinned coarsest level. */
 const BOOST_SCORE = -1e5;
+/** Pinned anchor chunks: just behind a boost, ahead of every view-driven request. */
+const PIN_SCORE = -5e4;
+/** How far from a street-level place its building is looked for, in metres. */
+const ANCHOR_RADIUS = 6;
+/** Levels up to this (4 m cubes) are fine enough to say whether something stands in the way of a note. */
+const OCCLUDER_MAX_LEVEL = 2;
 const RETRY_MS = 3000;
 
 export class ChunkManager {
@@ -118,6 +136,8 @@ export class ChunkManager {
   #planStart = 0;
   #demandKeys = new Map<ChunkKey, number>();
   #boost: readonly ChunkKey[] | null = null;
+  #pinned: readonly ChunkKey[] = [];
+  readonly #anchors = new Map<string, Anchor>();
   #warm = new Set<ChunkKey>();
   #shown = new Set<ChunkKey>();
   #nextBatch = 1;
@@ -190,6 +210,95 @@ export class ChunkManager {
       const lx = Math.min(CHUNK - 1, Math.max(0, Math.floor(x / size) - cx * CHUNK));
       const lz = Math.min(CHUNK - 1, Math.max(0, Math.floor(z / size) - cz * CHUNK));
       return r.ground[lz * CHUNK + lx] * size;
+    }
+    return Number.NaN;
+  }
+
+  /**
+   * Keeps the finest (1 m) chunks around each point (within ANCHOR_RADIUS) built and never evicted, so a note
+   * anchored there has one position for good: coarse levels pool buildings over the ground, and their heights
+   * can be metres off.
+   */
+  pin(points: ReadonlyArray<{ x: number; z: number }>): void {
+    const keys = new Set<ChunkKey>();
+    const lv = this.#o.manifest.levels[0];
+    for (const p of points) {
+      for (const gz of [p.z - ANCHOR_RADIUS, p.z + ANCHOR_RADIUS]) {
+        for (const gx of [p.x - ANCHOR_RADIUS, p.x + ANCHOR_RADIUS]) {
+          const cx = Math.floor(gx / CHUNK);
+          const cz = Math.floor(gz / CHUNK);
+          if (cx >= 0 && cz >= 0 && cx < lv.ncx && cz < lv.ncz && this.#o.dir.lengths[0][cz * lv.ncx + cx] > 0) keys.add(chunkKey(0, cx, cz));
+        }
+      }
+    }
+    this.#pinned = [...keys];
+    this.#anchors.clear();
+  }
+
+  /** The 1 m chunk holding global column (gx, gz): undefined while it is not built, null where the archive has none. */
+  #fine(gx: number, gz: number): Resident | null | undefined {
+    const cx = Math.floor(gx / CHUNK);
+    const cz = Math.floor(gz / CHUNK);
+    const lv = this.#o.manifest.levels[0];
+    if (cx < 0 || cz < 0 || cx >= lv.ncx || cz >= lv.ncz || this.#o.dir.lengths[0][cz * lv.ncx + cx] === 0) return null;
+    return this.#resident.get(chunkKey(0, cx, cz));
+  }
+
+  /**
+   * Where a note about the place at (x, z) is drawn: on the visible top of the building the place is in. That is
+   * the roof of its own column, or, for a street-level point, of the nearest building column within
+   * ANCHOR_RADIUS (ground floor and basement shops sit inside a building); with no building nearby, the ground.
+   * Read from the pinned 1 m chunks only, so it never changes with zoom or level of detail. Null until they are
+   * built.
+   */
+  anchorAt(x: number, z: number): Anchor | null {
+    const memo = this.#anchors.get(`${x},${z}`);
+    if (memo) return memo;
+    const R = Math.ceil(ANCHOR_RADIUS);
+    const gx0 = Math.floor(x);
+    const gz0 = Math.floor(z);
+    let best: Anchor | null = null;
+    let bestDist = Infinity;
+    for (let dz = -R; dz <= R; dz++) {
+      for (let dx = -R; dx <= R; dx++) {
+        const gx = gx0 + dx;
+        const gz = gz0 + dz;
+        const r = this.#fine(gx, gz);
+        if (r === undefined) return null;
+        if (r === null) continue;
+        const i = (gz - Math.floor(gz / CHUNK) * CHUNK) * CHUNK + (gx - Math.floor(gx / CHUNK) * CHUNK);
+        const cls = r.topClass[i];
+        if (cls !== Class.BUILDING && cls !== Class.ROOF) continue;
+        const dist = Math.hypot(gx + 0.5 - x, gz + 0.5 - z);
+        if (dist > ANCHOR_RADIUS || dist >= bestDist) continue;
+        bestDist = dist;
+        best = { x: gx + 0.5, y: r.top[i], z: gz + 0.5, building: true };
+      }
+    }
+    if (!best) {
+      const r = this.#fine(gx0, gz0);
+      if (r === undefined) return null;
+      const ground = r ? r.ground[(gz0 - Math.floor(gz0 / CHUNK) * CHUNK) * CHUNK + (gx0 - Math.floor(gx0 / CHUNK) * CHUNK)] : 0;
+      best = { x, y: ground, z, building: false };
+    }
+    this.#anchors.set(`${x},${z}`, best);
+    return best;
+  }
+
+  /**
+   * Height of the highest solid cell above column (x, z) from the finest built level up to 4 m cubes; NaN where
+   * only coarser data exists (too rough to say anything is in the way).
+   */
+  topAt(x: number, z: number): number {
+    for (let level = 0; level <= OCCLUDER_MAX_LEVEL; level++) {
+      const size = 1 << level;
+      const cx = Math.floor(x / (CHUNK * size));
+      const cz = Math.floor(z / (CHUNK * size));
+      const r = this.#resident.get(chunkKey(level, cx, cz));
+      if (!r) continue;
+      const lx = Math.min(CHUNK - 1, Math.max(0, Math.floor(x / size) - cx * CHUNK));
+      const lz = Math.min(CHUNK - 1, Math.max(0, Math.floor(z / size) - cz * CHUNK));
+      return r.top[lz * CHUNK + lx] * size;
     }
     return Number.NaN;
   }
@@ -312,6 +421,7 @@ export class ChunkManager {
       }
     }
     if (this.#boost) this.#wantedWithAncestors(this.#boost, BOOST_SCORE, demand);
+    for (const key of this.#pinned) demand.set(key, PIN_SCORE);
     const roots = this.#o.manifest.levels[this.#top];
     for (let cz = 0; cz < roots.ncz; cz++) {
       for (let cx = 0; cx < roots.ncx; cx++) {
@@ -521,7 +631,7 @@ export class ChunkManager {
     mesh.updateMatrix();
     mesh.visible = false;
     this.#o.group.add(mesh);
-    this.#resident.set(ref.key, { key: ref.key, mesh, bytes, faces: msg.faces, ground: msg.ground, lastUsed: performance.now(), uploaded: false });
+    this.#resident.set(ref.key, { key: ref.key, mesh, bytes, faces: msg.faces, ground: msg.ground, top: msg.top, topClass: msg.topClass, lastUsed: performance.now(), uploaded: false });
     this.#cpuBytes += bytes;
     this.#quads += msg.faces;
     this.#stats.chunksBuilt++;
@@ -541,6 +651,7 @@ export class ChunkManager {
   #evict(wanted: readonly ChunkKey[]): void {
     if (this.#gpuBytes + this.#cpuBytes <= this.#o.gpuBudgetBytes) return;
     const keep = new Set<ChunkKey>(wanted);
+    for (const k of this.#pinned) keep.add(k);
     for (const k of this.#shown) keep.add(k);
     const candidates: Resident[] = [];
     for (const r of this.#resident.values()) {

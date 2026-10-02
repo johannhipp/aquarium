@@ -2,9 +2,9 @@
  "_comment": "Area of the streamed Tokyo cubeworld. frame: EPSG:6677 metres, gx0 = easting of cell x=0, gtop = northing of cell z=0, nx/nz cells (1 m, multiples of 512). Every PLATEAU CityGML 3rd mesh that touches the frame is taken from every ward below that carries it (a mesh on a ward boundary appears in both wards' zips; features are merged by gml:id). Urls are the FY2025 (spec 5.0) CityGML zips from the PLATEAU data catalog.",
  "frame": {
   "gx0": -16800,
-  "gtop": -34093,
-  "nx": 14336,
-  "nz": 8704
+  "gtop": -31533,
+  "nx": 16384,
+  "nz": 11264
  },
  "wards": [
   {
@@ -112,6 +112,13 @@
    "ja": "杉並区",
    "year": 2025,
    "url": "https://assets.cms.plateau.reearth.io/assets/1f/4afed5-f8d0-42e7-b334-e507471ecd51/13115_suginami-ku_pref_2025_citygml_1_op.zip"
+  },
+  {
+   "code": "13123",
+   "name": "edogawa-ku",
+   "ja": "江戸川区",
+   "year": 2025,
+   "url": "https://assets.cms.plateau.reearth.io/assets/e6/75f5f9-3352-4d80-a79c-3a2421f75d5a/13123_edogawa-ku_pref_2025_citygml_1_op.zip"
   }
  ]
 }

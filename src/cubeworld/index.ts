@@ -14,8 +14,9 @@ const FIRST_FRAME_TIMEOUT_MS = 4000;
 
 declare global {
   interface Window {
-    /** Dev servers only: the map, for end-to-end checks. */
+    /** Dev servers only: the map and its viewer, for end-to-end checks and alignment measurements. */
     __cubeworld?: Cubeworld;
+    __streamViewer?: StreamViewer;
   }
 }
 
@@ -89,6 +90,7 @@ export async function createCubeworld(container: HTMLElement, focus: readonly Ma
     paletteId: PALETTE_ID,
     home: poses.length > 0 ? { ...middle, zoom: HOME_ZOOM } : undefined,
     warm: poses,
+    anchors: poses,
   });
   const deadline = performance.now() + FIRST_FRAME_TIMEOUT_MS;
   while (viewer.firstRenderMs() < 0 && performance.now() < deadline) {
@@ -98,6 +100,9 @@ export async function createCubeworld(container: HTMLElement, focus: readonly Ma
   }
   viewer.stop();
   const cube = wrap(viewer);
-  if (import.meta.env.DEV) window.__cubeworld = cube;
+  if (import.meta.env.DEV) {
+    window.__cubeworld = cube;
+    window.__streamViewer = viewer;
+  }
   return cube;
 }

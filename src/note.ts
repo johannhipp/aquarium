@@ -24,6 +24,7 @@ export function createNote(host: HTMLElement): Note {
   root.className = 'note';
   root.dataset.open = 'false';
   root.dataset.facing = 'false';
+  root.dataset.occluded = 'false';
   root.dataset.side = 'right';
   const dot = document.createElement('span');
   dot.className = 'note-dot';
@@ -72,6 +73,7 @@ export function createNote(host: HTMLElement): Note {
     /** Follow the anchor's projected position; hide while it is on the far side of the globe. */
     place(p: ScreenPoint): void {
       root.dataset.facing = String(p.facing);
+      root.dataset.occluded = String(p.occluded === true);
       root.dataset.side = p.x + GAP + textWidth > window.innerWidth - MARGIN ? 'left' : 'right';
       root.style.transform = `translate3d(${p.x.toFixed(1)}px, ${p.y.toFixed(1)}px, 0)`;
     },

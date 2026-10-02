@@ -4,7 +4,7 @@ import { createBackdrop, createWorldMaterial, setWorldFocus, wantsAntialias } fr
 import { DEFAULT_PALETTE, paletteById, rgb, type Palette } from '../palettes';
 import { inflateRaw, parseDirectory, type ChunkKey, type Manifest, type ThemeDef } from './format';
 import { BASE_HALF_HEIGHT, planFlight, type FlightPlan, type FlightPose } from './flight';
-import { ChunkManager, type ManagerStats, type ViewSample } from './manager';
+import { ChunkManager, type Anchor, type ManagerStats, type ViewSample } from './manager';
 import { LongTasks, jsHeapMB, summarize, type FrameStats, type LongTask } from './metrics';
 import { createPlaceholder, recolorPlaceholder } from './placeholder';
 import type { ScreenPoint } from '../../globe';
@@ -22,6 +22,8 @@ export interface ViewerOptions {
   workers?: number;
   /** false: the loop and the key listeners wait for `start()` (default true). */
   autoStart?: boolean;
+  /** Ground points (world metres) whose 1 m chunk stays built, so `project` there is exact at every zoom. */
+  anchors?: ReadonlyArray<{ x: number; z: number }>;
   /** Where the camera starts (default: the first theme, zoomed out over the ward). */
   home?: FlightPose;
   /** Poses whose chunks are warmed into Cache Storage at idle (default: every theme). */
@@ -84,6 +86,12 @@ export interface StreamViewer {
   flyToPose(pose: FlightPose, label: string, settleMs?: number): Promise<FlightReport>;
   /** Screen position (CSS px) of the ground point at world metres (x east, z south). */
   project(x: number, z: number, out: ScreenPoint): void;
+  /** Screen position of an exact world point (x east, y up, z south), for measurements. */
+  projectPoint(x: number, y: number, z: number, out: ScreenPoint): void;
+  /** Where `project` puts a note about (x, z): the roof of the place's building, or null until the 1 m chunks around it are built. */
+  anchorAt(x: number, z: number): Anchor | null;
+  /** Ground height in metres under (x, z) from the finest built chunk there; NaN where nothing is built. */
+  groundAt(x: number, z: number): number;
   /** Called after every rendered frame. */
   onFrame(cb: () => void): void;
   /** Off while a modal dialog is up, so drag and wheel never reach the world behind it. */
@@ -106,6 +114,9 @@ const STALL_MAX_MS = 4000;
 const STALL_SLACK = 3;
 /** ... for this fraction of them. */
 const STALL_READY = 0.9;
+/** The occlusion march: step along the view ray in metres, and the height (above the tallest building) where it stops. */
+const OCCLUDER_STEP = 1.5;
+const OCCLUDER_CEILING = 400;
 
 interface ActiveFlight {
   plan: FlightPlan;
@@ -186,11 +197,40 @@ export async function createStreamViewer(container: HTMLElement, options: Viewer
     workers: options.workers ?? Math.max(2, Math.min(4, (navigator.hardwareConcurrency || 4) - 1)),
     revealQuadsPerFrame: 60000,
   });
+  manager.pin(options.anchors ?? []);
 
   const longTasks = new LongTasks();
   const flightListeners: Array<(id: string | null) => void> = [];
   const frameListeners: Array<() => void> = [];
   const projected = new THREE.Vector3();
+
+  const toCamera = new THREE.Vector3();
+
+  /**
+   * True when something solid stands between the anchor and the camera: marches from just above the anchor along
+   * the view direction (orthographic: the same for every point) and compares with the columns' tops. Only columns
+   * known at 4 m or finer count, so a coarse stand-in never dims a note by mistake.
+   */
+  function isOccluded(a: Anchor): boolean {
+    toCamera.copy(camera.position).sub(target).normalize();
+    if (toCamera.y < 0.05) return false;
+    const step = OCCLUDER_STEP;
+    for (let t = step; ; t += step) {
+      const y = a.y + 0.5 + toCamera.y * t;
+      if (y > OCCLUDER_CEILING) return false;
+      const top = manager.topAt(a.x + toCamera.x * t, a.z + toCamera.z * t);
+      if (top > y) return true;
+    }
+  }
+
+  /** CSS-pixel position of a world point, from the camera as it is right now (matrices refreshed, never stale). */
+  function projectPoint(x: number, y: number, z: number, out: ScreenPoint): void {
+    camera.updateMatrixWorld();
+    projected.set(x, y, z).project(camera);
+    out.x = (projected.x * 0.5 + 0.5) * container.clientWidth;
+    out.y = (0.5 - projected.y * 0.5) * container.clientHeight;
+    out.facing = Number.isFinite(out.x) && Number.isFinite(out.y);
+  }
   let firstRender = -1;
   let dirty = true;
   let lastFrame = 0;
@@ -551,12 +591,19 @@ export async function createStreamViewer(container: HTMLElement, options: Viewer
     stop,
     flyToPose,
     project(x, z, out) {
+      const a = manager.anchorAt(x, z);
+      if (a) {
+        projectPoint(a.x, a.y, a.z, out);
+        out.occluded = isOccluded(a);
+        return;
+      }
       const g = manager.groundAt(x, z);
-      projected.set(x, Number.isFinite(g) ? g : target.y, z).project(camera);
-      out.x = (projected.x * 0.5 + 0.5) * container.clientWidth;
-      out.y = (0.5 - projected.y * 0.5) * container.clientHeight;
-      out.facing = Number.isFinite(out.x) && Number.isFinite(out.y);
+      projectPoint(x, Number.isFinite(g) ? g : target.y, z, out);
+      out.occluded = false;
     },
+    anchorAt: (x, z) => manager.anchorAt(x, z),
+    projectPoint,
+    groundAt: (x, z) => manager.groundAt(x, z),
     onFrame(cb) {
       frameListeners.push(cb);
     },

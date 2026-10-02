@@ -273,6 +273,14 @@ canvas:active {
   transition-delay: calc(140ms + var(--i) * 90ms);
 }
 
+/* Hidden behind a taller building in the map: the note stays, a little quieter. */
+.note {
+  transition: opacity 240ms ease-out;
+}
+.note[data-occluded='true'] {
+  opacity: 0.45;
+}
+
 @keyframes ping {
   from {
     opacity: 0.5;

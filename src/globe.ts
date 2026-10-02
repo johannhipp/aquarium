@@ -19,6 +19,8 @@ export interface ScreenPoint {
   y: number;
   /** false when the point is on the far side of the globe */
   facing: boolean;
+  /** true when something stands between the point and the camera (the map's notes dim slightly; the globe never sets it) */
+  occluded?: boolean;
 }
 
 export interface Globe {

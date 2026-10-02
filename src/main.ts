@@ -5,11 +5,18 @@ import { audioAllowed, createPlayer } from './audio';
 import { mountCubeworldFeatures, type CubeworldFeatures } from './cubeworld/mount';
 import { loadCreatureData, loadManifest, type Creature } from './data';
 import { runSoundGate } from './gate';
-import { createGlobe } from './globe';
+import { createGlobe, type Globe } from './globe';
 import { createGuide, type GuideItem } from './guide';
 import { createNote } from './note';
 import { loadPlaces } from './places';
 import { emitCreatureView } from './session';
+
+declare global {
+  interface Window {
+    /** Dev servers only: the globe, for alignment measurements. */
+    __globe?: Globe;
+  }
+}
 
 async function main(): Promise<void> {
   const [manifest, data] = await Promise.all([loadManifest(), loadCreatureData()]);
@@ -21,6 +28,8 @@ async function main(): Promise<void> {
       return [];
     }),
   ]);
+
+  if (import.meta.env.DEV) window.__globe = globe;
 
   const audioHost = document.createElement('div');
   audioHost.hidden = true;

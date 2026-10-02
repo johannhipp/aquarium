@@ -97,12 +97,21 @@ function buildChunk(id: number, ref: ChunkRef, raw: Uint8Array<ArrayBuffer>): Ch
   const geometry: THREE.BufferGeometry = world.geometry;
 
   const ground = new Uint16Array(CHUNK * CHUNK);
+  const top = new Uint16Array(CHUNK * CHUNK);
+  const topClass = new Uint8Array(CHUNK * CHUNK);
   for (let z = 0; z < CHUNK; z++) {
     for (let x = 0; x < CHUNK; x++) {
       const col = (z + PAD) * SPAN + x + PAD;
+      const out = z * CHUNK + x;
       for (let y = ny - 1; y >= 0; y--) {
-        if (TERRAIN[cells[col + COLUMNS * y]]) {
-          ground[z * CHUNK + x] = y + 1;
+        const c = cells[col + COLUMNS * y];
+        if (c === 0) continue;
+        if (top[out] === 0) {
+          top[out] = y + 1;
+          topClass[out] = c;
+        }
+        if (TERRAIN[c]) {
+          ground[out] = y + 1;
           break;
         }
       }
@@ -117,7 +126,7 @@ function buildChunk(id: number, ref: ChunkRef, raw: Uint8Array<ArrayBuffer>): Ch
   const index = geometry.index ? (geometry.index.array as Uint16Array | Uint32Array) : null;
   const bb = geometry.boundingBox;
   const box: ChunkMesh['box'] = bb ? [bb.min.x, bb.min.y, bb.min.z, bb.max.x, bb.max.y, bb.max.z] : [PAD, 0, PAD, PAD + CHUNK, ny, PAD + CHUNK];
-  return { type: 'chunk', id, ref, attributes, index, box, faces: world.faces, ground, ny };
+  return { type: 'chunk', id, ref, attributes, index, box, faces: world.faces, ground, top, topClass, ny };
 }
 
 async function handleLoad(req: LoadRequest): Promise<void> {
@@ -140,7 +149,7 @@ async function handleLoad(req: LoadRequest): Promise<void> {
         const mesh = buildChunk(req.id, ref, await inflateRaw(blob));
         const transfer: Transferable[] = mesh.attributes.map((a) => a.array.buffer);
         if (mesh.index) transfer.push(mesh.index.buffer);
-        transfer.push(mesh.ground.buffer);
+        transfer.push(mesh.ground.buffer, mesh.top.buffer, mesh.topClass.buffer);
         post(mesh, transfer);
       }
     }
