@@ -12,10 +12,13 @@ committed: `npm run map` (scripts/build-map.sh) creates the venv from requiremen
 
 Output: manifest.json, dir.<hash>.bin (deflate-raw: the chunk codec's frequency tables, then each chunk's length and
 height), chunks.<hash>-<n>.bin (16 MiB shards; every chunk one blob, read with HTTP range requests). The chunk codec is
-stream_codec.py; the wire format is documented in src/cubeworld/stream/format.ts. `pack` takes about 7 minutes (the
-entropy coder is plain Python on 10 cores) and writes to public/stream-next/, so a running dev page keeps working; the
+stream_codec.py; the wire format is documented in src/cubeworld/stream/format.ts. `pack` takes 2-3 minutes with the
+1 m detail limited to the places (about 7 without: the entropy coder is plain Python on 10 cores) and writes to public/stream-next/, so a running dev page keeps working; the
 dev server reloads on any write below public/, so build with `--out pipeline/cache/cubeworld/out-next` and swap with
 `mv public/stream public/stream-old && cp -R pipeline/cache/cubeworld/out-next public/stream`.
+
+Two size knobs in stream_area.json (research/cubeworld-streaming.md section 11): `detail.l0RadiusM` keeps 1 m chunks only
+within that distance of the places and themes (whole 64 m blocks), `roofQuantM` snaps building roofs to whole floors.
 
 The whole area is rasterised once into 2.5D layers at 1 m (DEM height, surface class, building roof height, water)
 plus sparse voxels for thin things (trees, poles, bridge decks). Chunks are cut from those layers; coarser LODs are
@@ -31,6 +34,7 @@ import functools
 import hashlib
 import json
 import math
+import os
 import sys
 import threading
 import time
@@ -53,8 +57,11 @@ PLATEAU = CACHE / "plateau2025"
 LISTINGS = CACHE / "listings"
 STREAM_CACHE = CACHE / "stream"
 OUT = ROOT / "public" / "stream-next"
-AREA = json.loads((HERE / "stream_area.json").read_text())
+AREA = json.loads(Path(os.environ.get("STREAM_AREA", HERE / "stream_area.json")).read_text())   # STREAM_AREA: experiments
 WARDS: list[dict] = AREA["wards"]
+ROOF_Q = int(AREA.get("roofQuantM", 0))        # roofs snap to whole floors of this many metres (0: exact)
+DETAIL = AREA.get("detail") or {}              # 1 m detail only near places and themes, see l0_blocks()
+PLACES = ROOT / "public" / "places" / "places.json"
 
 # CityGML members that feed the build. luse (1.5 GB) and fld/htd/urf are skipped on purpose.
 KINDS = ("bldg", "tran", "frn", "veg", "brid", "wtr", "dem")
@@ -689,6 +696,12 @@ def compose_region(sx: int, sz: int) -> np.ndarray | None:
     surf_cls = np.where(RC > 0, RC, np.where(water, WATER, GROUND)).astype(np.uint8)
     bm = cover & ~np.isnan(BH)
     top = np.clip(np.where(bm, np.maximum(k_of(BH), surf), surf), 1, NY_MAX - 8)
+    if ROOF_Q > 1:
+        # Roofs snap to whole floors on one grid of absolute height (so a flat roof stays flat on a slope, and
+        # neighbouring roofs of about one height become one), never below one floor above the ground cell. Only
+        # `top` of building columns changes: the footprint, the ground and everything thin stay as they were.
+        roof = np.floor((top + 1) / ROOF_Q + 0.5).astype(np.int32) * ROOF_Q
+        top = np.where(bm, np.clip(np.maximum(roof, surf + ROOF_Q) - 1, 1, NY_MAX - 8), top)
     dm = cover & ~np.isnan(deck)
     dk = np.clip(k_of(deck), 0, NY_MAX - 8)
 
@@ -718,6 +731,52 @@ def compose_region(sx: int, sz: int) -> np.ndarray | None:
 
 _MODEL: sc.Model | None = None       # set in every worker by _set_model
 _TRAIN: sc.Counts | None = None      # when set, encode_chunk only counts symbols (the training pass)
+_TRAIN_LEVELS: frozenset[int] = frozenset(range(LEVELS))
+_L0: np.ndarray | None = None        # (nz/64, nx/64) bool: 64 m blocks that get 1 m chunks; None: everywhere
+
+
+def detail_points() -> list[tuple[float, float, str]]:
+    """(E, N, what) of every spot that keeps 1 m detail: the places and the themes (EPSG:6677)."""
+    from pyproj import Transformer
+    out: list[tuple[float, float, str]] = []
+    src = DETAIL.get("sources", [])
+    if "places" in src:
+        out += [(p["epsg6677"][0], p["epsg6677"][1], p["id"]) for p in json.loads(PLACES.read_text())]
+    if "themes" in src:
+        to = Transformer.from_crs(4326, 6677, always_xy=True)
+        for tid, _icon, _name, pos, _zoom in THEMES:
+            e, n = (pos[1], pos[2]) if pos[0] == "xy" else to.transform(pos[2], pos[1])
+            out.append((e, n, tid))
+    return out
+
+
+def l0_blocks() -> np.ndarray | None:
+    """Which 64 m blocks (one level-1 chunk: 2 x 2 level-0 chunks) keep level 0: those within `l0RadiusM` of a place
+    or theme. Whole level-1 parents only, never part of one: the client splits a level-1 chunk into the children
+    that exist, so a half-detailed parent would leave holes. Elsewhere level 1 (2 m cubes) is the finest level."""
+    radius = float(DETAIL.get("l0RadiusM") or 0)
+    if radius <= 0:
+        return None
+    f = frame()
+    n = 2 * CHUNK
+    mask = np.zeros((f.nz // n, f.nx // n), bool)
+    bz, bx = np.mgrid[0:mask.shape[0], 0:mask.shape[1]]
+    for e, nn, _ in detail_points():
+        px, pz = e - f.gx0, f.gtop - nn
+        dx = np.maximum(np.maximum(bx * n - px, px - (bx + 1) * n), 0)
+        dz = np.maximum(np.maximum(bz * n - pz, pz - (bz + 1) * n), 0)
+        mask |= dx * dx + dz * dz <= radius * radius
+    return mask
+
+
+def _set_l0(mask: np.ndarray | None) -> None:
+    global _L0
+    _L0 = mask
+
+
+def _init_worker(model_bytes: bytes, mask: np.ndarray | None) -> None:
+    _set_model(model_bytes)
+    _set_l0(mask)
 
 
 def _set_model(model_bytes: bytes) -> None:
@@ -731,15 +790,18 @@ def encode_chunk(win: np.ndarray, level: int) -> tuple[bytes, int] | None:
     if not win[:, PAD:CHUNK + PAD, PAD:CHUNK + PAD].any():
         return None
     if _TRAIN is not None:
-        _TRAIN.add(level, sc.symbolize(win)[1])
+        if level in _TRAIN_LEVELS:
+            _TRAIN.add(level, sc.symbolize(win)[1])
         return None
     assert _MODEL is not None
     return sc.encode_blob(win, _MODEL, level)
 
 
-def train_supertile(job: tuple[int, int]) -> sc.Counts:
-    global _TRAIN
-    _TRAIN = sc.Counts()
+def train_supertile(arg: tuple[tuple[int, int], frozenset[int]]) -> sc.Counts:
+    """Symbol counts of one supertile for the given levels (the codec's frequency tables are trained on them)."""
+    global _TRAIN, _TRAIN_LEVELS
+    job, levels = arg
+    _TRAIN, _TRAIN_LEVELS = sc.Counts(), levels
     try:
         pack_supertile(job)
         return _TRAIN
@@ -763,6 +825,8 @@ def pack_supertile(job: tuple[int, int]) -> tuple[list[tuple[int, int, int, int,
         per = (SUPER // CHUNK) >> level          # chunks per supertile side at this level
         for lz in range(per):
             for lx in range(per):
+                if level == 0 and _L0 is not None and not _L0[(sz * per + lz) >> 1, (sx * per + lx) >> 1]:
+                    continue
                 x0, z0 = off + lx * CHUNK - PAD, off + lz * CHUNK - PAD
                 enc = encode_chunk(grid[:, z0:z0 + SPAN, x0:x0 + SPAN], level)
                 if enc is not None:
@@ -854,19 +918,31 @@ def cmd_pack(args: list[str]) -> None:
         jobs = [(int(a), int(b)) for a, b in (s.split(",") for s in only)]
     t0 = time.time()
 
-    # pass 1: the codec's frequency tables, trained on every fourth supertile (they are static, shipped in dir.bin)
+    # pass 1: the codec's frequency tables (static, shipped in dir.bin): every level from every fourth supertile, and
+    # level 0 from every supertile that keeps any 1 m chunks (they are few and spread out)
+    mask = l0_blocks()
+    _set_l0(mask)
+    sample = frozenset(jobs[::4])
+    everything = frozenset(range(LEVELS))
+    train: list[tuple[tuple[int, int], frozenset[int]]] = []
+    for sx, sz in jobs:
+        has_l0 = mask is None or bool(mask[sz * (SUPER // CHUNK // 2):(sz + 1) * (SUPER // CHUNK // 2), sx * (SUPER // CHUNK // 2):(sx + 1) * (SUPER // CHUNK // 2)].any())
+        levels_here = (everything if (sx, sz) in sample else frozenset()) | (frozenset({0}) if has_l0 else frozenset())
+        if levels_here:
+            train.append(((sx, sz), levels_here))
     counts = sc.Counts()
-    with ProcessPoolExecutor(10) as ex:
-        for c in ex.map(train_supertile, jobs[::4], chunksize=1):
+    with ProcessPoolExecutor(10, initializer=_set_l0, initargs=(mask,)) as ex:
+        for c in ex.map(train_supertile, train, chunksize=1):
             counts.merge(c)
     model_bytes = counts.model().to_bytes()
     _set_model(model_bytes)
-    print(f"  trained codec tables on {len(jobs[::4])} supertiles, {time.time() - t0:.0f}s", flush=True)
+    print(f"  trained codec tables on {len(train)} supertiles, {time.time() - t0:.0f}s"
+          + (f"; 1 m detail in {int(mask.sum())} of {mask.size} 64 m blocks ({mask.mean():.1%} of the frame)" if mask is not None else ""), flush=True)
 
     # pass 2: every chunk
     chunks: dict[tuple[int, int, int], tuple[int, bytes]] = {}
     core4: dict[tuple[int, int], np.ndarray] = {}
-    with ProcessPoolExecutor(10, initializer=_set_model, initargs=(model_bytes,)) as ex:
+    with ProcessPoolExecutor(10, initializer=_init_worker, initargs=(model_bytes, mask)) as ex:
         for n, (job, res) in enumerate(zip(jobs, ex.map(pack_supertile, jobs, chunksize=1)), 1):
             for level, cx, cz, h, blob in res[0]:
                 chunks[(level, cx, cz)] = (h, blob)
@@ -923,6 +999,10 @@ def cmd_pack(args: list[str]) -> None:
         "shardBits": SHARD_BITS,
         "bytes": {"dir": len(dir_blob), "chunks": sum(len(sh) for sh in shards)},
         "counts": {"chunks": total, "byLevel": by_level},
+        # informational: level 0 (1 m) exists only in whole 64 m blocks near these points, level 1 is the finest elsewhere
+        "detail": ({"l0RadiusM": DETAIL["l0RadiusM"], "blockM": 2 * CHUNK, "l0Blocks": int(mask.sum()), "sources": DETAIL.get("sources", [])}
+                   if mask is not None else None),
+        "roofQuantM": ROOF_Q,
         "themes": theme_defs(),
     }
     (OUT / "manifest.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=1))

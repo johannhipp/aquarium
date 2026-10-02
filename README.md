@@ -12,9 +12,27 @@ Tokyo with five bookmarked places, which works the same way (see *Places on the 
 
 ```sh
 npm install
+npm run map          # once, before dev/build: generates the Tokyo map (read the cost below)
 npm run dev          # drag to rotate, scroll/pinch to zoom
 npm run build        # type-check + production build into dist/
 ```
+
+### Setup: building the map (read before `npm run map`)
+
+The Tokyo map (`public/stream/`, about 22 MB) is generated from PLATEAU open data, not committed, and **recreating
+it is expensive**. Measured on a 10-core, 36 GB Apple-silicon laptop:
+
+| | |
+|---|---|
+| **Disk** | about **47 GB** under `pipeline/cache/cubeworld/` (gitignored): 40.8 GB raw CityGML (`plateau2025/`), 5.4 GB intermediates (`stream/`: 3.8 GB of 1 m layers, 1.3 GB tiles, 0.3 GB DEM), 0.4 GB Python venv. `scripts/build-map.sh` refuses to start with less than 50 GB free. After a build `rm -rf pipeline/cache/cubeworld/plateau2025` gives 41 GB back (a rebuild then downloads again). |
+| **Download** | about **2.3 GB** (776 members fetched by HTTP range request out of the 18 ward zips, never whole zips) |
+| **Time** | about **30-40 min** from scratch (fetch 13 min depends on your link, DEM and water prep 3.5, raster 5, merge < 1, pack 3-5); re-running resumes, a repeat `pack` alone is 2-5 min |
+| **RAM** | up to about 4 GB for the biggest process (pack), about 1 GB for the heaviest raster tile, ten workers in parallel; fine on 16 GB |
+| **Output** | `public/stream/`: **21.8 MB** chunks in two shards + 183 KB directory + manifest |
+
+The archive is lossy in two ways, both chosen for size and listed in `stream_area.json`: 1 m cubes exist only within
+400 m of the places and themes (2 m cubes elsewhere), and building roofs snap to whole 3 m floors
+(`research/cubeworld-streaming.md` section 11).
 
 If the browser would block audio, a pixel speaker with a sad face asks for one click first (see *Sound gate*); the `?` in the corner opens a picture of a fish bopping to music.
 Then click a sprite at the bottom to hear its river and fly to it; click it again (or press
@@ -262,7 +280,7 @@ is anchored on the ground there (and dims when something stands in front of it).
 and Sumida (Morishita, Kinshicho, Tatekawa) and Taito (Asakusa, Ueno), a 16.4 x 12.8 km frame (CityGML 2.0):
 buildings LOD1-3 (LOD2/3 in the centre, LOD1 in the west), roads LOD1-3 (carriageway, sidewalk, island), city
 furniture and vegetation (poles and trees where the wards publish them, Shimbashi/Toranomon), bridges, water,
-and the DEM TIN. The archive (`public/stream/`: about 52 MB in four 16 MiB `chunks.<hash>-<n>.bin` shards, a directory
+and the DEM TIN. The archive (`public/stream/`: 21.8 MB in two `chunks.<hash>-<n>.bin` shards of at most 16 MiB, a 183 KB directory
 and the manifest) is generated, not committed: run `npm run map` once after cloning (`vite build` stops with a hint if it is missing); rebuild it with
 `pipeline/cubeworld/stream_build.py` (`research/cubeworld-streaming.md` section 9; the area is
 `pipeline/cubeworld/stream_area.json`; the format, hosting and offline decisions are in
@@ -271,10 +289,15 @@ only the needed CityGML members by HTTP range request, rasterises 1 m layers, an
 pyramid (1, 2, 4, 8, 16, 32, 64 m cubes) of 32x32-column chunks, each coded as 2.5D columns with a static
 rANS model (`pipeline/cubeworld/stream_codec.py`), into range-readable shards plus a directory. The viewer (`src/cubeworld/stream/`)
 picks levels by on-screen cube size, draws a coarser stand-in until all children of a chunk are ready,
-prefetches along the flight path, caches chunks in Cache Storage (and warms the destinations at
-idle), and keeps GPU memory under a budget. A service worker (`public/sw.js`, production builds) makes the shell work
-offline after the first visit. Rebuild and measurements: `pipeline/cubeworld/stream_build.py`
-(docstring) and `research/cubeworld-streaming.md`. The dev-only page `stream.html` (`STREAM=1 vite build`
+prefetches along the flight path (bytes of far-ahead chunks go to the cache, meshes are built when due), caches every chunk in
+Cache Storage (and warms the 20 destinations and the coarse levels at idle: 3.5 MB), and keeps geometry memory under a budget
+(320 MB on desktop, 120 MB on touch-first or low-RAM devices; `?gpuMB=<n>` overrides it, `?cache=0` turns the cache off for
+cold-network tests). 1 m cubes exist only within 400 m of the places; everywhere else the finest level is 2 m. The map is
+21.8 MB in total, a visitor downloads about 0.3 MB to enter it and 0.1-0.2 MB per place, and a repeat visit about 0.
+A service worker (`public/sw.js`, production builds) makes the shell, and the places already visited or warmed, work
+offline after the first visit. Sizes, the ship checklist and what blocks a public release (audio licences, an on-screen
+PLATEAU credit, phone memory): `research/cubeworld-webnative.md` section 5. Rebuild and measurements:
+`pipeline/cubeworld/stream_build.py` (docstring) and `research/cubeworld-streaming.md`. The dev-only page `stream.html` (`STREAM=1 vite build`
 bundles it) shows the same map with theme buttons and the flight metrics.
 
 **Integration.** `src/guide.ts` is the one place where an index, the player, a camera and the note meet; the
@@ -324,9 +347,9 @@ public.** Where no interior or on-the-spot recording exists the loop is the stre
 ```sh
 npm run map    # scripts/build-map.sh: venv from pipeline/cubeworld/requirements.txt, fetch, prep, raster, merge, pack, swap into public/stream/
 ```
-Needs Python 3.12 (uses `uv` if installed), network and about 50 GB of free disk for the cache
-(`pipeline/cache/cubeworld/`, ~2.3 GB downloaded as HTTP range requests into the PLATEAU ward zips, unzipped
-there). It takes 30-40 minutes on a 10-core laptop; every step resumes from the cache. The area and the ward
+Needs Python 3.12 (uses `uv` if installed), network and about 50 GB of free disk for the cache (47 GB used; see
+*Setup: building the map* at the top for the split, the RAM and the time; `pipeline/cache/cubeworld/`, ~2.3 GB downloaded as
+HTTP range requests into the PLATEAU ward zips, unzipped there). It takes 30-40 minutes on a 10-core laptop; every step resumes from the cache. The area and the ward
 zips are `pipeline/cubeworld/stream_area.json`. The steps, run one by one, are `fetch`, `prep`, `raster`,
 `merge` and `pack --out DIR` of `pipeline/cubeworld/stream_build.py` (see its docstring and
 `research/cubeworld-streaming.md`).

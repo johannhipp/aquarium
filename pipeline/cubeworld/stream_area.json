@@ -6,6 +6,16 @@
   "nx": 16384,
   "nz": 12800
  },
+ "detail": {
+  "_comment": "1 m (level 0) chunks only within l0RadiusM of the places in public/places/places.json and the themes in stream_build.py THEMES, in whole 64 m blocks; everywhere else level 1 (2 m) is the finest level. Remove the block for 1 m detail everywhere (+30 MB).",
+  "l0RadiusM": 400,
+  "sources": [
+   "places",
+   "themes"
+  ]
+ },
+ "roofQuantM": 3,
+ "_roofQuantM": "building roofs snap to whole floors of this many metres (absolute grid, at least one floor above the ground); 0 keeps them exact. Ground, trees, poles and decks are never snapped.",
  "wards": [
   {
    "code": "13101",
@@ -26,8 +36,7 @@
    "name": "minato-ku",
    "ja": "港区",
    "year": 2025,
-   "url": "https://assets.cms.plateau.reearth.io/assets/ea/d75459-6d62-4a1f-8081-317603bd5f8d/13103_minato-ku_pref_2025_citygml_1_op.zip",
-   "dir": "minato2025"
+   "url": "https://assets.cms.plateau.reearth.io/assets/ea/d75459-6d62-4a1f-8081-317603bd5f8d/13103_minato-ku_pref_2025_citygml_1_op.zip"
   },
   {
    "code": "13104",

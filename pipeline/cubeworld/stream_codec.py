@@ -5,14 +5,15 @@ every column of the 2.5D city is one of a few shapes, so a column is coded as
 
     pattern  (empty | ground | ground + surface class k | ground + building [+ roof] | ... | explicit run list)
     s        height of the ground run, predicted from the left/up neighbours (median edge detector)
-    b        height of the building run: the same as left / up / up-right, or a fresh value
+    top      where the building ends, as a height above the chunk floor (ground + building): the same as left / up /
+             up-right, or a fresh building height. A flat roof on a slope repeats, whatever the ground does below it.
     exotic   trees, poles, decks, stacked roofs ...: the plain run list
 
 Every symbol is coded with a static rANS model: per LOD level and per context a frequency table trained on the
 build's own chunks (`train`), shipped inside dir.<hash>.bin. Static tables mean no per-chunk learning cost and no
 header, which is what a 400-byte chunk needs; the context is a function of already decoded neighbours only.
 
-Blob: u8 version (2), u16 ny, then the rANS byte stream (32-bit state, 12-bit probabilities, byte renormalisation,
+Blob: u8 version (3), u16 ny, then the rANS byte stream (32-bit state, 12-bit probabilities, byte renormalisation,
 first four bytes = initial state, little endian).
 """
 from __future__ import annotations
@@ -27,7 +28,7 @@ CHUNK = 32
 PAD = 1
 SPAN = CHUNK + 2 * PAD
 COLUMNS = SPAN * SPAN
-VERSION = 2
+VERSION = 3
 PROB_BITS = 12
 M = 1 << PROB_BITS
 RANS_L = 1 << 23
@@ -151,12 +152,13 @@ def symbolize(win: np.ndarray) -> tuple[int, list[tuple[int, int, int]]]:
             Sg[Z][X] = s
             if pid in (PAT_BLDG_ROOF, PAT_BLDG):
                 b = l[1]
+                v = s + b          # the building's top as a height above the chunk floor, not above its ground
                 bl, bu, bur = Bh[Z][X - 1], Bh[Z - 1][X], Bh[Z - 1][X + 1]
-                sel = 0 if (bl and b == bl) else 1 if (bu and b == bu) else 2 if (bur and b == bur) else 3
+                sel = 0 if (bl and v == bl) else 1 if (bu and v == bu) else 2 if (bur and v == bur) else 3
                 ops.append((T_BSEL, (((bl > 0) * 2 + (bu > 0)) * 4) + (pl == pid) * 2 + (pu == pid), sel))
                 if sel == 3:
                     emit_v(T_BVAL, 0, b - 1)
-                Bh[Z][X] = b
+                Bh[Z][X] = v
     return ny, ops
 
 
@@ -367,8 +369,11 @@ def decode_blob(blob: bytes, model: Model, level: int) -> np.ndarray:
                 if pid in (PAT_BLDG_ROOF, PAT_BLDG):
                     bl, bu, bur = Bh[Z][X - 1], Bh[Z - 1][X], Bh[Z - 1][X + 1]
                     sel = rd.sym(T_BSEL, (((bl > 0) * 2 + (bu > 0)) * 4) + (pl == pid) * 2 + (pu == pid))
-                    b = bl if sel == 0 else bu if sel == 1 else bur if sel == 2 else rd.value(T_BVAL, 0) + 1
-                    Bh[Z][X] = b
+                    if sel == 3:
+                        b = rd.value(T_BVAL, 0) + 1
+                    else:
+                        b = (bl if sel == 0 else bu if sel == 1 else bur) - s
+                    Bh[Z][X] = s + b
                 runs = run_list(pid, s, b)
             y = 0
             for c, n in runs:

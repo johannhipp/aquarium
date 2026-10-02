@@ -20,6 +20,37 @@ declare global {
   }
 }
 
+interface MemoryHint {
+  /** GiB of RAM, rounded down to a power of two and capped at 8; Chromium only */
+  deviceMemory: number;
+}
+
+function hasMemoryHint(n: Navigator): n is Navigator & MemoryHint {
+  return 'deviceMemory' in n && typeof n.deviceMemory === 'number';
+}
+
+/** What the viewer may spend: geometry memory (GPU plus the arrays not yet uploaded), cube size before refining, workers. */
+interface Budget {
+  gpuBudgetMB: number;
+  detailPx: number;
+  workers: number | undefined;
+}
+
+/**
+ * A phone-class budget on touch-first devices and on low-RAM ones (iOS Safari gives a tab roughly 300 MB in
+ * total, of which the page's own JS, decoded audio and the canvas already take about half): geometry stays
+ * under about 120 MB, cubes up to 9 px are accepted before refining, two workers. Elsewhere 320 MB / 7 px.
+ * `?gpuMB=<n>` overrides the geometry budget (testing).
+ */
+function chooseBudget(): Budget {
+  const touchFirst = matchMedia('(pointer: coarse)').matches && matchMedia('(hover: none)').matches;
+  const lowRam = hasMemoryHint(navigator) && navigator.deviceMemory <= 4;
+  const budget: Budget = touchFirst || lowRam ? { gpuBudgetMB: 120, detailPx: 9, workers: 2 } : { gpuBudgetMB: 320, detailPx: 7, workers: undefined };
+  const override = Number(new URLSearchParams(location.search).get('gpuMB'));
+  if (Number.isFinite(override) && override > 0) budget.gpuBudgetMB = override;
+  return budget;
+}
+
 /** A point on the map as the Japan Plane Rectangular CS IX coordinates PLATEAU uses (EPSG:6677), in metres. */
 export interface MapPoint {
   easting: number;
@@ -85,9 +116,15 @@ export async function createCubeworld(container: HTMLElement, focus: readonly Ma
   const manifest = (await (await fetch(`${STREAM_BASE}manifest.json`)).json()) as { frame: { gx0: number; gtop: number } };
   const poses = focus.map((p) => ({ x: p.easting - manifest.frame.gx0, z: manifest.frame.gtop - p.northing, zoom: PLACE_ZOOM }));
   const middle = poses.reduce((m, p) => ({ x: m.x + p.x / poses.length, z: m.z + p.z / poses.length }), { x: 0, z: 0 });
+  const budget = chooseBudget();
   const viewer = await createStreamViewer(container, {
     base: STREAM_BASE,
     paletteId: PALETTE_ID,
+    gpuBudgetMB: budget.gpuBudgetMB,
+    detailPx: budget.detailPx,
+    workers: budget.workers,
+    // `?cache=0`: no Cache Storage and no idle warm-up (cold-network measurements)
+    useCache: new URLSearchParams(location.search).get('cache') !== '0',
     home: poses.length > 0 ? { ...middle, zoom: HOME_ZOOM } : undefined,
     warm: poses,
     anchors: poses,

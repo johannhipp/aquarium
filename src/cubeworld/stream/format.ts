@@ -196,15 +196,16 @@ const OUTSIDE = 9;
 const SURFACE_CLASS = [0, 0, 2, 3, 0, 8, 0, 0, 0];
 
 /**
- * chunk blob: u8 version (2), u16 ny, then a rANS stream (32-bit state, 12-bit probabilities, byte renormalisation,
+ * chunk blob: u8 version (3), u16 ny, then a rANS stream (32-bit state, 12-bit probabilities, byte renormalisation,
  * the first four bytes are the initial state, little endian). Columns come in raster order over the SPAN x SPAN
  * window; each is a pattern (empty, ground, ground + road/sidewalk/water, ground + building [+ roof], ground + roof,
  * or an explicit run list for trees, poles, decks), the ground height predicted from the left/up neighbours, and
- * the building height as "same as left / up / up-right" or a fresh value. Every symbol uses a static frequency table
+ * the building top (ground + building, a height above the chunk floor) as "same as left / up / up-right" or a fresh
+ * building height. Every symbol uses a static frequency table
  * selected by already decoded neighbours (`ChunkModel`). Mirror of pipeline/cubeworld/stream_codec.py.
  */
 export function decodeChunk(blob: Uint8Array<ArrayBuffer>, level: number, model: ChunkModel): DecodedChunk {
-  if (blob[0] !== 2) throw new Error(`unknown chunk version ${blob[0]}`);
+  if (blob[0] !== 3) throw new Error(`unknown chunk version ${blob[0]}`);
   const ny = blob[1] | (blob[2] << 8);
   const tables = model.groups[Math.min(level, GROUPS - 1)];
   let x = blob[3] | (blob[4] << 8) | (blob[5] << 16) | (blob[6] << 24);
@@ -295,10 +296,10 @@ export function decodeChunk(blob: Uint8Array<ArrayBuffer>, level: number, model:
         const bl = bh[at - 1];
         const bu = bh[at - W];
         const sel = sym(2, ((bl > 0 ? 2 : 0) + (bu > 0 ? 1 : 0)) * 4 + (pl === pid ? 2 : 0) + (pu === pid ? 1 : 0));
-        const b = sel === 0 ? bl : sel === 1 ? bu : sel === 2 ? bh[at - W + 1] : value(3, 0) + 1;
-        bh[at] = b;
-        fill(col, 4, s, b);
-        if (pid === PAT_BLDG_ROOF) fill(col, 5, s + b, 1);
+        const top = sel === 0 ? bl : sel === 1 ? bu : sel === 2 ? bh[at - W + 1] : s + value(3, 0) + 1;
+        bh[at] = top;
+        fill(col, 4, s, top - s);
+        if (pid === PAT_BLDG_ROOF) fill(col, 5, top, 1);
       } else if (pid === PAT_ROOF) {
         fill(col, 5, s, 1);
       } else if (pid !== PAT_GROUND) {

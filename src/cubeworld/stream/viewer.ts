@@ -109,6 +109,8 @@ const PREFETCH_SAMPLES = 40;
 /** The last stretch starts here; if the destination is still missing coarse chunks then, the flight crawls. */
 const STALL_FROM = 0.5;
 const STALL_RATE = 0.08;
+/** From this fraction of the flight on, the destination's chunks are built with top priority. */
+const BOOST_FROM = 0.4;
 const STALL_MAX_MS = 4000;
 /** Every wanted chunk needs a built stand-in at most this many levels coarser ... */
 const STALL_SLACK = 3;
@@ -507,7 +509,8 @@ export async function createStreamViewer(container: HTMLElement, options: Viewer
       const crawl = f.clock / f.plan.durationMs > STALL_FROM && f.stallMs < STALL_MAX_MS && manager.readiness(f.finalKeys, STALL_SLACK) < STALL_READY;
       f.clock += crawl ? dtMs * STALL_RATE : dtMs;
       if (crawl) f.stallMs += dtMs * (1 - STALL_RATE);
-      manager.boost(crawl ? f.finalKeys : null);
+      // the destination is built early (not just fetched) so it is drawn on arrival, however big the view is
+      manager.boost(crawl || f.clock / f.plan.durationMs > BOOST_FROM ? f.finalKeys : null);
       const u = Math.min(1, f.clock / f.plan.durationMs);
       setPose(f.plan.at(u));
       moved = true;

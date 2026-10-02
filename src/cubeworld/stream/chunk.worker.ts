@@ -13,7 +13,10 @@ import type { AttributeData, ChunkMesh, ChunkRef, FromWorker, LoadRequest, ToWor
 
 let init: WorkerInit | null = null;
 let palette: Palette | null = null;
-let cache: Cache | null = null;
+/** Resolves once Cache Storage is open (or to null: off, unsupported, or failed). Requests wait for it, so the very first ones use the cache too. */
+let cacheReady: Promise<Cache | null> = Promise.resolve(null);
+/** Missing chunks closer together than this are fetched in one range request; farther apart, in separate ones (the bytes between are cached or unwanted). */
+const RUN_GAP = 4096;
 let linkFreeAt = 0;
 const aborts = new Map<number, AbortController>();
 
@@ -58,8 +61,9 @@ async function fetchBlobs(req: LoadRequest, signal: AbortSignal): Promise<{ blob
   const blobs = new Map<number, Uint8Array<ArrayBuffer>>();
   const missing: ChunkRef[] = [];
   let hits = 0;
+  const cache = await cacheReady;
   await Promise.all(req.chunks.map(async (ref) => {
-    const hit = cache ? await cache.match(cacheRequest(ref)) : undefined;
+    const hit = cache ? await cache.match(cacheRequest(ref)).catch(() => undefined) : undefined;
     if (hit) {
       blobs.set(ref.key, new Uint8Array(await hit.arrayBuffer()));
       hits++;
@@ -70,17 +74,20 @@ async function fetchBlobs(req: LoadRequest, signal: AbortSignal): Promise<{ blob
   let net = 0;
   let requests = 0;
   const shardSize = 2 ** init.shardBits;
-  const byShard = new Map<number, ChunkRef[]>();
-  for (const ref of missing) {
+  // one range request per run: chunks of one shard in file order, split where more than RUN_GAP bytes lie between two
+  const runs: { shard: number; refs: ChunkRef[] }[] = [];
+  const sorted = [...missing].sort((a, b) => a.offset - b.offset);
+  for (const ref of sorted) {
     const shard = Math.floor(ref.offset / shardSize);
-    const list = byShard.get(shard);
-    if (list) list.push(ref);
-    else byShard.set(shard, [ref]);
+    const last = runs[runs.length - 1];
+    const prev = last?.refs[last.refs.length - 1];
+    if (last && prev && last.shard === shard && ref.offset - (prev.offset + prev.length) <= RUN_GAP) last.refs.push(ref);
+    else runs.push({ shard, refs: [ref] });
   }
-  for (const [shard, refs] of byShard) {
+  for (const { shard, refs } of runs) {
     const first = shard * shardSize;
-    const lo = Math.min(...refs.map((r) => r.offset)) - first;
-    const hi = Math.max(...refs.map((r) => r.offset + r.length)) - first;
+    const lo = refs[0].offset - first;
+    const hi = refs[refs.length - 1].offset + refs[refs.length - 1].length - first;
     const res = await fetch(init.chunkUrls[shard], { headers: { Range: `bytes=${lo}-${hi - 1}` }, signal });
     if (!res.ok) throw new Error(`range ${lo}-${hi - 1} of shard ${shard}: HTTP ${res.status}`);
     const body = new Uint8Array(await res.arrayBuffer());
@@ -93,7 +100,8 @@ async function fetchBlobs(req: LoadRequest, signal: AbortSignal): Promise<{ blob
       const at = ref.offset - first - base;
       const blob = body.slice(at, at + ref.length);
       blobs.set(ref.key, blob);
-      if (cache) puts.push(cache.put(cacheRequest(ref), new Response(blob.slice())));
+      // a full or failing cache must never lose a chunk that was fetched
+      if (cache) puts.push(cache.put(cacheRequest(ref), new Response(blob.slice())).catch(() => {}));
     }
     await Promise.all(puts);
   }
@@ -205,10 +213,8 @@ self.onmessage = (e: MessageEvent<ToWorker>) => {
     case 'init':
       init = msg;
       palette = paletteById(msg.paletteId);
-      void (msg.useCache && 'caches' in self ? caches.open(`stream-${msg.hash}`) : Promise.resolve(null)).then((c) => {
-        cache = c;
-        post({ type: 'ready' });
-      });
+      cacheReady = (msg.useCache && 'caches' in self ? caches.open(`stream-${msg.hash}`) : Promise.resolve(null)).catch(() => null);
+      void cacheReady.then(() => post({ type: 'ready' }));
       break;
     case 'palette':
       palette = paletteById(msg.paletteId);

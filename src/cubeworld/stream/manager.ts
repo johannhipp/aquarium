@@ -56,7 +56,10 @@ interface Job {
 interface Batch {
   id: number;
   keys: ChunkKey[];
+  /** idle warm-up: fetched into the cache, nothing built, nothing wanted yet */
   warm: boolean;
+  /** only fetched into the cache (warm-up, or a chunk too far ahead on the flight path to build yet) */
+  fetchOnly: boolean;
   slot: WorkerSlot;
   /** some chunks of the batch are still wanted */
   wanted: boolean;
@@ -93,6 +96,8 @@ export interface ManagerStats {
   evicted: number;
   /** chunks whose bytes the idle warm-up has put in Cache Storage */
   warmed: number;
+  /** the chunks drawn right now: how many, their geometry bytes and quads */
+  shown: { chunks: number; bytes: number; quads: number };
 }
 
 export interface UpdateResult {
@@ -111,6 +116,9 @@ const LEVEL_PENALTY = 250;
 const COALESCE_GAP = 12 * 1024;
 const MAX_BATCH_BYTES = 256 * 1024;
 const MAX_BATCH_CHUNKS = 16;
+/** Idle warm-up has no one waiting on it, so its batches are bigger (fewer requests). */
+const WARM_BATCH_BYTES = 1024 * 1024;
+const WARM_BATCH_CHUNKS = 96;
 const MAX_INFLIGHT = 6;
 const WARM_SCORE = 1e9;
 /** Boosted chunks sort ahead of everything except the pinned coarsest level. */
@@ -121,6 +129,17 @@ const PIN_SCORE = 2e3;
 const ANCHOR_RADIUS = 6;
 /** Levels up to this (4 m cubes) are fine enough to say whether something stands in the way of a note. */
 const OCCLUDER_MAX_LEVEL = 2;
+/**
+ * A chunk the plan wants more than this many ms from now is only fetched (its bytes go to Cache Storage), not
+ * built: meshes of a whole flight path would sit in memory for seconds before the camera gets there. It is built
+ * when it comes within reach, from the cache, in a few milliseconds.
+ */
+const LOOKAHEAD_MS = 2000;
+/** While more than this much geometry is built but not drawn yet, chunks needed later than NEAR_MS are not built. */
+const PENDING_CAP_BYTES = 56 * 1024 * 1024;
+const NEAR_MS = 250;
+/** A planned chunk this many ms behind the camera no longer counts as wanted, so it may be evicted. */
+const PASSED_MS = 400;
 const RETRY_MS = 3000;
 
 export class ChunkManager {
@@ -138,6 +157,8 @@ export class ChunkManager {
   #boost: readonly ChunkKey[] | null = null;
   #pins: ReadonlyArray<{ x: number; z: number; keys: readonly ChunkKey[] }> = [];
   readonly #anchors = new Map<string, Anchor>();
+  /** chunks whose bytes a fetch-only batch put in the cache for the current plan */
+  readonly #aheadFetched = new Set<ChunkKey>();
   #warm = new Set<ChunkKey>();
   #shown = new Set<ChunkKey>();
   #nextBatch = 1;
@@ -188,7 +209,15 @@ export class ChunkManager {
       if (j.state === 'queued') queued++;
       else inflight++;
     }
-    return { resident: this.#resident.size, queued, inflight, gpuBytes: this.#gpuBytes, cpuBytes: this.#cpuBytes, quads: this.#quads, warmed: this.#warmed.size, ...this.#stats };
+    const shown = { chunks: 0, bytes: 0, quads: 0 };
+    for (const key of this.#shown) {
+      const r = this.#resident.get(key);
+      if (!r) continue;
+      shown.chunks++;
+      shown.bytes += r.bytes;
+      shown.quads += r.faces;
+    }
+    return { shown, resident: this.#resident.size, queued, inflight, gpuBytes: this.#gpuBytes, cpuBytes: this.#cpuBytes, quads: this.#quads, warmed: this.#warmed.size, ...this.#stats };
   }
 
   /** Meshes currently drawn, for renderer.info-style reporting. */
@@ -312,14 +341,15 @@ export class ChunkManager {
     return this.#select(sample, 0);
   }
 
-  /** Fraction of `keys` that are built or have a built ancestor at most `slack` levels coarser. */
+  /** Fraction of `keys` that are built (or fetched ahead into the cache) or have such an ancestor at most `slack` levels coarser. */
   readiness(keys: readonly ChunkKey[], slack: number): number {
     if (keys.length === 0) return 1;
     let ready = 0;
     for (const key of keys) {
       let k = key;
       for (let up = 0; up <= slack; up++) {
-        if (this.#resident.has(k)) {
+        // fetched ahead = in the cache = built within milliseconds once it is due
+        if (this.#resident.has(k) || this.#aheadFetched.has(k)) {
           ready++;
           break;
         }
@@ -358,12 +388,14 @@ export class ChunkManager {
     for (const s of samples) this.#wantedWithAncestors(this.#select(s, 24), s.tMs, plan);
     this.#plan = plan;
     this.#planStart = now;
+    this.#aheadFetched.clear();
   }
 
   /** The user took over (or the target changed): chunks only the old plan wanted are dropped from the queue and aborted. */
   clearPlan(): void {
     this.#plan = null;
     this.#boost = null;
+    this.#aheadFetched.clear();
   }
 
   /** Makes `keys` (and their ancestors) the most urgent requests after the coarsest level, or null to stop. */
@@ -419,6 +451,7 @@ export class ChunkManager {
     if (this.#plan) {
       const elapsed = now - this.#planStart;
       for (const [key, t] of this.#plan) {
+        if (t - elapsed < -PASSED_MS) continue;
         const score = Math.max(0, t - elapsed) + LEVEL_PENALTY * (this.#top - keyLevel(key));
         const cur = demand.get(key);
         if (cur === undefined || score < cur) demand.set(key, score);
@@ -439,7 +472,7 @@ export class ChunkManager {
     this.#reconcile(demand, now);
     this.#dispatch(now);
     const result = this.#display(wanted, now);
-    if (now - this.#lastEvict > 400) {
+    if (now - this.#lastEvict > 120) {
       this.#lastEvict = now;
       this.#evict(wanted);
     }
@@ -488,6 +521,8 @@ export class ChunkManager {
       }
       const failedAt = this.#failed.get(key);
       if (failedAt !== undefined && now - failedAt < RETRY_MS) continue;
+      // already fetched ahead of time and not due yet: nothing to do until it is
+      if (this.#aheadFetched.has(key) && score - LEVEL_PENALTY * (this.#top - keyLevel(key)) > LOOKAHEAD_MS) continue;
       this.#jobs.set(key, { key, score, warm: false, state: 'queued', batch: 0 });
     }
     for (const key of this.#warm) {
@@ -519,6 +554,19 @@ export class ChunkManager {
     return { key, level, cx, cz, offset: this.#o.dir.offsets[level][i], length: this.#o.dir.lengths[level][i] };
   }
 
+  /**
+   * What to do with a queued job now: 'build' it (fetch, decode, mesh), only 'fetch' its bytes into the cache (it
+   * is needed later than LOOKAHEAD_MS, or later than NEAR_MS while too much built geometry waits to be drawn), or
+   * 'wait' (already fetched, still not due). Only with a cache to put fetched bytes in.
+   */
+  #mode(job: Job): 'build' | 'fetch' | 'wait' {
+    if (!this.#o.useCache || job.warm) return 'build';
+    const due = job.score - LEVEL_PENALTY * (this.#top - keyLevel(job.key));
+    const later = due > LOOKAHEAD_MS || (due > NEAR_MS && this.#cpuBytes > PENDING_CAP_BYTES);
+    if (!later) return 'build';
+    return this.#aheadFetched.has(job.key) ? 'wait' : 'fetch';
+  }
+
   #dispatch(now: number): void {
     let free = MAX_INFLIGHT - this.#batches.size;
     if (free <= 0) return;
@@ -532,17 +580,22 @@ export class ChunkManager {
       if (free <= 0) break;
       if (taken.has(head.key)) continue;
       if (head.warm && (realBusy || queued.some((q) => !q.warm))) break; // warm-up only runs when nothing real waits
+      const mode = head.warm ? 'build' : this.#mode(head);
+      if (mode === 'wait') continue;
+      const fetchOnly = head.warm || mode === 'fetch';
       const refs: ChunkRef[] = [this.#ref(head.key)];
       let lo = refs[0].offset;
       let hi = lo + refs[0].length;
       taken.add(head.key);
       for (const c of queued) {
-        if (refs.length >= MAX_BATCH_CHUNKS) break;
+        if (refs.length >= (fetchOnly ? WARM_BATCH_CHUNKS : MAX_BATCH_CHUNKS)) break;
         if (taken.has(c.key) || c.warm !== head.warm) continue;
+        const cm = c.warm ? 'build' : this.#mode(c);
+        if (cm === 'wait' || (cm === 'fetch') !== (fetchOnly && !head.warm)) continue;
         const r = this.#ref(c.key);
         const nlo = Math.min(lo, r.offset);
         const nhi = Math.max(hi, r.offset + r.length);
-        if (r.offset > hi + COALESCE_GAP || r.offset + r.length < lo - COALESCE_GAP || nhi - nlo > MAX_BATCH_BYTES) continue;
+        if (r.offset > hi + COALESCE_GAP || r.offset + r.length < lo - COALESCE_GAP || nhi - nlo > (fetchOnly ? WARM_BATCH_BYTES : MAX_BATCH_BYTES)) continue;
         refs.push(r);
         taken.add(c.key);
         lo = nlo;
@@ -550,7 +603,7 @@ export class ChunkManager {
       }
       const slot = this.#slots.reduce((a, b) => (b.inflight < a.inflight ? b : a));
       const id = this.#nextBatch++;
-      const batch: Batch = { id, keys: refs.map((r) => r.key), warm: head.warm, slot, wanted: true };
+      const batch: Batch = { id, keys: refs.map((r) => r.key), warm: head.warm, fetchOnly, slot, wanted: true };
       this.#batches.set(id, batch);
       slot.inflight++;
       for (const r of refs) {
@@ -560,7 +613,7 @@ export class ChunkManager {
           job.batch = id;
         }
       }
-      slot.worker.postMessage({ type: 'load', id, chunks: refs, warm: head.warm } satisfies ToWorker);
+      slot.worker.postMessage({ type: 'load', id, chunks: refs, warm: fetchOnly } satisfies ToWorker);
       free--;
     }
     void now;
@@ -587,6 +640,7 @@ export class ChunkManager {
             if (!job || job.batch !== msg.id) continue;
             this.#jobs.delete(key);
             if (batch.warm && !msg.cancelled) this.#warmed.add(key);
+            else if (batch.fetchOnly && !msg.cancelled) this.#aheadFetched.add(key);
           }
         }
         this.onChange();
