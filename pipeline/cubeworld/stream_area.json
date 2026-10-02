@@ -1,0 +1,117 @@
+{
+ "_comment": "Area of the streamed Tokyo cubeworld. frame: EPSG:6677 metres, gx0 = easting of cell x=0, gtop = northing of cell z=0, nx/nz cells (1 m, multiples of 512). Every PLATEAU CityGML 3rd mesh that touches the frame is taken from every ward below that carries it (a mesh on a ward boundary appears in both wards' zips; features are merged by gml:id). Urls are the FY2025 (spec 5.0) CityGML zips from the PLATEAU data catalog.",
+ "frame": {
+  "gx0": -16800,
+  "gtop": -34093,
+  "nx": 14336,
+  "nz": 8704
+ },
+ "wards": [
+  {
+   "code": "13101",
+   "name": "chiyoda-ku",
+   "ja": "千代田区",
+   "year": 2025,
+   "url": "https://assets.cms.plateau.reearth.io/assets/5d/dc07c5-ace7-465a-9c99-53f6d78f6164/13101_chiyoda-ku_pref_2025_citygml_1_op.zip"
+  },
+  {
+   "code": "13102",
+   "name": "chuo-ku",
+   "ja": "中央区",
+   "year": 2025,
+   "url": "https://assets.cms.plateau.reearth.io/assets/93/1f058b-e06b-445c-ae62-2e02cdf72849/13102_chuo-ku_pref_2025_citygml_1_op.zip"
+  },
+  {
+   "code": "13103",
+   "name": "minato-ku",
+   "ja": "港区",
+   "year": 2025,
+   "url": "https://assets.cms.plateau.reearth.io/assets/ea/d75459-6d62-4a1f-8081-317603bd5f8d/13103_minato-ku_pref_2025_citygml_1_op.zip",
+   "dir": "minato2025"
+  },
+  {
+   "code": "13104",
+   "name": "shinjuku-ku",
+   "ja": "新宿区",
+   "year": 2025,
+   "url": "https://assets.cms.plateau.reearth.io/assets/84/48ebed-93d8-4196-bdda-e1db9590d3d1/13104_shinjuku-ku_pref_2025_citygml_1_op.zip"
+  },
+  {
+   "code": "13105",
+   "name": "bunkyo-ku",
+   "ja": "文京区",
+   "year": 2025,
+   "url": "https://assets.cms.plateau.reearth.io/assets/4b/ac4a9f-1bdf-4978-bbfa-8ba8a80d12a0/13105_bunkyo-ku_pref_2025_citygml_1_op.zip"
+  },
+  {
+   "code": "13106",
+   "name": "taito-ku",
+   "ja": "台東区",
+   "year": 2025,
+   "url": "https://assets.cms.plateau.reearth.io/assets/80/45b2b1-5a88-40ab-9877-70b540b8707e/13106_taito-ku_city_2025_citygml_1_op.zip"
+  },
+  {
+   "code": "13107",
+   "name": "sumida-ku",
+   "ja": "墨田区",
+   "year": 2025,
+   "url": "https://assets.cms.plateau.reearth.io/assets/af/d16ede-837d-458a-af51-16771bbb96d8/13107_sumida-ku_pref_2025_citygml_1_op.zip"
+  },
+  {
+   "code": "13108",
+   "name": "koto-ku",
+   "ja": "江東区",
+   "year": 2025,
+   "url": "https://assets.cms.plateau.reearth.io/assets/55/c134fe-ccfb-4c1b-9054-d8c6f44b7597/13108_koto-ku_pref_2025_citygml_1_op.zip"
+  },
+  {
+   "code": "13109",
+   "name": "shinagawa-ku",
+   "ja": "品川区",
+   "year": 2025,
+   "url": "https://assets.cms.plateau.reearth.io/assets/4b/90d7b7-679a-46d4-a842-7706fec36d40/13109_shinagawa-ku_pref_2025_citygml_1_op.zip"
+  },
+  {
+   "code": "13110",
+   "name": "meguro-ku",
+   "ja": "目黒区",
+   "year": 2025,
+   "url": "https://assets.cms.plateau.reearth.io/assets/c1/5af712-42ee-403a-bad5-f5d82f8b2492/13110_meguro-ku_pref_2025_citygml_1_op.zip"
+  },
+  {
+   "code": "13111",
+   "name": "ota-ku",
+   "ja": "大田区",
+   "year": 2025,
+   "url": "https://assets.cms.plateau.reearth.io/assets/2c/6a2f27-a1e1-466a-a8cf-4627060f7ca4/13111_ota-ku_pref_2025_citygml_1_op.zip"
+  },
+  {
+   "code": "13112",
+   "name": "setagaya-ku",
+   "ja": "世田谷区",
+   "year": 2025,
+   "url": "https://assets.cms.plateau.reearth.io/assets/b4/38c131-2e1e-4226-95f7-44f2b12debd7/13112_setagaya-ku_pref_2025_citygml_1_op.zip"
+  },
+  {
+   "code": "13113",
+   "name": "shibuya-ku",
+   "ja": "渋谷区",
+   "year": 2025,
+   "url": "https://assets.cms.plateau.reearth.io/assets/fd/21cbf7-ee57-42bb-a445-ea9c46f8c1b3/13113_shibuya-ku_pref_2025_citygml_1_op.zip"
+  },
+  {
+   "code": "13114",
+   "name": "nakano-ku",
+   "ja": "中野区",
+   "year": 2025,
+   "url": "https://assets.cms.plateau.reearth.io/assets/89/a1621d-b7db-4499-a3c2-673109be0704/13114_nakano-ku_pref_2025_citygml_1_op.zip"
+  },
+  {
+   "code": "13115",
+   "name": "suginami-ku",
+   "ja": "杉並区",
+   "year": 2025,
+   "url": "https://assets.cms.plateau.reearth.io/assets/1f/4afed5-f8d0-42e7-b334-e507471ecd51/13115_suginami-ku_pref_2025_citygml_1_op.zip"
+  }
+ ]
+}

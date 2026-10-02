@@ -1,7 +1,6 @@
 import './transition.css';
-import type { Player } from './audio';
 import type * as CubeworldModule from './cubeworld';
-import type { Cubeworld } from './cubeworld';
+import type { Cubeworld, MapPoint } from './cubeworld';
 import type { Globe } from './globe';
 import type { Point, World } from './wallet';
 
@@ -23,6 +22,8 @@ const easeOut = (t: number): number => 1 - (1 - t) ** 4;
 
 export interface Transition {
   readonly world: World;
+  /** The streamed map once it has been entered for the first time. */
+  readonly cube: Cubeworld | null;
   /** Start loading cubeworld's code (e.g. when the wallet opens) so the click does not wait for it. */
   preload(): void;
   toCube(from: Point): Promise<void>;
@@ -31,7 +32,10 @@ export interface Transition {
 
 interface Hooks {
   globe: Pick<Globe, 'setActive'>;
-  player: Pick<Player, 'suspend' | 'resume'>;
+  /** The map points the camera will fly to (read when the map is first built). */
+  focus: () => readonly MapPoint[];
+  /** The map was just built (before it is shown). */
+  onCube: (cube: Cubeworld) => void;
   /** Called at the moment of the swap, with the world now on screen. */
   onWorld: (world: World) => void;
 }
@@ -64,8 +68,8 @@ async function tween(ms: number, ease: (t: number) => number, draw: (p: number) 
  * keeps its camera and selection, and cubeworld keeps its camera, so each return lands where the
  * visitor left it.
  *
- * Audio: the river loop is paused with the globe (cubeworld has no sound of its own yet, and a
- * river bed under a landscape would belong to nothing on screen) and fades back in on return.
+ * Audio and notes belong to each world's guide (see guide.ts), which `onWorld` puts to sleep and wakes:
+ * a river loop under a city map would belong to nothing on screen, and the other way round.
  */
 export function createTransition(hooks: Hooks): Transition {
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -165,7 +169,6 @@ export function createTransition(hooks: Hooks): Transition {
     world = to;
     if (to === 'cube') {
       hooks.globe.setActive(false);
-      hooks.player.suspend();
       document.documentElement.dataset.world = 'cube';
       stage.dataset.active = 'true';
       cube?.start();
@@ -174,7 +177,6 @@ export function createTransition(hooks: Hooks): Transition {
       delete stage.dataset.active;
       delete document.documentElement.dataset.world;
       hooks.globe.setActive(true);
-      void hooks.player.resume();
     }
     hooks.onWorld(to);
   }
@@ -183,14 +185,19 @@ export function createTransition(hooks: Hooks): Transition {
     get world() {
       return world;
     },
+    get cube() {
+      return cube;
+    },
     preload() {
       void load();
     },
     toCube(from) {
       return run(from, 'cube', async () => {
         const mod = await load();
-        // built while the screen is covered, so the (one-off) mesh build never janks the wipe
-        cube ??= mod.createCubeworld(stage);
+        // built while the screen is covered, so the (one-off) stream start never janks the wipe
+        if (cube) return;
+        cube = await mod.createCubeworld(stage, hooks.focus());
+        hooks.onCube(cube);
       });
     },
     toGlobe(from) {

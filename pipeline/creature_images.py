@@ -1,7 +1,8 @@
 """Finishing pass for the generated creature photographs (one consistent look).
 
 Reads the raw image-model output from pipeline/cache/creature-raw/<id>.png and writes
-art/creatures/<id>.png (full-size, not shipped with the site):
+art/creatures/<id>.png (full-size, not shipped with the site); places likewise:
+creature-raw/places/<id>.png -> art/places/<id>.png. The finish:
   1. white point: near-white (>= 249) becomes exactly #FFFFFF, so the surround is pure white
   2. framing: crop to the subject, scale to a shared bounding box, centre on a square canvas
   3. grade: pull saturation down to a shared level and cool the shadows (white stays white)
@@ -61,6 +62,10 @@ def main() -> None:
         extra_id = json.loads(path.read_text())["id"]
         finish(RAW / f"{extra_id}.png", OUT / "extras" / f"{extra_id}.png", zlib.crc32(extra_id.encode()))
         print("wrote", OUT / "extras" / f"{extra_id}.png")
+    places = ROOT / "art" / "places"  # place images: raw in creature-raw/places, same finish
+    for pl in json.loads((places / "places.full.json").read_text()):
+        finish(RAW / "places" / f"{pl['id']}.png", places / f"{pl['id']}.png", zlib.crc32(pl["id"].encode()))
+        print("wrote", places / f"{pl['id']}.png")
 
 
 if __name__ == "__main__":

@@ -1,6 +1,6 @@
 """Fill the prompt template and publish the slim creature index.
 
-Source of truth: art/creatures/creatures.full.json (every field, including prompt, notes, art paths) and
+Source of truth: art/creatures/creatures.full.json and art/places/places.full.json (same template) (every field, including prompt, notes, art paths) and
 art/creatures/extras/*.json. This script
   1. renders art/creatures/style.json + each entry's subject/motion into its `prompt`
   2. writes the slim public/creatures/creatures.json the app fetches: only the fields it reads
@@ -31,6 +31,14 @@ def main() -> None:
     (ART / "creatures.full.json").write_text(json.dumps(creatures, indent=2, ensure_ascii=False) + "\n")
     slim = [{k: c[k] for k in SLIM_FIELDS} for c in creatures]
     (PUBLIC / "creatures.json").write_text(json.dumps(slim, ensure_ascii=False, separators=(",", ":")) + "\n")  # compact: fetched on every load
+
+    places_path = ROOT / "art" / "places" / "places.full.json"  # places: objects, not creatures; same template
+    if places_path.exists():
+        places = json.loads(places_path.read_text())
+        for pl in places:
+            pl["prompt"] = prompt(pl)
+            print(f"--- places/{pl['id']}\n{pl['prompt']}\n")
+        places_path.write_text(json.dumps(places, indent=2, ensure_ascii=False) + "\n")
 
     for path in sorted((ART / "extras").glob("*.json")):  # extra images: not creature entries, same template
         extra = json.loads(path.read_text())

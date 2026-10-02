@@ -6,7 +6,7 @@ import { createStreamViewer, type FlightReport, type StreamViewer } from './view
  * Dev-only streaming page (stream.html): Minato-ku as a chunked LOD pyramid, streamed on demand.
  *   ?throttle=slow3g|fast3g|4g|<kbps>   simulate a slow link (latency + shared bandwidth) inside the chunk workers
  *   ?cache=0                             do not use Cache Storage (cold-network measurements)
- *   ?palette=<id>                        look; P cycles
+ *   ?palette=<id>                        look (mono, gameboy, washi, night, foam)
  *   ?detail=<px>                         cubes wider than this many CSS px are refined (default 7)
  *   ?workers=<n>  ?gpuMB=<n>  ?hud=1     worker count, GPU memory budget, numbers overlay
  *   ?fly=<themeId>                       fly to a theme as soon as the first frame is drawn

@@ -98,5 +98,35 @@
     "file": "audio/mekong-giant-catfish.mp3",
     "durationSec": 18.0,
     "loop": true
+  },
+  "place:teamlab-borderless": {
+    "file": "audio/places/teamlab-borderless.mp3",
+    "durationSec": 18.0,
+    "loop": true
+  },
+  "place:perfect-beer-kitchen": {
+    "file": "audio/places/perfect-beer-kitchen.mp3",
+    "durationSec": 18.0,
+    "loop": true
+  },
+  "place:aoyama-tunnel": {
+    "file": "audio/places/aoyama-tunnel.mp3",
+    "durationSec": 18.0,
+    "loop": true
+  },
+  "place:imakatsu-roppongi": {
+    "file": "audio/places/imakatsu-roppongi.mp3",
+    "durationSec": 18.0,
+    "loop": true
+  },
+  "place:sushidokoro-unitora": {
+    "file": "audio/places/sushidokoro-unitora.mp3",
+    "durationSec": 18.0,
+    "loop": true
+  },
+  "place:jinza-udon-shimbashi": {
+    "file": "audio/places/jinza-udon-shimbashi.mp3",
+    "durationSec": 18.0,
+    "loop": true
   }
 }

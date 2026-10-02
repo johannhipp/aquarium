@@ -1,0 +1,22 @@
+{
+  "imakatsu-roppongi": [
+    { "lang": "ja", "name": "イマカツ 六本木本店" }
+  ],
+  "teamlab-borderless": [
+    { "lang": "ja", "name": "チームラボボーダレス" },
+    { "lang": "ja-Latn", "name": "teamLab Borderless" }
+  ],
+  "perfect-beer-kitchen": [
+    { "lang": "ja", "name": "PERFECT BEER KITCHEN 新橋" }
+  ],
+  "aoyama-tunnel": [
+    { "lang": "ja", "name": "青山トンネル" },
+    { "lang": "ja-Latn", "name": "AOYAMA TUNNEL" }
+  ],
+  "sushidokoro-unitora": [
+    { "lang": "ja", "name": "寿司処 うに虎" }
+  ],
+  "jinza-udon-shimbashi": [
+    { "lang": "ja", "name": "新橋甚三" }
+  ]
+}

@@ -1,4 +1,4 @@
-import type { RiverName } from './data';
+import type { LocalName } from './data';
 import type { ScreenPoint } from './globe';
 
 const EXIT_MS = 200;
@@ -6,12 +6,20 @@ const EXIT_MS = 200;
 const GAP = 14;
 const MARGIN = 16;
 
+export interface Note {
+  /** Fade the names in beside the anchor; names appear one after another. */
+  show(names: readonly LocalName[]): Promise<void>;
+  hide(): void;
+  /** Follow the anchor's projected position; hide while it is on the far side of the globe. */
+  place(p: ScreenPoint): void;
+}
+
 /**
- * The river's native names, anchored to a point on the globe. The wrapper is positioned with
+ * A river's or place's native names, anchored to a point on screen. The wrapper is positioned with
  * a transform every camera frame; the enter/exit animation lives on the inner parts via CSS
  * transitions keyed on data attributes, so retargeting mid-flight never restarts.
  */
-export function createNote(host: HTMLElement) {
+export function createNote(host: HTMLElement): Note {
   const root = document.createElement('div');
   root.className = 'note';
   root.dataset.open = 'false';
@@ -30,7 +38,7 @@ export function createNote(host: HTMLElement) {
 
   return {
     /** Fade the names in beside the anchor; names appear one after another. */
-    async show(names: readonly RiverName[]): Promise<void> {
+    async show(names: readonly LocalName[]): Promise<void> {
       const mine = ++token;
       // If the previous note is still leaving, let it finish before swapping its text.
       const wait = EXIT_MS - (performance.now() - closedAt);

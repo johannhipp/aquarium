@@ -1,15 +1,15 @@
 # Cubeworld at Tokyo scale: streaming, LOD and optimistic loading
 
-Status: Minato-ku (about 41 km² of tiles, 20 km² of land) is built and streams in `stream.html`. Everything marked **measured** was run in headless Chrome (Metal GPU, 1400x900) against the Vite dev server on this machine. Everything marked **[INFERENCE]** is arithmetic or judgement. Cited prior art is collected, with links, in [`cubeworld-streaming-sources.md`](cubeworld-streaming-sources.md); section letters below point into it.
+Status: 15 central Tokyo wards (125 km² frame, Shimokitazawa to Morishita, section 10) are built and stream in `stream.html`; sections 1-9 below were measured on the earlier Minato-only build (about 41 km² of tiles, 20 km² of land) and are kept as measured. Everything marked **measured** was run in headless Chrome (Metal GPU, 1400x900) against the Vite dev server on this machine. Everything marked **[INFERENCE]** is arithmetic or judgement. Cited prior art is collected, with links, in [`cubeworld-streaming-sources.md`](cubeworld-streaming-sources.md); section letters below point into it.
 
 ## 0. Result in one screen
 
 | | |
 |---|---|
 | Page | `http://localhost:5199/stream.html` (dev only; `?hud=1` numbers, `?throttle=slow3g\|fast3g\|4g\|<kbps>`, `?cache=0`, `?palette=`, `?detail=`, `?fly=<theme>`) |
-| Data | all of Minato-ku FY2025: bldg LOD1/2/3, tran LOD1/2/3, frn + veg + brid (LOD3 where present, so Shimbashi keeps poles and trees), wtr, DEM TIN. 7 LODs (1, 2, 4, 8, 16, 32, 64 m cubes), 8192 x 7680 m box |
-| Archive | `public/stream/`: `chunks.<hash>.bin` 20.1 MB, `dir.<hash>.bin` 294 KB, `manifest.json`; 54,237 chunks (48,148 unique). Under the 50 MB limit, so it is not gitignored; rebuild recipe below |
-| Build time | fetch 84 CityGML members (about 380 MB over HTTP range requests) 50 s, raster 38 s on 10 cores, pack 15 s |
+| Data | 15 wards of PLATEAU FY2025 (section 10): bldg LOD1/2/3 (LOD1 outside the centre), tran LOD1/2/3, frn + veg + brid (LOD3 where present, so Shimbashi keeps poles and trees), wtr, DEM TIN. 7 LODs (1, 2, 4, 8, 16, 32, 64 m cubes), 14,336 x 8,704 m box (Minato-only build: 8192 x 7680 m) |
+| Archive | `public/stream/`: `chunks.<hash>.bin` 71.5 MB (**gitignored**, rebuilt by `stream_build.py`), `dir.<hash>.bin` 887 KB, `manifest.json`; 162,477 chunks (148,865 unique). Minato-only build was 20.1 MB, 294 KB, 54,237 chunks |
+| Build time | 15-ward build: fetch 1.65 GB over HTTP range requests about 8 min, DEM + water prep 3.5 min, raster 154 tiles 2.5 min on 10 cores, merge 12 s, pack 42 s (Minato-only: 380 MB, 50 s, 38 s, 15 s) |
 | First frame | 3.5 KB of data (15 chunks of 64 m cubes), 137-450 ms locally, 0.9 s on slow 3G; the 32 m overview of the whole ward is 33 KB |
 | Theme flights | 5 theme buttons, pixel icons. Local network, cold cache: 6 of 6 flights landed with the destination fully drawn; 220-690 KB per flight; 0 long tasks; frame interval p95 16.8 ms; page JS per frame p95 about 2 ms |
 | Slow network | coarse first, refine after. Slow 3G: overview in 3 s, the flight waits (at most 4 s) for the destination's coarse chunks, and the view is complete 3.7-4.8 s after landing |
@@ -174,7 +174,7 @@ Reading it:
 
 - Rainbow Bridge (and any `brid` object) is a solid wall: the original lab rule fills bridge columns from the lowest to the highest sampled surface. The data pipeline is otherwise 2.5D (roof z-buffer), so overhangs, arcades and under-bridge space are lost; trees and bridges are the only non-column shapes.
 - LOD3 exists only where PLATEAU has it (the Shimbashi pocket and a few meshes); elsewhere roads are LOD1/2 and there are no poles or trees (frn and veg are only in 10 and 5 meshes).
-- Only Minato-ku. Tiles outside Minato's meshes are not data; the footprint is the union of the 39 mesh rectangles (so the boundary is jagged).
+- Coverage is the frame of section 10, not a ward: meshes at its edge are cut by the frame, and the wards outside it (Ota, Bunkyo, Taito, Sumida, Nakano, Suginami) contribute only their meshes inside it. Outside the central wards the buildings are mostly LOD1 (flat roofs), see section 10.
 - Memory: 264 B per quad, and GPU + JS heap peaked at about 400 + 150 MB; a laptop with 8 GB is fine, a phone is not. The budget (320 MB) is soft by roughly 100 MB while a plan is active.
 - Not tested: Safari/Firefox (no Long Tasks API there, `requestIdleCallback` fallback untested), a real remote CDN, mobile GPUs, a non-headless frame rate above 60 Hz.
 - `jsHeapMB` comes from non-standard `performance.memory` (Chromium).
@@ -183,12 +183,34 @@ Reading it:
 
 ```
 V=pipeline/cache/cubeworld/venv/bin/python
-$V pipeline/cubeworld/stream_build.py fetch     # 84 CityGML members by HTTP range request
-$V pipeline/cubeworld/stream_build.py prep      # DEM triangle caches + water triangles
-$V pipeline/cubeworld/stream_build.py raster    # per-3rd-mesh tile layers
-$V pipeline/cubeworld/stream_build.py merge     # 8192 x 7680 global layers (preview: `... preview`)
-$V pipeline/cubeworld/stream_build.py pack      # public/stream/ (rewrites all files; the hash changes only if the content does)
+$V pipeline/cubeworld/stream_build.py fetch     # ward zip listings, then 517 CityGML members (1.65 GB zipped) by HTTP range request
+$V pipeline/cubeworld/stream_build.py prep      # DEM triangle caches per ward file + water triangles
+$V pipeline/cubeworld/stream_build.py raster    # per-3rd-mesh tile layers (154 tiles)
+$V pipeline/cubeworld/stream_build.py merge     # 14336 x 8704 global layers (preview: `... preview`)
+$V pipeline/cubeworld/stream_build.py pack      # writes public/stream-next/ (--out DIR to change)
+mv public/stream public/stream-old && mv public/stream-next public/stream   # swap in; the hash changes only if the content does
 npm run dev                                     # then /stream.html
 ```
 
+`chunks.<hash>.bin` (71.5 MB) is in `.gitignore` (over the 60 MB we keep in git); `manifest.json` and `dir.<hash>.bin` are committed, so a fresh clone needs the five steps above (about 15 min plus the download) before the world appears.
+
 Code: `pipeline/cubeworld/stream_build.py` (imports `plateau_voxelize.py` and `plateau_citygml.py`), `src/cubeworld/stream/` (`format.ts` wire format, `protocol.ts`, `chunk.worker.ts`, `selection.ts`, `manager.ts` queue/display/budgets, `flight.ts`, `viewer.ts`, `placeholder.ts`, `metrics.ts`, `icons.ts`, `main.ts`), `stream.html`, `vite.config.ts`.
+
+## 10. Multi-ward build: Shimokitazawa to Morishita
+
+The area is `pipeline/cubeworld/stream_area.json`: the EPSG:6677 frame and the list of ward zips. `stream_build.py` has no ward-specific code; adding a ward or moving the frame is an edit of that file and a rebuild.
+
+**Frame.** `gx0 = -16800`, `gtop = -34093`, 14,336 x 8,704 cells (28 x 17 supertiles of 512 m; 7 x 4.25 top-level 2048 m chunks, 35 chunks at level 6). World `x = E - gx0 = E + 16800`, `z = gtop - N = -34093 - N`. It holds all of the old Minato frame (`gx0 -12081, gtop -35117, 8192 x 7680`, now at x 4719, z 976), Shimokitazawa station (E -14960, N -37564: x 1840, z 3471) with 1.8 km to the west edge (Daita, at x 735, is also inside), and Morishita station (E -3243, N -34614: x 13557, z 521) with 780 m to the east edge and 520 m to the north edge.
+
+**Data.** FY2025 (令和7年度, spec 5.0) is the newest set for every ward in the catalog, so no ward needed an older year and no GSI DEM fallback was needed: each ward zip carries `dem`, `wtr`, `tran`, `bldg`. 15 wards touch the frame: Chiyoda, Chuo, Minato, Shinjuku, Bunkyo, Taito, Sumida, Koto, Shinagawa, Meguro, Ota, Setagaya, Shibuya, Nakano, Suginami. Per ward the build takes the 3rd-mesh `bldg`, `tran`, `frn`, `veg`, `brid` files that touch the frame, and the 2nd-mesh `wtr` and `dem` files (Setagaya splits `533935` into `_00` and `_50`). Only those members are range-requested from each ward zip: 517 members, 1.65 GB zipped, 25.7 GB as CityGML (DEM is 22:1 zipped).
+
+- **Boundary meshes are in several zips, mostly as the same file.** Of the 235 used members that more than one ward carries, 154 are byte-identical (same name, size and CRC, read from the zip's central directory), so only the first ward's copy is fetched (1.65 GB instead of 2.23 GB); 81 differ slightly (another ward's clip or attributes) and are all read. Per tile every file of the mesh is read and one copy of each `gml:id` is kept (`plateau_citygml.Feature.gid`, `iter_unique`), so a building or road on a ward line is never doubled. Water bodies are merged by id, DEM triangles per mesh by concatenation.
+- **Tiles are frame-independent.** Each 3rd-mesh tile stores its window in absolute EPSG:6677 integers; `merge` places it in the frame, so moving the frame re-merges and re-packs without re-rasterising.
+- LOD: the best LOD per building, as before. Building features read by the tiles (windows overlap, so some are counted twice): LOD1 330 k, LOD2 65 k, LOD3 about 100. Chiyoda, Chuo and Minato are mostly LOD2 (LOD3 pockets at Shimbashi); Shinjuku and Koto are about 15 % LOD2; Setagaya, Meguro, Shinagawa, Shibuya, Nakano, Suginami and Sumida are LOD1 with LOD2 only in a few meshes, which is how those PLATEAU files are published (a mesh file holds `lod1Solid` for every building and `lod2*` for some). `frn` and `veg` (poles, trees) were read mainly in Chiyoda, Chuo, Minato and Shinjuku, with a few poles in Shibuya; there are none around Shimokitazawa, so low-rise areas have flat roofs and no street trees. Roads are LOD1 outlines where the ward has no LOD2 traffic areas.
+- **Themes.** The five themes keep their positions (re-derived from lat/lon or EPSG:6677 for the new frame: Shimbashi x 9680, z 3107). Two were added: `shimokitazawa` (x 1843, z 3474) and `morishita` (x 13557, z 521).
+
+**Measured** (headless Chrome, local dev server, cache off): `dir.bin` 887,387 B (was 293,863 B), fetched whole at start with `manifest.json` (2.8 KB); first frame 1.7 s in the unbundled dev server with 71.5 KB of chunks in 7 requests; the page JS heap stays near 30 MB with the directory (162 k entries, about 1.6 MB parsed) and about 290 MB of GPU buffers at the busiest wide view (the budget evicts: 1,693 evictions by the end of a session of about 30 views). A 12 km flight from Shimokitazawa to Morishita took 4.5 s, landed with 80 of 80 chunks drawn, 0 long tasks, frame p95 16.7 ms, 779 KB over 139 requests. The overview at the coarsest LODs is emptier over the low-rise west than over the high-rise east, because a 64 m cell needs half of its 8 cells solid to be drawn and an 8 m building does not reach that; it fills in on zoom.
+
+Screenshots: `research/img/stream-wide-1-overview.webp` (whole frame), `stream-wide-{2,3,4}-west-shimokitazawa-*.webp` (zoom 0.08, 0.25, 1.0) and `stream-wide-{5,6,7}-east-morishita-*.webp`.
+
+Limits: no `luse` (parks are ground-coloured), no rail class is produced (PLATEAU's `trk` is not read), and most of the west (Setagaya, Nakano, Meguro, Shinagawa) has flat LOD1 roofs. The 71.5 MB archive is not in git (section 9).

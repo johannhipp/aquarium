@@ -5,6 +5,8 @@ OpenStreetMap, rasterized to 1-bit bitmaps (black = river, white = everything el
 and wrapped onto a 3D globe that shows nothing but the rivers. On top sits a small
 creature layer: twenty fish and aquatic animals, each tied to one of the rivers, shown as a
 Game Boy–style index. Clicking one plays that river's soundscape and flies the globe there.
+A wallet in the corner (unlocked by looking at five creatures) opens *cubeworld*: a voxel map of
+Tokyo with five bookmarked places, which works the same way (see *Places on the Tokyo map*).
 
 ## Run
 
@@ -203,3 +205,93 @@ and share-alike, so the site cannot be used commercially with it unless that fil
 
 River names are native-language names of the rivers as used along them (e.g. Amazon:
 Portuguese, Spanish, Quechua; Ganges: Hindi, Bengali, Urdu).
+
+## Places on the Tokyo map
+
+*Cubeworld* (the cube in the wallet) is a streamed voxel map of Tokyo drawn in the `foam` palette
+(`src/cubeworld/palettes.ts`). It has its own index of five places the author bookmarked, in the same
+look and with the same behaviour as the creature index: click a sprite and its recording crossfades in
+(same player, same sound gate and sound-loss rules) while the camera hops there (zoom out, glide, zoom
+in, with the destination's chunks fetched along the path); when it lands, the place's Japanese name
+appears in the same note component beside a dot on the spot. Click it again, or press Esc, to stop.
+No other text is drawn. The fish-to-cube iris transition and the `?` are unchanged; the map and its
+data are only fetched when the cube is entered (`import('./cubeworld')`, then the module worker and
+range requests into `public/stream/`).
+
+| id | place | where |
+| --- | --- | --- |
+| `imakatsu-roppongi` | Imakatsu Roppongi, tonkatsu | Roppongi |
+| `teamlab-borderless` | teamLab Borderless, digital art museum | Azabudai Hills |
+| `perfect-beer-kitchen` | Perfect Beer Kitchen, craft beer bar | Shimbashi |
+| `aoyama-tunnel` | Aoyama Tunnel, bar | Aoyama (Shibuya 4-chome) |
+| `sushidokoro-unitora` | Sushidokoro Unitora, sushi | Tsukiji |
+
+Tsukiji is Chuo-ku, but the PLATEAU Minato-ku data reaches across the ward line and renders
+buildings and streets there, so it needed no fallback (`jinza-udon-shimbashi`, Shiodome, was prepared
+as one and is not shown). Aoyama Tunnel sits about 1 km inside the western edge of the data.
+
+| file | content |
+| --- | --- |
+| `public/places/places.json` | per place: `id`, `name`, `kind`, `address`, `lat`, `lon`, `epsg6677` `[E, N]` (the map's native plane coordinates), `sprite`; the last entry carries the unused `fallback` |
+| `public/places/<id>-gb.png` | 80x80 1-bit sprite, same style template and `pipeline/sprites.py` as the creatures |
+| `public/places/place-names.json` | `id` → `{lang, name}`: the name as on the shop's signage / Tabelog (second entry only when the brand is written in Latin) |
+| `public/audio/places/<id>.mp3`, `audio.json` key `place:<id>` | one 18 s seamless loop per place, the same encoding as the creatures |
+| `art/places/` | full-size images and `places.full.json` (not served) |
+| `public/stream/` | the map: `manifest.json`, `dir.<hash>.bin`, `chunks.<hash>.bin` |
+
+**The map data.** PLATEAU 3D city model, FY2025, 15 central wards from Setagaya (Shimokitazawa) to Koto
+(Morishita), a 14.3 x 8.7 km frame (CityGML 2.0): buildings LOD1-3 (LOD2/3 in the centre, LOD1 in the
+west), roads LOD1-3 (carriageway, sidewalk, island), city furniture and vegetation (poles and trees where
+the wards publish them, Shimbashi/Toranomon), bridges, water, and the DEM TIN. The 71 MB `chunks.<hash>.bin`
+is not in git: rebuild it with `pipeline/cubeworld/stream_build.py` (`research/cubeworld-streaming.md`, section 9;
+the area is `pipeline/cubeworld/stream_area.json`). The script fetches
+only the needed CityGML members by HTTP range request, rasterises 1 m layers, and packs a 7-level
+pyramid (1, 2, 4, 8, 16, 32, 64 m cubes) of 32x32-column chunks, run-length encoded and `deflate-raw`
+compressed, into one range-readable `chunks.<hash>.bin` plus a directory. The viewer (`src/cubeworld/stream/`)
+picks levels by on-screen cube size, draws a coarser stand-in until all children of a chunk are ready,
+prefetches along the flight path, caches chunks in Cache Storage (and warms the five destinations at
+idle), and keeps GPU memory under a budget. Rebuild and measurements: `pipeline/cubeworld/stream_build.py`
+(docstring) and `research/cubeworld-streaming.md`. The dev-only page `stream.html` (`STREAM=1 vite build`
+bundles it) shows the same map with theme buttons and the flight metrics.
+
+**Integration.** `src/guide.ts` is the one place where an index, the player, a camera and the note meet; the
+globe's creatures (`src/main.ts`) and the map's places (`src/cubeworld/mount.ts`) are each a guide with
+their own stage (`globe.flyTo/project`, `cubeworld.flyTo/project`). Entering the other world puts a guide to
+sleep (silence, note hidden, selection kept) and wakes the other, so returning resumes where you left.
+
+### Place credits
+
+Map: 出典：国土交通省 3D都市モデル（Project PLATEAU）東京都港区（令和7年度）を加工して作成 / Source: MLIT Project
+PLATEAU, Minato-ku FY2025 3D city model, processed into voxels (Public Data License v1.0, CC BY 4.0
+compatible). The app draws no text but the place names, so this notice lives here and bottom-right on `stream.html`.
+Place sprites were generated like the creatures' (see *Credits* above).
+
+Place sounds are 18 s loops cut by `pipeline/audio.py` from YouTube recordings (downloaded with yt-dlp; per-layer
+URLs, channels, licences and time ranges in `art/audio/credits.json`). **Only the teamLab loop is
+Creative Commons (CC BY). The other four are under YouTube's standard licence: private prototype only, not
+cleared for public release; replace them (or get permission) before the site goes public.**
+
+| place | recording | licence |
+| --- | --- | --- |
+| teamLab Borderless | [Teamlab Borderless Tokyo Japan 2024 walkthrough](https://www.youtube.com/watch?v=_ExKTkNFepE) by Traveling with Sochi, inside the museum (waterfall room) | CC BY 3.0 (YouTube Creative Commons Attribution) |
+| Perfect Beer Kitchen | room tone from two bar-hopping vlogs filmed in the shop: [なおたか酒場](https://www.youtube.com/watch?v=n3WFAKnQPsc), [PERFECT BEER](https://www.youtube.com/watch?v=pBzMJAJzEHc) | YouTube standard licence |
+| Imakatsu Roppongi | dining room of the honten: [一口だけ東京](https://www.youtube.com/watch?v=xGjUPqv1VMc), [백백백 backback100](https://www.youtube.com/watch?v=WhHnreFxLEY) | YouTube standard licence |
+| Sushidokoro Unitora | counter of the shop (then Tsukiji Itadori Bekkan): [MySX30](https://www.youtube.com/watch?v=JoORdqFUz7M) | YouTube standard licence |
+| Aoyama Tunnel | **street fallback**, no usable interior recording exists: dusk traffic on Aoyama-dori near Miyamasuzaka, [akkz01](https://www.youtube.com/watch?v=1Wxz7KvrHrw) | YouTube standard licence |
+
+Approximations are noted per place in `credits.json` (Imakatsu has no isolated fryer sizzle; the unused Jinza
+Udon fallback loop comes from the shop's earlier location).
+
+### Rebuilding the map data
+
+```sh
+V=pipeline/cache/cubeworld/venv/bin/python
+$V pipeline/cubeworld/stream_build.py fetch     # PLATEAU CityGML members by HTTP range request
+$V pipeline/cubeworld/stream_build.py prep      # DEM triangle caches + water triangles
+$V pipeline/cubeworld/stream_build.py raster    # per-3rd-mesh tile layers
+$V pipeline/cubeworld/stream_build.py merge     # global layers
+$V pipeline/cubeworld/stream_build.py pack      # -> public/stream/
+```
+See the docstring of `stream_build.py` (it also covers the wider multi-ward frame) and
+`research/cubeworld-streaming.md`. If `public/stream/chunks.*.bin` is not committed (it is large), `pack`
+recreates it from the cached layers.

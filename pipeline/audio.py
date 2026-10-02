@@ -15,10 +15,16 @@ which carries the encoder delay/padding so gapless decoders (Web Audio decodeAud
 
 Sources are the 128 kbps "hq" previews that Freesound serves without an API key (the lossless
 originals need a login), plus one public-domain NPS file from Wikimedia Commons.
+
+Place tracks (key `place:<id>`, written to public/audio/places/<id>.mp3) come from YouTube video audio
+fetched with yt-dlp (`YT_DLP=/path/to/yt-dlp`, a build from 2026.09 or later): every YouTube layer is
+credited with URL, channel, licence and the exact timestamp ranges used. Videos under the standard
+YouTube licence are marked "private prototype only, not cleared for public release".
 """
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import sys
 import tempfile
@@ -47,6 +53,8 @@ PD_NPS = ("Public domain (US National Park Service)", "https://commons.wikimedia
 CC_BY_3 = ("CC BY 3.0", "https://creativecommons.org/licenses/by/3.0/")
 CC_BY_NC_SA_3 = ("CC BY-NC-SA 3.0 (non-commercial, share-alike)", "https://creativecommons.org/licenses/by-nc-sa/3.0/")
 PD_NPS_WORK = ("Public domain (US National Park Service work)", "https://www.nps.gov/subjects/sound/gallery.htm")
+YT_CC = ("CC BY 3.0 (YouTube Creative Commons Attribution licence)", "https://creativecommons.org/licenses/by/3.0/")
+YT_STD = ("YouTube standard licence: private prototype only, not cleared for public release", "https://www.youtube.com/t/terms")
 
 
 @dataclass(frozen=True)
@@ -58,6 +66,7 @@ class Source:
     author: str
     licence: tuple[str, str]
     what: str  # what this recording is and where it was made
+    channel: str = ""  # YouTube sources: uploader channel
 
 
 FS = "https://cdn.freesound.org/previews"
@@ -234,6 +243,30 @@ SOURCES: dict[str, Source] = {s.key: s for s in [
            "https://freesound.org/people/hopflog/sounds/752783/",
            "DonDetLaosjungleambience", "hopflog", CC0,
            "Night insects and the distant Mekong falls at Don Det, Laos."),
+    Source("yt-teamlab-sochi", "https://www.youtube.com/watch?v=_ExKTkNFepE", "https://www.youtube.com/watch?v=_ExKTkNFepE",
+           "Teamlab Borderless Tokyo Japan 2024 walkthrough and magical cafe", "Traveling with Sochi", YT_CC,
+           "Walkthrough of teamLab Borderless at Azabudai Hills (uploaded 2024-06-29), captions instead of voice-over.", "Traveling with Sochi"),
+    Source("yt-pbk-naotaka", "https://www.youtube.com/watch?v=n3WFAKnQPsc", "https://www.youtube.com/watch?v=n3WFAKnQPsc",
+           "【1人1万円】新橋で限界はしご酒！とんかつに沖縄料理にハラミにハンバーグ！肉肉肉とビールでキマる", "なおたか酒場 / NAOTAKA IZAKAYA", YT_STD,
+           "Shimbashi bar-hopping vlog (uploaded 2023-12-05); the PERFECT BEER KITCHEN Shimbashi interior appears at the start and again at the end.", "なおたか酒場 / NAOTAKA IZAKAYA"),
+    Source("yt-pbk-numa", "https://www.youtube.com/watch?v=pBzMJAJzEHc", "https://www.youtube.com/watch?v=pBzMJAJzEHc",
+           "【新橋はしご酒前編】32杯飲み放題チャレンジしたら限界超えてベロベロに", "PERFECT BEER - Numa's Bar Hopping Chronicles", YT_STD,
+           "Shimbashi bar-hopping vlog (uploaded 2024-02-19); first stop is PERFECT BEER KITCHEN Shimbashi.", "PERFECT BEER - Numa's Bar Hopping Chronicles"),
+    Source("yt-aoyama-walk", "https://www.youtube.com/watch?v=1Wxz7KvrHrw", "https://www.youtube.com/watch?v=1Wxz7KvrHrw",
+           "【東京夜散歩】青山通り宮益坂の夕暮れから夜 4K Aoyama street Miyamasuzaka", "akkz01", YT_STD,
+           "Dusk-to-night walk along Aoyama-dori to Miyamasuzaka (uploaded 2021-04-25), no voice-over or music.", "akkz01"),
+    Source("yt-imakatsu-quiet", "https://www.youtube.com/watch?v=xGjUPqv1VMc", "https://www.youtube.com/watch?v=xGjUPqv1VMc",
+           "イマカツ추성훈돈카츠#도쿄돈카츠#일본돈카츠", "一口だけ東京한입만도쿄", YT_STD,
+           "Short visit video of Imakatsu Roppongi honten (uploaded 2025-03-11); the window is the dining room in the evening, between the narrator's lines.", "一口だけ東京한입만도쿄"),
+    Source("yt-imakatsu-table", "https://www.youtube.com/watch?v=WhHnreFxLEY", "https://www.youtube.com/watch?v=WhHnreFxLEY",
+           "[일본] 도쿄 롯폰기 추성훈 이마카츠 본점 닭가슴살카츠 멘치카츠 새우카츠 히레카츠 나마비루 미쉐린", "백백백 backback100", YT_STD,
+           "Close-mic table scene at Imakatsu Roppongi honten (uploaded 2023-06-08): plates, chopsticks, crunch and distant chatter.", "백백백 backback100"),
+    Source("yt-unitora-counter", "https://www.youtube.com/watch?v=JoORdqFUz7M", "https://www.youtube.com/watch?v=JoORdqFUz7M",
+           "Tsukiji Itadori Bekkan | Freshest Sushi & Seafood in Tokyo’s Famous Market! 築地虎杖 別館", "MySX30", YT_STD,
+           "Visit to Tsukiji Itadori Bekkan (now Sushidokoro Unitora, uploaded 2025-10-05); no narration, the counter scene starts at about 2:14.", "MySX30"),
+    Source("yt-jinza-kitchen", "https://www.youtube.com/watch?v=gFOA1iAbG6o", "https://www.youtube.com/watch?v=gFOA1iAbG6o",
+           "注文90秒で出てくるうどん屋…420人のサラリーマンが昼に殺到する", "黙飯 MOKU MESHI TOKYO", YT_STD,
+           "Silent-style documentary of the Jinza udon shop in Nishi-Shimbashi (uploaded 2024-01-31): fryer and boiling kitchen sounds, counter hall.", "黙飯 MOKU MESHI TOKYO"),
 ]}
 
 
@@ -251,6 +284,7 @@ class Layer:
     even: bool = False  # bed only: flatten slow level swells (gain riding)
     note: str = ""
     then: tuple[str, ...] = ()  # bed only: keys of more sources chained after `src` before looping
+    windows: tuple[tuple[float | str, ...], ...] = ()  # bed only: (start, dur) or (src, start, dur) windows, chained; replaces start/dur
 
 
 @dataclass(frozen=True)
@@ -380,6 +414,32 @@ TRACKS: list[Track] = [
     ], note="The Mekong at Vientiane (about 340 km downstream of the catfish's Chiang Khong focus) and at the Don Det falls in southern Laos, "
             "with a night stream from the Chiang Rai hills (not the Mekong) for water body. No open recording from Chiang Khong/Chiang Saen exists. "
             "The giant catfish makes no known sound, so there is no creature layer."),
+    Track("place:teamlab-borderless", [
+        Layer("yt-teamlab-sochi", "place", "bed", windows=((72, 17.3), (92.5, 11.8)), gain=0),
+    ], note="Inside the museum: the waterfall room (crowd murmur and the museum's faint soundscape) from a captioned, voice-over-free CC BY walkthrough "
+            "recorded at Azabudai Hills in 2024. The museum's own tonal soundscape is part of the place."),
+    Track("place:perfect-beer-kitchen", [
+        Layer("yt-pbk-naotaka", "place", "bed", af="highpass=f=60", windows=(
+            ("yt-pbk-naotaka", 128.3, 7.2), ("yt-pbk-naotaka", 258.7, 6.1), ("yt-pbk-numa", 187.2, 8.2),
+            ("yt-pbk-naotaka", 440.7, 6.3), ("yt-pbk-naotaka", 168.4, 4.2))),
+    ], note="Inside the exact branch (Shinbashi 3-3-8): room tone, glass and plate clunks and faint murmur, cut from the gaps between the hosts' sentences "
+            "in two bar-hopping vlogs; the vlogs are denoised, so the floor is thin."),
+    Track("place:aoyama-tunnel", [
+        Layer("yt-aoyama-walk", "place", "bed", af="highpass=f=60", windows=((745, 12), (876, 12)), even=True),
+    ], note="No usable interior recording of the basement bar exists (every video is a DJ mix with a continuous beat). "
+            "Street fallback: dusk traffic on Aoyama-dori between Okamoto Taro's Tree of Children and Miyamasuzaka (the Shibuya 4-chome frontage), from a voice-free night-walk video."),
+    Track("place:imakatsu-roppongi", [
+        Layer("yt-imakatsu-quiet", "place", "bed", windows=((225, 34),), gain=0),
+        Layer("yt-imakatsu-table", "place", "bed", windows=((126, 26),), gain=-9, af="highpass=f=80"),
+    ], note="Inside the Roppongi honten dining room: quiet evening murmur with sparse clinks, layered under a closer table take (plates, chopsticks, crunch) "
+            "from a second visit video. Both are captioned, voice-over-free clips; no isolated fryer sizzle was found, so the kitchen is only implied."),
+    Track("place:sushidokoro-unitora", [
+        Layer("yt-unitora-counter", "place", "bed", af="highpass=f=250", windows=((273, 16), (160.5, 16))),
+    ], note="At the sushi counter of the exact shop (formerly Tsukiji Itadori Bekkan): board taps, clinks and faint chatter, cut from a no-narration visit video. "
+            "The recording is bass-heavy, so it is high-passed at 250 Hz."),
+    Track("place:jinza-udon-shimbashi", [
+        Layer("yt-jinza-kitchen", "place", "bed", windows=((391, 14), (1241, 14)), even=True),
+    ], note="Tempura-fryer kitchen and the counter hall with diners, from the shop's earlier Nishi-Shimbashi location (same brand and cook; the shop moved to the Tokyo Shiodome Building in June 2026)."),
 ]
 
 
@@ -389,7 +449,25 @@ def run(*cmd: str) -> subprocess.CompletedProcess[bytes]:
     return subprocess.run(cmd, check=True, capture_output=True)
 
 
+def fetch_youtube(src: Source) -> Path:
+    """Audio-only download with yt-dlp (set YT_DLP to a recent build; releases older than ~2026.09 get HTTP 403)."""
+    exe = os.environ.get("YT_DLP", "yt-dlp")
+    CACHE.mkdir(parents=True, exist_ok=True)
+    existing = sorted(CACHE.glob(f"{src.key}.*"))
+    if existing and existing[0].stat().st_size > 10_000:
+        return existing[0]
+    for attempt in range(3):
+        done = subprocess.run([exe, "-f", "140/ba", "--no-warnings", "-q", "-o", str(CACHE / f"{src.key}.%(ext)s"), src.url],
+                              capture_output=True, text=True)
+        if done.returncode == 0:
+            return sorted(CACHE.glob(f"{src.key}.*"))[0]
+        time.sleep(5 * (attempt + 1))
+    raise RuntimeError(f"yt-dlp failed for {src.key}: {done.stderr[-300:]}")
+
+
 def fetch(src: Source) -> Path:
+    if "youtube.com/watch" in src.url:
+        return fetch_youtube(src)
     CACHE.mkdir(parents=True, exist_ok=True)
     path = CACHE / f"{src.key}{Path(src.url).suffix}"
     if path.exists() and path.stat().st_size > 10_000:
@@ -461,7 +539,21 @@ def render(track: Track) -> np.ndarray:
     beds = [l for l in track.layers if l.role == "bed"]
     # beds are looped to the full length and summed; different loop periods keep layered beds from repeating in lockstep
     for layer in beds:
-        raw = decode(fetch(SOURCES[layer.src]), layer.af)[int(layer.start * SR):]
+        if layer.windows:  # quiet windows (possibly of several recordings), chained with a cross-fade
+            decoded: dict[str, np.ndarray] = {}
+            parts = []
+            for key_, s, d in window_parts(layer):
+                if key_ not in decoded:
+                    decoded[key_] = decode(fetch(SOURCES[key_]), layer.af)
+                parts.append(decoded[key_][int(s * SR):int((s + d) * SR)])
+            raw = parts[0]
+            for p in parts[1:]:
+                raw = xfade(raw, p, int(0.8 * SR))
+        else:
+            full = decode(fetch(SOURCES[layer.src]), layer.af)
+            raw = full[int(layer.start * SR):]
+            if layer.dur is not None:
+                raw = raw[: int(layer.dur * SR)]
         seg = normalise(level(raw) if layer.even else raw, layer.gain)
         for key_ in layer.then:  # further clips of the same place, chained with a short cross-fade
             nxt = decode(fetch(SOURCES[key_]), layer.af)
@@ -483,8 +575,8 @@ def render(track: Track) -> np.ndarray:
 
 
 def encode(track_id: str, wav: np.ndarray) -> Path:
-    OUT.mkdir(parents=True, exist_ok=True)
-    dest = OUT / f"{track_id}.mp3"
+    dest = ROOT / "public" / track_file(track_id)
+    dest.parent.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory() as tmp:
         raw = Path(tmp) / "mix.f32"
         wav.astype("<f4").tofile(raw)
@@ -514,13 +606,44 @@ def seam_report(path: Path) -> str:
 
 
 
+def clock(t: float) -> str:
+    return f"{int(t // 60)}:{t % 60:04.1f}"
+
+
+def layer_source_ranges(layer: Layer) -> dict[str, list[str]]:
+    """Per source key, the timestamp ranges ('m:ss.s-m:ss.s') a layer uses."""
+    out: dict[str, list[str]] = {}
+    if layer.windows:
+        for key, s, d in window_parts(layer):
+            out.setdefault(key, []).append(f"{clock(s)}-{clock(s + d)}")
+        return out
+    if layer.dur is not None:
+        out[layer.src] = [f"{clock(layer.start)}-{clock(layer.start + layer.dur)}"]
+    else:
+        out[layer.src] = [f"from {clock(layer.start)}"]
+    for key in layer.then:
+        out.setdefault(key, ["whole file"])
+    return out
+
+
+def window_parts(layer: Layer) -> list[tuple[str, float, float]]:
+    return [w if len(w) == 3 else (layer.src, *w) for w in layer.windows]
+
+
+def track_file(track_id: str) -> str:
+    """'dourada-catfish' -> audio/dourada-catfish.mp3, 'place:foo' -> audio/places/foo.mp3 (relative to public/)."""
+    kind, _, name = track_id.rpartition(":")
+    return f"audio/{kind}s/{name}.mp3" if kind else f"audio/{name}.mp3"
+
+
 def manifest_entry(track: Track, mp3: Path) -> dict:
     seen: dict[tuple[str, str], dict] = {}
     for layer in track.layers:
-        for key_ in (layer.src, *layer.then):
+        for key_, ranges in layer_source_ranges(layer).items():
             src = SOURCES[key_]
             key = (layer.kind, src.key)
             if key in seen:
+                seen[key]["ranges"] += [r for r in ranges if r not in seen[key]["ranges"]]
                 continue
             note = src.what if not layer.note or layer.note == src.what else f"{src.what} {layer.note}"
             seen[key] = {
@@ -528,12 +651,14 @@ def manifest_entry(track: Track, mp3: Path) -> dict:
                 "title": src.title,
                 "source": src.page,
                 "author": src.author,
+                **({"channel": src.channel} if src.channel else {}),
                 "license": src.licence[0],
                 "licenseUrl": src.licence[1],
+                "ranges": list(ranges),
                 "note": note,
             }
     return {
-        "file": f"audio/{track.id}.mp3",
+        "file": track_file(track.id),
         "durationSec": duration(mp3),
         "loop": True,
         "note": track.note,

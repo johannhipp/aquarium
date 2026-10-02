@@ -1,0 +1,62 @@
+[
+  {
+    "id": "imakatsu-roppongi",
+    "name": "Imakatsu Roppongi",
+    "kind": "Tonkatsu restaurant",
+    "address": "Roppongi 4-12-5, Minato, Tokyo",
+    "lat": 35.6644501,
+    "lon": 139.7315786,
+    "epsg6677": [-9212, -37223],
+    "sprite": "places/imakatsu-roppongi-gb.png"
+  },
+  {
+    "id": "teamlab-borderless",
+    "name": "teamLab Borderless: MORI Building DIGITAL ART MUSEUM",
+    "kind": "Art museum",
+    "address": "Azabudai Hills Garden Plaza B, B1, Toranomon 5-9, Minato, Tokyo",
+    "lat": 35.6620689,
+    "lon": 139.7432671,
+    "epsg6677": [-8154, -37488],
+    "sprite": "places/teamlab-borderless-gb.png"
+  },
+  {
+    "id": "perfect-beer-kitchen",
+    "name": "PERFECT BEER KITCHEN SHIMBASHI (PBK)",
+    "kind": "Bar",
+    "address": "Shinbashi 3-3-8, Minato, Tokyo",
+    "lat": 35.6655446,
+    "lon": 139.7542485,
+    "epsg6677": [-7160, -37103],
+    "sprite": "places/perfect-beer-kitchen-gb.png"
+  },
+  {
+    "id": "aoyama-tunnel",
+    "name": "Aoyama Tunnel",
+    "kind": "Bar",
+    "address": "Shibuya 4-5-9 B1F, Tokyo (Aoyama)",
+    "lat": 35.658641,
+    "lon": 139.7092174,
+    "epsg6677": [-11238, -37865],
+    "sprite": "places/aoyama-tunnel-gb.png"
+  },
+  {
+    "id": "sushidokoro-unitora",
+    "name": "Sushidokoro Unitora",
+    "kind": "Sushi restaurant",
+    "address": "Tsukiji 4-10-16, Chuo, Tokyo",
+    "lat": 35.665628,
+    "lon": 139.7703541,
+    "epsg6677": [-5702, -37095],
+    "sprite": "places/sushidokoro-unitora-gb.png",
+    "fallback": {
+      "id": "jinza-udon-shimbashi",
+      "name": "Jinza Udon Shimbashi",
+      "kind": "Udon restaurant",
+      "address": "Tokyo Shiodome Building 2F, Higashishinbashi 1-9-1, Minato, Tokyo",
+      "lat": 35.6629395,
+      "lon": 139.7612147,
+      "epsg6677": [-6529, -37393],
+      "sprite": "places/jinza-udon-shimbashi-gb.png"
+    }
+  }
+]

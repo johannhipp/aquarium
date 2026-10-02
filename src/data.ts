@@ -33,7 +33,8 @@ export interface AudioEntry {
   loop: boolean;
 }
 
-export interface RiverName {
+/** A name in its own language and script, shown by the note beside a river or a place. */
+export interface LocalName {
   lang: string;
   name: string;
 }
@@ -41,28 +42,28 @@ export interface RiverName {
 export interface CreatureData {
   creatures: Creature[];
   audio: ReadonlyMap<string, AudioEntry>;
-  names: ReadonlyMap<string, RiverName[]>;
+  names: ReadonlyMap<string, LocalName[]>;
 }
 
 type Dict = Record<string, unknown>;
 
-function isDict(v: unknown): v is Dict {
+export function isDict(v: unknown): v is Dict {
   return typeof v === 'object' && v !== null && !Array.isArray(v);
 }
 
-function str(v: unknown, what: string): string {
+export function str(v: unknown, what: string): string {
   if (typeof v !== 'string' || v === '') throw new Error(`${what}: expected a non-empty string`);
   return v;
 }
 
-function pair(v: unknown, what: string): [number, number] {
+export function pair(v: unknown, what: string): [number, number] {
   if (!Array.isArray(v) || v.length !== 2 || typeof v[0] !== 'number' || typeof v[1] !== 'number') {
     throw new Error(`${what}: expected [number, number]`);
   }
   return [v[0], v[1]];
 }
 
-async function getJson(url: string): Promise<unknown> {
+export async function getJson(url: string): Promise<unknown> {
   const res = await fetch(url);
   if (!res.ok) throw new Error(`${url}: HTTP ${res.status}`);
   return res.json();
@@ -90,15 +91,15 @@ function parseAudio(v: unknown): Map<string, AudioEntry> {
   );
 }
 
-function parseNames(v: unknown): Map<string, RiverName[]> {
-  if (!isDict(v)) throw new Error('river-names.json: expected an object');
+export function parseNames(v: unknown, file: string): Map<string, LocalName[]> {
+  if (!isDict(v)) throw new Error(`${file}: expected an object`);
   return new Map(
     Object.entries(v).map(([riverId, list]) => {
-      if (!Array.isArray(list)) throw new Error(`river-names.json ${riverId}: expected an array`);
+      if (!Array.isArray(list)) throw new Error(`${file} ${riverId}: expected an array`);
       const seen = new Set<string>();
-      const names: RiverName[] = [];
+      const names: LocalName[] = [];
       for (const n of list) {
-        if (!isDict(n)) throw new Error(`river-names.json ${riverId}: entry is not an object`);
+        if (!isDict(n)) throw new Error(`${file} ${riverId}: entry is not an object`);
         const name = str(n.name, `${riverId}.name`).normalize('NFC').trim();
         // Same name in two languages (e.g. pt/es "Río Negro" written alike) is shown once.
         if (name === '' || seen.has(name)) continue;
@@ -150,5 +151,5 @@ export async function loadCreatureData(): Promise<CreatureData> {
     getJson('/creatures/river-names.json'),
   ]);
   if (!Array.isArray(creatures)) throw new Error('creatures.json: expected an array');
-  return { creatures: creatures.map(parseCreature), audio: parseAudio(audio), names: parseNames(names) };
+  return { creatures: creatures.map(parseCreature), audio: parseAudio(audio), names: parseNames(names, 'river-names.json') };
 }

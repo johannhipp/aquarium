@@ -26,6 +26,7 @@ NS = {
     "core": "http://www.opengis.net/citygml/2.0",
 }
 Q = {k: "{%s}" % v for k, v in NS.items()}
+GML_ID = Q["gml"] + "id"
 
 _to6677 = Transformer.from_crs(6697, 6677, always_xy=True)
 
@@ -63,6 +64,7 @@ class Feature:
     kind: str                      # e.g. "Building", "TrafficArea", "AuxiliaryTrafficArea", "Road"
     function: str | None
     lods: dict[str, list[tuple[np.ndarray, list[np.ndarray]]]] = field(default_factory=dict)
+    gid: str | None = None         # gml:id, to drop a feature that two wards' files both carry
     # lods key e.g. "lod1Solid", "lod2MultiSurface", "lod2Solid", "lod3MultiSurface"; for buildings,
     # boundary-surface type (Roof/Wall/Ground/...) is encoded in key suffix: "lod2MultiSurface:RoofSurface"
 
@@ -86,20 +88,20 @@ def iter_tran(path: str) -> Iterator[Feature]:
         for el in road.iter(Q["tran"] + "TrafficArea", Q["tran"] + "AuxiliaryTrafficArea"):
             g = _lod_geoms(el)
             if g:
-                areas.append(Feature(etree.QName(el).localname, _code(el, "tran:function"), g))
+                areas.append(Feature(etree.QName(el).localname, _code(el, "tran:function"), g, el.get(GML_ID)))
         if areas:
             yield from areas
         else:
             g = _lod_geoms(road)
             if g:
-                yield Feature("Road", _code(road, "tran:function"), g)
+                yield Feature("Road", _code(road, "tran:function"), g, road.get(GML_ID))
         road.clear()
 
 
 def iter_bldg(path: str) -> Iterator[Feature]:
     """Buildings; geometry grouped by lod and boundary-surface type."""
     for _, b in etree.iterparse(path, tag=Q["bldg"] + "Building", huge_tree=True):
-        f = Feature("Building", _code(b, "bldg:usage"))
+        f = Feature("Building", _code(b, "bldg:usage"), gid=b.get(GML_ID))
         for child in b:
             name = etree.QName(child).localname
             if name.startswith("lod") and name.endswith(("Solid", "MultiSurface")):
@@ -121,7 +123,7 @@ def iter_deep(path: str, tag: str) -> Iterator[Feature]:
     """Any city object (frn:CityFurniture, veg:*, brid:Bridge ...): every lodN geometry anywhere below it,
     grouped as lods["lodN"] (implicit representations are ignored)."""
     for _, el in etree.iterparse(path, tag=tag, huge_tree=True):
-        f = Feature(etree.QName(el).localname, None)
+        f = Feature(etree.QName(el).localname, None, gid=el.get(GML_ID))
         for fn in el.iterfind("*"):
             if etree.QName(fn).localname == "function":
                 f.function = (fn.text or "").strip()

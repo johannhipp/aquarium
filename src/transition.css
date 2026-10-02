@@ -33,8 +33,18 @@
   display: block;
 }
 
-/* Only the globe has a river index and name notes; cubeworld shows just the landscape. */
-html[data-world='cube'] .dex,
-html[data-world='cube'] .note {
+/* Each world has its own index (the globe's creatures, the map's places); the note is shared. */
+html[data-world='cube'] .dex[data-kind='creatures'],
+html:not([data-world='cube']) .dex[data-kind='places'] {
   display: none;
+}
+
+/* The note keeps its look; over the busy map it only gets darker ink and a thicker white halo. */
+html[data-world='cube'] .note-body {
+  color: rgb(11 11 11 / 0.92);
+  text-shadow:
+    0 0 6px #fff,
+    0 0 3px #fff,
+    0 0 3px #fff,
+    0 0 1px #fff;
 }

@@ -67,6 +67,11 @@ def main() -> None:
         extra_id = json.loads(path.read_text())["id"]
         sprite(ART / "extras" / f"{extra_id}.png", OUT / "extras" / f"{extra_id}-gb.png")
         print("wrote", OUT / "extras" / f"{extra_id}-gb.png")
+    places_art = ROOT / "art" / "places"  # places: art/places/<id>.png -> public/places/<id>-gb.png
+    places_out = ROOT / "public" / "places"
+    for pl in json.loads((places_art / "places.full.json").read_text()):
+        sprite(places_art / f"{pl['id']}.png", places_out / f"{pl['id']}-gb.png")
+        print("wrote", places_out / f"{pl['id']}-gb.png")
 
 
 if __name__ == "__main__":

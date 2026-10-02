@@ -1,12 +1,13 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { createBackdrop, createWorldMaterial, setWorldFocus, wantsAntialias } from '../material';
-import { DEFAULT_PALETTE, PALETTES, paletteById, rgb, type Palette } from '../palettes';
+import { DEFAULT_PALETTE, paletteById, rgb, type Palette } from '../palettes';
 import { inflateRaw, parseDirectory, type ChunkKey, type Manifest, type ThemeDef } from './format';
 import { BASE_HALF_HEIGHT, planFlight, type FlightPlan, type FlightPose } from './flight';
 import { ChunkManager, type ManagerStats, type ViewSample } from './manager';
 import { LongTasks, jsHeapMB, summarize, type FrameStats, type LongTask } from './metrics';
 import { createPlaceholder, recolorPlaceholder } from './placeholder';
+import type { ScreenPoint } from '../../globe';
 import type { Throttle } from './protocol';
 
 export interface ViewerOptions {
@@ -19,10 +20,18 @@ export interface ViewerOptions {
   detailPx?: number;
   gpuBudgetMB?: number;
   workers?: number;
+  /** false: the loop and the key listeners wait for `start()` (default true). */
+  autoStart?: boolean;
+  /** Where the camera starts (default: the first theme, zoomed out over the ward). */
+  home?: FlightPose;
+  /** Poses whose chunks are warmed into Cache Storage at idle (default: every theme). */
+  warm?: readonly FlightPose[];
 }
 
 export interface FlightReport {
   theme: string;
+  /** a drag, key or newer flight ended it before the camera arrived */
+  interrupted: boolean;
   distanceM: number;
   durationMs: number;
   /** of which the flight spent crawling because the destination's coarse chunks had not arrived */
@@ -67,6 +76,18 @@ export interface StreamViewer {
   settled(timeoutMs: number): Promise<boolean>;
   /** How much of what the current view wants is built and drawn (one `manager.update`). */
   coverage(): { wanted: number; resident: number; displayed: number; changed: boolean };
+  /** Draw and listen for keys (a viewer starts running unless `autoStart` is false). */
+  start(): void;
+  /** Stop drawing and release the key listeners; the camera and the chunks stay as they are. */
+  stop(): void;
+  /** Flies to any pose with the hop plan; resolves at landing (settleMs 0) with `interrupted` set if a drag or a new flight cut it short. */
+  flyToPose(pose: FlightPose, label: string, settleMs?: number): Promise<FlightReport>;
+  /** Screen position (CSS px) of the ground point at world metres (x east, z south). */
+  project(x: number, z: number, out: ScreenPoint): void;
+  /** Called after every rendered frame. */
+  onFrame(cb: () => void): void;
+  /** Off while a modal dialog is up, so drag and wheel never reach the world behind it. */
+  setInteractive(on: boolean): void;
   dispose(): void;
 }
 
@@ -127,7 +148,8 @@ export async function createStreamViewer(container: HTMLElement, options: Viewer
   scene.add(backdrop, placeholder, group);
   renderer.setClearColor(new THREE.Color(...rgb(palette.background.bottom)), 1);
 
-  const camera = new THREE.OrthographicCamera(-1, 1, BASE_HALF_HEIGHT, -BASE_HALF_HEIGHT, 1, CAMERA_DISTANCE * 3);
+  // far enough that the ground at the far corner of the frame never clips, however wide the frame is
+  const camera = new THREE.OrthographicCamera(-1, 1, BASE_HALF_HEIGHT, -BASE_HALF_HEIGHT, 1, CAMERA_DISTANCE + 2 * worldSize);
   const controls = new OrbitControls(camera, renderer.domElement);
   controls.enableDamping = true;
   controls.dampingFactor = 0.08;
@@ -139,14 +161,14 @@ export async function createStreamViewer(container: HTMLElement, options: Viewer
   controls.maxPolarAngle = Math.PI / 2 - 0.08;
   const target = controls.target;
 
-  const home = manifest.themes[0];
+  const home = options.home ?? { x: manifest.themes[0].x, z: manifest.themes[0].z, zoom: 0.03 };
   target.set(home.x, 10, home.z);
   camera.position.set(
     target.x + CAMERA_DISTANCE * Math.sin(START_POLAR) * Math.sin(START_AZIMUTH),
     target.y + CAMERA_DISTANCE * Math.cos(START_POLAR),
     target.z + CAMERA_DISTANCE * Math.sin(START_POLAR) * Math.cos(START_AZIMUTH),
   );
-  camera.zoom = 0.03;
+  camera.zoom = home.zoom;
   camera.updateProjectionMatrix();
   controls.update();
 
@@ -167,6 +189,8 @@ export async function createStreamViewer(container: HTMLElement, options: Viewer
 
   const longTasks = new LongTasks();
   const flightListeners: Array<(id: string | null) => void> = [];
+  const frameListeners: Array<() => void> = [];
+  const projected = new THREE.Vector3();
   let firstRender = -1;
   let dirty = true;
   let lastFrame = 0;
@@ -251,11 +275,10 @@ export async function createStreamViewer(container: HTMLElement, options: Viewer
   const velocity = new THREE.Vector2();
   const forward = new THREE.Vector3();
 
+  const releaseKeys = (): void => held.clear();
+
   function onKeyDown(e: KeyboardEvent): void {
-    if (e.code === 'KeyP' && !e.metaKey && !e.ctrlKey && !e.altKey) {
-      cyclePalette();
-      return;
-    }
+    if (document.querySelector('dialog[open]')) return;
     const key = MOVE_KEYS[e.code];
     if (!key || e.metaKey || e.ctrlKey || e.altKey) return;
     e.preventDefault();
@@ -267,9 +290,6 @@ export async function createStreamViewer(container: HTMLElement, options: Viewer
     const key = MOVE_KEYS[e.code];
     if (key) held.delete(key);
   }
-  window.addEventListener('keydown', onKeyDown);
-  window.addEventListener('keyup', onKeyUp);
-  window.addEventListener('blur', () => held.clear());
 
   function shiftView(mx: number, my: number, mz: number): void {
     target.x += mx;
@@ -342,12 +362,20 @@ export async function createStreamViewer(container: HTMLElement, options: Viewer
     };
   }
 
-  async function flyTo(themeId: string, settleMs = 6000): Promise<FlightReport> {
+  /** Flies to a theme of the manifest (the dev page's buttons). */
+  function flyTo(themeId: string, settleMs = 6000): Promise<FlightReport> {
     const theme = manifest.themes.find((t) => t.id === themeId);
     if (!theme) throw new Error(`unknown theme ${themeId}`);
+    return flyToPose({ x: theme.x, z: theme.z, zoom: theme.zoom }, themeId, settleMs);
+  }
+
+  /**
+   * Flies to any pose with the hop plan and optimistic prefetch. Resolves at landing (`settleMs` 0) or once the
+   * destination is completely drawn (up to `settleMs` after landing); `interrupted` tells a drag or a new flight.
+   */
+  async function flyToPose(to: FlightPose, themeId: string, settleMs = 0): Promise<FlightReport> {
     cancelFlight();
     const from: FlightPose = { x: target.x, z: target.z, zoom: camera.zoom };
-    const to: FlightPose = { x: theme.x, z: theme.z, zoom: theme.zoom };
     const plan = planFlight(from, to);
     const t0 = performance.now();
     const samples: ViewSample[] = [];
@@ -376,12 +404,13 @@ export async function createStreamViewer(container: HTMLElement, options: Viewer
     const lt = longTasks.between(t0, landed);
     if (!flight) recording = false; // a superseding flight keeps recording
     let completeAfterMs: number | null = arrival.complete ? 0 : null;
-    if (!arrival.complete && !interrupted) {
+    if (!arrival.complete && !interrupted && settleMs > 0) {
       const waited = performance.now();
       if (await settled(settleMs)) completeAfterMs = performance.now() - waited;
     }
     return {
       theme: themeId,
+      interrupted,
       distanceM: Math.round(plan.distance),
       durationMs: Math.round(landed - t0),
       stallMs: Math.round(active.stallMs),
@@ -418,12 +447,6 @@ export async function createStreamViewer(container: HTMLElement, options: Viewer
     }
     return false;
   }
-
-  function cyclePalette(): void {
-    const next = PALETTES[(PALETTES.findIndex((p) => p.id === palette.id) + 1) % PALETTES.length];
-    api.setPalette(next.id);
-  }
-
   // ---- the loop
   function frame(now: number): void {
     const dt = lastFrame === 0 ? 0 : Math.min(0.05, (now - lastFrame) / 1000);
@@ -461,12 +484,33 @@ export async function createStreamViewer(container: HTMLElement, options: Viewer
     renderer.render(scene, camera);
     manager.frameRendered();
     if (firstRender < 0 && manager.shownCount() > 0) firstRender = performance.now();
+    for (const cb of frameListeners) cb();
   }
-  renderer.setAnimationLoop((now: number) => {
+  function loop(now: number): void {
     const began = performance.now();
     frame(now);
     if (recording) frameCpu.push(performance.now() - began);
-  });
+  }
+  let running = false;
+  function start(): void {
+    if (running) return;
+    running = true;
+    lastFrame = 0;
+    window.addEventListener('keydown', onKeyDown);
+    window.addEventListener('keyup', onKeyUp);
+    window.addEventListener('blur', releaseKeys);
+    renderer.setAnimationLoop(loop);
+    dirty = true;
+  }
+  function stop(): void {
+    running = false;
+    renderer.setAnimationLoop(null);
+    window.removeEventListener('keydown', onKeyDown);
+    window.removeEventListener('keyup', onKeyUp);
+    window.removeEventListener('blur', releaseKeys);
+    releaseKeys();
+    velocity.set(0, 0);
+  }
 
   const api: StreamViewer = {
     manifest,
@@ -503,10 +547,25 @@ export async function createStreamViewer(container: HTMLElement, options: Viewer
     },
     settled,
     coverage: () => manager.update(currentView(), performance.now()),
+    start,
+    stop,
+    flyToPose,
+    project(x, z, out) {
+      const g = manager.groundAt(x, z);
+      projected.set(x, Number.isFinite(g) ? g : target.y, z).project(camera);
+      out.x = (projected.x * 0.5 + 0.5) * container.clientWidth;
+      out.y = (0.5 - projected.y * 0.5) * container.clientHeight;
+      out.facing = Number.isFinite(out.x) && Number.isFinite(out.y);
+    },
+    onFrame(cb) {
+      frameListeners.push(cb);
+    },
+    setInteractive(on) {
+      controls.enabled = on;
+      if (!on) held.clear();
+    },
     dispose() {
-      renderer.setAnimationLoop(null);
-      window.removeEventListener('keydown', onKeyDown);
-      window.removeEventListener('keyup', onKeyUp);
+      stop();
       observer.disconnect();
       controls.dispose();
       manager.dispose();
@@ -516,14 +575,16 @@ export async function createStreamViewer(container: HTMLElement, options: Viewer
     },
   };
 
-  // idle warm-up: the bytes of every theme destination's view, so a click finds them in Cache Storage
+  // idle warm-up: the bytes of every destination's view, so a click finds them in Cache Storage
+  const warmPoses: readonly FlightPose[] = options.warm ?? manifest.themes.map((t) => ({ x: t.x, z: t.z, zoom: t.zoom }));
   manager.onRoots = () => {
     const warm = (): void => {
       if (flight) return;
-      manager.setWarm(manifest.themes.map((t) => viewAt({ x: t.x, z: t.z, zoom: t.zoom }, 0)), 3);
+      manager.setWarm(warmPoses.map((p) => viewAt(p, 0)), 3);
     };
     if ('requestIdleCallback' in window) window.requestIdleCallback(warm, { timeout: 4000 });
     else setTimeout(warm, 1500);
   };
+  if (options.autoStart ?? true) start();
   return api;
 }

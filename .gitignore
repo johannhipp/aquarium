@@ -10,3 +10,9 @@ __pycache__/
 *.pyc
 .DS_Store
 *.log
+
+# Streamed Tokyo cubeworld: the 71 MB chunk archive is rebuilt by pipeline/cubeworld/stream_build.py (see
+# research/cubeworld-streaming.md, "Rebuild"); manifest.json and dir.<hash>.bin stay in git. Build/swap staging dirs too.
+public/stream/chunks.*.bin
+public/stream-next/
+public/stream-old/

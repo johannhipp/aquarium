@@ -572,5 +572,164 @@
         "note": "Night insects and the distant Mekong falls at Don Det, Laos."
       }
     ]
+  },
+  "place:teamlab-borderless": {
+    "file": "audio/places/teamlab-borderless.mp3",
+    "durationSec": 18.0,
+    "loop": true,
+    "note": "Inside the museum: the waterfall room (crowd murmur and the museum's faint soundscape) from a captioned, voice-over-free CC BY walkthrough recorded at Azabudai Hills in 2024. The museum's own tonal soundscape is part of the place.",
+    "layers": [
+      {
+        "kind": "place",
+        "title": "Teamlab Borderless Tokyo Japan 2024 walkthrough and magical cafe",
+        "source": "https://www.youtube.com/watch?v=_ExKTkNFepE",
+        "author": "Traveling with Sochi",
+        "channel": "Traveling with Sochi",
+        "license": "CC BY 3.0 (YouTube Creative Commons Attribution licence)",
+        "licenseUrl": "https://creativecommons.org/licenses/by/3.0/",
+        "ranges": [
+          "1:12.0-1:29.3",
+          "1:32.5-1:44.3"
+        ],
+        "note": "Walkthrough of teamLab Borderless at Azabudai Hills (uploaded 2024-06-29), captions instead of voice-over."
+      }
+    ]
+  },
+  "place:perfect-beer-kitchen": {
+    "file": "audio/places/perfect-beer-kitchen.mp3",
+    "durationSec": 18.0,
+    "loop": true,
+    "note": "Inside the exact branch (Shinbashi 3-3-8): room tone, glass and plate clunks and faint murmur, cut from the gaps between the hosts' sentences in two bar-hopping vlogs; the vlogs are denoised, so the floor is thin.",
+    "layers": [
+      {
+        "kind": "place",
+        "title": "【1人1万円】新橋で限界はしご酒！とんかつに沖縄料理にハラミにハンバーグ！肉肉肉とビールでキマる",
+        "source": "https://www.youtube.com/watch?v=n3WFAKnQPsc",
+        "author": "なおたか酒場 / NAOTAKA IZAKAYA",
+        "channel": "なおたか酒場 / NAOTAKA IZAKAYA",
+        "license": "YouTube standard licence: private prototype only, not cleared for public release",
+        "licenseUrl": "https://www.youtube.com/t/terms",
+        "ranges": [
+          "2:08.3-2:15.5",
+          "4:18.7-4:24.8",
+          "7:20.7-7:27.0",
+          "2:48.4-2:52.6"
+        ],
+        "note": "Shimbashi bar-hopping vlog (uploaded 2023-12-05); the PERFECT BEER KITCHEN Shimbashi interior appears at the start and again at the end."
+      },
+      {
+        "kind": "place",
+        "title": "【新橋はしご酒前編】32杯飲み放題チャレンジしたら限界超えてベロベロに",
+        "source": "https://www.youtube.com/watch?v=pBzMJAJzEHc",
+        "author": "PERFECT BEER - Numa's Bar Hopping Chronicles",
+        "channel": "PERFECT BEER - Numa's Bar Hopping Chronicles",
+        "license": "YouTube standard licence: private prototype only, not cleared for public release",
+        "licenseUrl": "https://www.youtube.com/t/terms",
+        "ranges": [
+          "3:07.2-3:15.4"
+        ],
+        "note": "Shimbashi bar-hopping vlog (uploaded 2024-02-19); first stop is PERFECT BEER KITCHEN Shimbashi."
+      }
+    ]
+  },
+  "place:aoyama-tunnel": {
+    "file": "audio/places/aoyama-tunnel.mp3",
+    "durationSec": 18.0,
+    "loop": true,
+    "note": "No usable interior recording of the basement bar exists (every video is a DJ mix with a continuous beat). Street fallback: dusk traffic on Aoyama-dori between Okamoto Taro's Tree of Children and Miyamasuzaka (the Shibuya 4-chome frontage), from a voice-free night-walk video.",
+    "layers": [
+      {
+        "kind": "place",
+        "title": "【東京夜散歩】青山通り宮益坂の夕暮れから夜 4K Aoyama street Miyamasuzaka",
+        "source": "https://www.youtube.com/watch?v=1Wxz7KvrHrw",
+        "author": "akkz01",
+        "channel": "akkz01",
+        "license": "YouTube standard licence: private prototype only, not cleared for public release",
+        "licenseUrl": "https://www.youtube.com/t/terms",
+        "ranges": [
+          "12:25.0-12:37.0",
+          "14:36.0-14:48.0"
+        ],
+        "note": "Dusk-to-night walk along Aoyama-dori to Miyamasuzaka (uploaded 2021-04-25), no voice-over or music."
+      }
+    ]
+  },
+  "place:imakatsu-roppongi": {
+    "file": "audio/places/imakatsu-roppongi.mp3",
+    "durationSec": 18.0,
+    "loop": true,
+    "note": "Inside the Roppongi honten dining room: quiet evening murmur with sparse clinks, layered under a closer table take (plates, chopsticks, crunch) from a second visit video. Both are captioned, voice-over-free clips; no isolated fryer sizzle was found, so the kitchen is only implied.",
+    "layers": [
+      {
+        "kind": "place",
+        "title": "イマカツ추성훈돈카츠#도쿄돈카츠#일본돈카츠",
+        "source": "https://www.youtube.com/watch?v=xGjUPqv1VMc",
+        "author": "一口だけ東京한입만도쿄",
+        "channel": "一口だけ東京한입만도쿄",
+        "license": "YouTube standard licence: private prototype only, not cleared for public release",
+        "licenseUrl": "https://www.youtube.com/t/terms",
+        "ranges": [
+          "3:45.0-4:19.0"
+        ],
+        "note": "Short visit video of Imakatsu Roppongi honten (uploaded 2025-03-11); the window is the dining room in the evening, between the narrator's lines."
+      },
+      {
+        "kind": "place",
+        "title": "[일본] 도쿄 롯폰기 추성훈 이마카츠 본점 닭가슴살카츠 멘치카츠 새우카츠 히레카츠 나마비루 미쉐린",
+        "source": "https://www.youtube.com/watch?v=WhHnreFxLEY",
+        "author": "백백백 backback100",
+        "channel": "백백백 backback100",
+        "license": "YouTube standard licence: private prototype only, not cleared for public release",
+        "licenseUrl": "https://www.youtube.com/t/terms",
+        "ranges": [
+          "2:06.0-2:32.0"
+        ],
+        "note": "Close-mic table scene at Imakatsu Roppongi honten (uploaded 2023-06-08): plates, chopsticks, crunch and distant chatter."
+      }
+    ]
+  },
+  "place:sushidokoro-unitora": {
+    "file": "audio/places/sushidokoro-unitora.mp3",
+    "durationSec": 18.0,
+    "loop": true,
+    "note": "At the sushi counter of the exact shop (formerly Tsukiji Itadori Bekkan): board taps, clinks and faint chatter, cut from a no-narration visit video. The recording is bass-heavy, so it is high-passed at 250 Hz.",
+    "layers": [
+      {
+        "kind": "place",
+        "title": "Tsukiji Itadori Bekkan | Freshest Sushi & Seafood in Tokyo’s Famous Market! 築地虎杖 別館",
+        "source": "https://www.youtube.com/watch?v=JoORdqFUz7M",
+        "author": "MySX30",
+        "channel": "MySX30",
+        "license": "YouTube standard licence: private prototype only, not cleared for public release",
+        "licenseUrl": "https://www.youtube.com/t/terms",
+        "ranges": [
+          "4:33.0-4:49.0",
+          "2:40.5-2:56.5"
+        ],
+        "note": "Visit to Tsukiji Itadori Bekkan (now Sushidokoro Unitora, uploaded 2025-10-05); no narration, the counter scene starts at about 2:14."
+      }
+    ]
+  },
+  "place:jinza-udon-shimbashi": {
+    "file": "audio/places/jinza-udon-shimbashi.mp3",
+    "durationSec": 18.0,
+    "loop": true,
+    "note": "Tempura-fryer kitchen and the counter hall with diners, from the shop's earlier Nishi-Shimbashi location (same brand and cook; the shop moved to the Tokyo Shiodome Building in June 2026).",
+    "layers": [
+      {
+        "kind": "place",
+        "title": "注文90秒で出てくるうどん屋…420人のサラリーマンが昼に殺到する",
+        "source": "https://www.youtube.com/watch?v=gFOA1iAbG6o",
+        "author": "黙飯 MOKU MESHI TOKYO",
+        "channel": "黙飯 MOKU MESHI TOKYO",
+        "license": "YouTube standard licence: private prototype only, not cleared for public release",
+        "licenseUrl": "https://www.youtube.com/t/terms",
+        "ranges": [
+          "6:31.0-6:45.0",
+          "20:41.0-20:55.0"
+        ],
+        "note": "Silent-style documentary of the Jinza udon shop in Nishi-Shimbashi (uploaded 2024-01-31): fryer and boiling kitchen sounds, counter hall."
+      }
+    ]
   }
 }
