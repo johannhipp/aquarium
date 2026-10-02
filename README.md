@@ -35,8 +35,9 @@ The creature assets have their own scripts (see *Creature layer* below):
 `numpy`, `requests` and `ffmpeg`; downloads are cached in `pipeline/cache/audio`).
 
 `pipeline/cache/` (~300 MB of downloaded OSM geometry, source recordings and raw image renders)
-is not committed; the scripts above recreate it. Everything the app serves is committed under
-`public/`, and the source art under `art/`.
+is not committed; the scripts above recreate it. The Tokyo map (`public/stream/`) is generated too:
+`npm run map` builds it (see *Rebuilding the map data*). Everything else the app serves is committed
+under `public/`, and the source art under `art/`.
 
 ## Choices
 
@@ -261,8 +262,8 @@ is anchored on the ground there (and dims when something stands in front of it).
 and Sumida (Morishita, Kinshicho, Tatekawa) and Taito (Asakusa, Ueno), a 16.4 x 12.8 km frame (CityGML 2.0):
 buildings LOD1-3 (LOD2/3 in the centre, LOD1 in the west), roads LOD1-3 (carriageway, sidewalk, island), city
 furniture and vegetation (poles and trees where the wards publish them, Shimbashi/Toranomon), bridges, water,
-and the DEM TIN. The 52 MB archive (`public/stream/`: four 16 MiB `chunks.<hash>-<n>.bin` shards, a directory
-and the manifest) is committed, so `npm run build` needs no data download; rebuild it with
+and the DEM TIN. The archive (`public/stream/`: about 52 MB in four 16 MiB `chunks.<hash>-<n>.bin` shards, a directory
+and the manifest) is generated, not committed: run `npm run map` once after cloning (`vite build` stops with a hint if it is missing); rebuild it with
 `pipeline/cubeworld/stream_build.py` (`research/cubeworld-streaming.md` section 9; the area is
 `pipeline/cubeworld/stream_area.json`; the format, hosting and offline decisions are in
 `research/cubeworld-webnative.md`). The script fetches
@@ -321,13 +322,11 @@ public.** Where no interior or on-the-spot recording exists the loop is the stre
 ### Rebuilding the map data
 
 ```sh
-V=pipeline/cache/cubeworld/venv/bin/python
-$V pipeline/cubeworld/stream_build.py fetch     # PLATEAU CityGML members by HTTP range request
-$V pipeline/cubeworld/stream_build.py prep      # DEM triangle caches + water triangles
-$V pipeline/cubeworld/stream_build.py raster    # per-3rd-mesh tile layers
-$V pipeline/cubeworld/stream_build.py merge     # global layers
-$V pipeline/cubeworld/stream_build.py pack      # -> public/stream/
+npm run map    # scripts/build-map.sh: venv from pipeline/cubeworld/requirements.txt, fetch, prep, raster, merge, pack, swap into public/stream/
 ```
-See the docstring of `stream_build.py` (it also covers the wider multi-ward frame) and
-`research/cubeworld-streaming.md`. If `public/stream/chunks.*.bin` is not committed (it is large), `pack`
-recreates it from the cached layers.
+Needs Python 3.12 (uses `uv` if installed), network and about 50 GB of free disk for the cache
+(`pipeline/cache/cubeworld/`, ~2.3 GB downloaded as HTTP range requests into the PLATEAU ward zips, unzipped
+there). It takes 30-40 minutes on a 10-core laptop; every step resumes from the cache. The area and the ward
+zips are `pipeline/cubeworld/stream_area.json`. The steps, run one by one, are `fetch`, `prep`, `raster`,
+`merge` and `pack --out DIR` of `pipeline/cubeworld/stream_build.py` (see its docstring and
+`research/cubeworld-streaming.md`).

@@ -1,0 +1,11 @@
+# Python 3.12 dependencies of the Tokyo map build (stream_build.py and the modules it imports).
+# Versions are the ones the committed pipeline was last run with. scripts/build-map.sh installs them.
+lxml==6.1.3
+mapbox_earcut==2.1.0
+numpy==2.5.3
+pillow==12.3.0
+pyproj==3.8.0
+remotezip==0.12.6
+requests==2.34.2
+scipy==1.18.1
+shapely==2.1.2

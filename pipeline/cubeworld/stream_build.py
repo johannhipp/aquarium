@@ -1,6 +1,7 @@
 """PLATEAU FY2025 Tokyo wards -> streamable chunk archive for src/cubeworld/stream (see research/cubeworld-streaming.md).
 
-The area (EPSG:6677 frame and the wards that fill it) is pipeline/cubeworld/stream_area.json.
+The area (EPSG:6677 frame and the wards that fill it) is pipeline/cubeworld/stream_area.json. The output is generated, not
+committed: `npm run map` (scripts/build-map.sh) creates the venv from requirements.txt and runs every step below.
 
     V=pipeline/cache/cubeworld/venv/bin/python
     $V pipeline/cubeworld/stream_build.py fetch      # list each ward zip, then range-request every 3rd-mesh CityGML member inside the frame

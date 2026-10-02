@@ -11,7 +11,8 @@ __pycache__/
 .DS_Store
 *.log
 
-# Streamed Tokyo cubeworld: public/stream/ (manifest, dir, 16 MiB chunk shards, 52 MB in all) IS committed, so the
-# site builds and deploys from git alone; only rebuild staging directories are ignored (research/cubeworld-webnative.md).
+# Streamed Tokyo cubeworld: public/stream/ is generated from PLATEAU open data by `npm run map`
+# (scripts/build-map.sh; pipeline/cubeworld/stream_area.json says what to fetch). Never committed.
+public/stream/
 public/stream-next/
 public/stream-old/

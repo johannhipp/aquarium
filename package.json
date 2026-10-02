@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "map": "scripts/build-map.sh"
   },
   "dependencies": {
     "@fontsource/inter": "^5.3.0",
