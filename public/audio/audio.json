@@ -124,8 +124,78 @@
     "durationSec": 18.0,
     "loop": true
   },
-  "place:jinza-udon-shimbashi": {
-    "file": "audio/places/jinza-udon-shimbashi.mp3",
+  "place:shibuya-scramble-crossing": {
+    "file": "audio/places/shibuya-scramble-crossing.mp3",
+    "durationSec": 18.0,
+    "loop": true
+  },
+  "place:the-sg-club": {
+    "file": "audio/places/the-sg-club.mp3",
+    "durationSec": 18.0,
+    "loop": true
+  },
+  "place:kitasando-coffee": {
+    "file": "audio/places/kitasando-coffee.mp3",
+    "durationSec": 18.0,
+    "loop": true
+  },
+  "place:meiji-jingu": {
+    "file": "audio/places/meiji-jingu.mp3",
+    "durationSec": 18.0,
+    "loop": true
+  },
+  "place:kyushu-jangara-harajuku": {
+    "file": "audio/places/kyushu-jangara-harajuku.mp3",
+    "durationSec": 18.0,
+    "loop": true
+  },
+  "place:omoide-yokocho": {
+    "file": "audio/places/omoide-yokocho.mp3",
+    "durationSec": 18.0,
+    "loop": true
+  },
+  "place:otemachi-station": {
+    "file": "audio/places/otemachi-station.mp3",
+    "durationSec": 18.0,
+    "loop": true
+  },
+  "place:ecute-ueno-tans-tantan": {
+    "file": "audio/places/ecute-ueno-tans-tantan.mp3",
+    "durationSec": 18.0,
+    "loop": true
+  },
+  "place:jam-akihabara": {
+    "file": "audio/places/jam-akihabara.mp3",
+    "durationSec": 18.0,
+    "loop": true
+  },
+  "place:senso-ji": {
+    "file": "audio/places/senso-ji.mp3",
+    "durationSec": 18.0,
+    "loop": true
+  },
+  "place:monja-kura-tsukishima": {
+    "file": "audio/places/monja-kura-tsukishima.mp3",
+    "durationSec": 18.0,
+    "loop": true
+  },
+  "place:chen-kenichi-mapo-tofu-kiba": {
+    "file": "audio/places/chen-kenichi-mapo-tofu-kiba.mp3",
+    "durationSec": 18.0,
+    "loop": true
+  },
+  "place:shelter-shimokitazawa": {
+    "file": "audio/places/shelter-shimokitazawa.mp3",
+    "durationSec": 18.0,
+    "loop": true
+  },
+  "place:basement-bar-shimokitazawa": {
+    "file": "audio/places/basement-bar-shimokitazawa.mp3",
+    "durationSec": 18.0,
+    "loop": true
+  },
+  "place:tokyo-saryo-kamiuma": {
+    "file": "audio/places/tokyo-saryo-kamiuma.mp3",
     "durationSec": 18.0,
     "loop": true
   }

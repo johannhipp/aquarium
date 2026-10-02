@@ -264,9 +264,75 @@ SOURCES: dict[str, Source] = {s.key: s for s in [
     Source("yt-unitora-counter", "https://www.youtube.com/watch?v=JoORdqFUz7M", "https://www.youtube.com/watch?v=JoORdqFUz7M",
            "Tsukiji Itadori Bekkan | Freshest Sushi & Seafood in Tokyo’s Famous Market! 築地虎杖 別館", "MySX30", YT_STD,
            "Visit to Tsukiji Itadori Bekkan (now Sushidokoro Unitora, uploaded 2025-10-05); no narration, the counter scene starts at about 2:14.", "MySX30"),
-    Source("yt-jinza-kitchen", "https://www.youtube.com/watch?v=gFOA1iAbG6o", "https://www.youtube.com/watch?v=gFOA1iAbG6o",
-           "注文90秒で出てくるうどん屋…420人のサラリーマンが昼に殺到する", "黙飯 MOKU MESHI TOKYO", YT_STD,
-           "Silent-style documentary of the Jinza udon shop in Nishi-Shimbashi (uploaded 2024-01-31): fryer and boiling kitchen sounds, counter hall.", "黙飯 MOKU MESHI TOKYO"),
+    Source("yt-meiji-sound-forest", "https://www.youtube.com/watch?v=MKATkzih5ek", "https://www.youtube.com/watch?v=MKATkzih5ek",
+           "曇天の明治神宮。都会の中の緑の社で癒される/#環境音#癒しの音#神社の音", "Sound Forest [landscape]", YT_STD,
+           "Cloudy-day walk from the sando to the shrine at Meiji Jingu (uploaded 2020-07-16): gravel, birds, a distant JR train.", "Sound Forest [landscape]"),
+    Source("yt-jangara-counter", "https://www.youtube.com/watch?v=Ke97m0vHStU", "https://www.youtube.com/watch?v=Ke97m0vHStU",
+           "【清正の井戸 明治神宮】パワースポット 幸運 開運 休日 一人散歩 飯 九州じゃんがららあめん 原宿", "ぱいんちゃんねる", YT_STD,
+           "Counter POV inside Kyushu Jangara Ramen Harajuku (uploaded 2021-04-14); subtitles instead of narration in the shop part.", "ぱいんちゃんねる"),
+    Source("yt-jangara-inusuke", "https://www.youtube.com/watch?v=xW3sGkAHhW0", "https://www.youtube.com/watch?v=xW3sGkAHhW0",
+           "【原宿】「九州じゃんがららーめん」九州じゃんがら全部入り", "Inusuke Vlog Gourmet", YT_STD,
+           "Eating shots inside Kyushu Jangara Ramen Harajuku (uploaded 2025-04-27).", "Inusuke Vlog Gourmet"),
+    Source("yt-omoide-tokyohz", "https://www.youtube.com/watch?v=nShvOnTbHc0", "https://www.youtube.com/watch?v=nShvOnTbHc0",
+           "4K 昼から大盛況の新宿西口思い出横丁 / Shinjuku Nishiguchi Omoide Yokocho in Shinjuku Tokyo Japn 4k 60fps", "Tokyo Hz", YT_STD,
+           "Saturday-afternoon walk through Omoide Yokocho (uploaded 2023-05-26), recorded on a Tascam field recorder.", "Tokyo Hz"),
+    Source("yt-omoide-shiba", "https://www.youtube.com/watch?v=5IKJZo-zyEE", "https://www.youtube.com/watch?v=5IKJZo-zyEE",
+           "[4K HDR] Omoide Yokocho, Shinjuku | Tokyo", "Walk with Shiba", YT_STD,
+           "Walk through the grill counters of Omoide Yokocho (uploaded 2023-05-26).", "Walk with Shiba"),
+    Source("yt-otemachi-calm", "https://www.youtube.com/watch?v=jhkAvfWQT2g", "https://www.youtube.com/watch?v=jhkAvfWQT2g",
+           "Otemachi Station Z08 to M18 Walk | Tokyo Metro Exploration | Japan 4K", "Tokyo Calm Travels & Beyond", YT_STD,
+           "Uncut walk through Otemachi Station (uploaded 2023-11-15): Hanzomon-line platform with a train, quiet platform, transfer passages.", "Tokyo Calm Travels & Beyond"),
+    Source("yt-otemachi-rail", "https://www.youtube.com/watch?v=hvrGLBrcWuE", "https://www.youtube.com/watch?v=hvrGLBrcWuE",
+           "Otemachi Station | 大手町駅 | Tokyo 4K ASMR", "Japan Railway Explorer", YT_STD,
+           "Uncut ASMR walk through the Otemachi transfer passages (uploaded 2026-02-25).", "Japan Railway Explorer"),
+    Source("yt-tantan-2022", "https://www.youtube.com/watch?v=Nj0Hote-cbo", "https://www.youtube.com/watch?v=Nj0Hote-cbo",
+           "T'sたんたん エキュート上野店 2022/2 白胡麻たんたん麺 880円。", "Kotaro's gourmet trip (にっぽんグルメ旅)", YT_STD,
+           "Eating at the counter of T's TanTan Ecute Ueno (uploaded 2022-03-04), no narration.", "Kotaro's gourmet trip (にっぽんグルメ旅)"),
+    Source("yt-tantan-2025", "https://www.youtube.com/watch?v=pEK5BG-rRDw", "https://www.youtube.com/watch?v=pEK5BG-rRDw",
+           "T'sたんたん エキュート上野店 2025/1 黒胡麻たんたん麺 1200円。T'sベジ餃子(3個) 350円。", "Kotaro's gourmet trip (にっぽんグルメ旅)", YT_STD,
+           "Eating at the counter of T's TanTan Ecute Ueno (uploaded 2025-01-25), no narration.", "Kotaro's gourmet trip (にっぽんグルメ旅)"),
+    Source("yt-akiba-chuo", "https://www.youtube.com/watch?v=tTaL2-H2hJg", "https://www.youtube.com/watch?v=tTaL2-H2hJg",
+           "【4K HDR JAPAN】DJI pocket 3 POV Tokyo Akihabara pedestrian paradise.秋葉原歩行者天国", "POV JAPAN", YT_CC,
+           "Uncut walk along Chuo-dori on a pedestrian-paradise day (uploaded 2024-01-17): crowd murmur, footsteps, distant traffic.", "POV JAPAN"),
+    Source("yt-shibuya-walk", "https://www.youtube.com/watch?v=_q6XbuQzWP0", "https://www.youtube.com/watch?v=_q6XbuQzWP0",
+           "[4K]NIGHT Walk in SHIBUYA 夜の渋谷を散歩 #4K", "Walking Japan TV", YT_CC,
+           "Uncut GoPro night walk across the Shibuya scramble crossing (uploaded 2019-12-28; the crossing is 0:12-1:48).", "Walking Japan TV"),
+    Source("yt-sg-bartimes", "https://www.youtube.com/watch?v=v-n1CpepO3Q", "https://www.youtube.com/watch?v=v-n1CpepO3Q",
+           "Syuichi Ofuchi（The SG Club／Tokyo）Black Bush Irish Coffee", "BAR TIMES", YT_STD,
+           "Bartending film shot at The SG Club bar counter (uploaded 2024-01-09): ice, glassware and pouring with almost no room sound.", "BAR TIMES"),
+    Source("yt-sg-jinnan", "https://www.youtube.com/watch?v=199lV8peIkU", "https://www.youtube.com/watch?v=199lV8peIkU",
+           "東京夜散歩～渋谷 神南・宮下公園（Tokyo Night Walk: Jinnan & MIYASHITA PARK）", "Tokyo Night Walk", YT_STD,
+           "Night walk along a Jinnan backstreet (uploaded 2023-11-15): quiet traffic hum and footsteps.", "Tokyo Night Walk"),
+    Source("yt-kitasando", "https://www.youtube.com/watch?v=k5mplvvF_EM", "https://www.youtube.com/watch?v=k5mplvvF_EM",
+           "話題のカフェ『KITASANDO COFFEE』。Walk along the Kitasando in Shibuya Ward, Tokyo, Japan。日本の東京、渋谷区北参道・千駄ヶ谷 (GoPro walk)", "cinemafic-Café and camera moments", YT_STD,
+           "GoPro walk to KITASANDO COFFEE (uploaded 2020-11-07); the shop interior shots run 3:03-3:49.", "cinemafic-Café and camera moments"),
+    Source("yt-shimokita-night", "https://www.youtube.com/watch?v=4Jd4BoaF3k4", "https://www.youtube.com/watch?v=4Jd4BoaF3k4",
+           "JAPAN WALK, Tokyo's Adult night time, Shimokitazawa｜下北沢 東京 4K 60fps Binaural", "Night Walk in JAPAN Ambience", YT_STD,
+           "Binaural night walk on the Shimokitazawa south shopping street (uploaded 2022-06-23); the street chapter starts at 3:39.", "Night Walk in JAPAN Ambience"),
+    Source("yt-daizawa-lane", "https://www.youtube.com/watch?v=gfvt-AoPc0w", "https://www.youtube.com/watch?v=gfvt-AoPc0w",
+           "[4K] Tokyo Walk - Hidden Shimokitazawa: Shrine to Station", "NARI JAPAN WALK", YT_STD,
+           "Uncut walk through quiet lanes to Daizawa Inari Shrine (uploaded 2025-09-23); very quiet, distant birds and insects.", "NARI JAPAN WALK"),
+    Source("yt-kitazawa-side", "https://www.youtube.com/watch?v=IQVOkvrSKEY", "https://www.youtube.com/watch?v=IQVOkvrSKEY",
+           "下北沢駅　ライブハウス散策　下北沢SHELTER（シェルター）下北沢LIVEHOLIC（ライブホリック）その他", "鈴みの街歩き記録", YT_STD,
+           "Daytime walk along the side streets near the Shimokitazawa live houses (uploaded 2026-03-29): soft traffic hum and footsteps.", "鈴みの街歩き記録"),
+    Source("yt-sangenjaya-ambient", "https://www.youtube.com/watch?v=E8xdeyogvoI", "https://www.youtube.com/watch?v=E8xdeyogvoI",
+           "Exploring Sangenjaya, Tokyo || [4K] Ambient Walk", "Tea Tree Explorer", YT_STD,
+           "Ambient walk through the quiet side streets of Sangenjaya (uploaded 2023-10-20), stated to have no music.", "Tea Tree Explorer"),
+    Source("yt-sensoji-ambient", "https://www.youtube.com/watch?v=XrOt7LnTayk", "https://www.youtube.com/watch?v=XrOt7LnTayk",
+           "Walking ASAKUSA, Tokyo | Real Japan in 4K with 3D Binaural 浅草/浅草寺 | Audio", "Tokyo Ambient Walk & Drive.official", YT_STD,
+           "Rainy-day binaural walk through Asakusa and Senso-ji (uploaded 2026-08-16); the precinct and incense burner are at 13:00-19:00.", "Tokyo Ambient Walk & Drive.official"),
+    Source("yt-monja-emily", "https://www.youtube.com/watch?v=o5Wjf2lRXiI", "https://www.youtube.com/watch?v=o5Wjf2lRXiI",
+           "【もんじゃ蔵】【月島】【本場】【東京】【もんじゃ焼き】", "emily", YT_STD,
+           "Short video of monjayaki cooking on the iron griddle at Monja Kura, Tsukishima (uploaded 2022-09-16).", "emily"),
+    Source("yt-monja-shin", "https://www.youtube.com/watch?v=5jU-YQCoqH4", "https://www.youtube.com/watch?v=5jU-YQCoqH4",
+           "【月島もんじゃ】大人気 蔵さん①", "しん散歩", YT_STD,
+           "Griddle with spatula scrapes at Monja Kura, Tsukishima (uploaded 2024-03-10).", "しん散歩"),
+    Source("yt-chen-kiba", "https://www.youtube.com/watch?v=QBipw2cVhJ0", "https://www.youtube.com/watch?v=QBipw2cVhJ0",
+           "行列のできる担々麺と麻婆豆腐【陳建一麻婆豆腐店】東京都江東区", "ニカタツBLOG (Nikatatsu BLOG)", YT_STD,
+           "Eating in the dining room of Chen Kenichi Mapo Tofu Kiba (uploaded 2021-12-21); on-screen captions, no commentary.", "ニカタツBLOG (Nikatatsu BLOG)"),
+    Source("yt-chen-kitchen", "https://www.youtube.com/watch?v=ltuRMWEiWyg", "https://www.youtube.com/watch?v=ltuRMWEiWyg",
+           "お店を代表する3品(俯瞰カメラ)陳建一 四川飯店グループ オーナー:中華料理", "Share Spirits", YT_STD,
+           "Overhead-camera film of Chen Kenichi cooking in his Sichuan Hanten group kitchen (uploaded 2021-03-03): wok roar, clatter, spatula and ladle clinks.", "Share Spirits"),
 ]}
 
 
@@ -437,9 +503,67 @@ TRACKS: list[Track] = [
         Layer("yt-unitora-counter", "place", "bed", af="highpass=f=250", windows=((273, 16), (160.5, 16))),
     ], note="At the sushi counter of the exact shop (formerly Tsukiji Itadori Bekkan): board taps, clinks and faint chatter, cut from a no-narration visit video. "
             "The recording is bass-heavy, so it is high-passed at 250 Hz."),
-    Track("place:jinza-udon-shimbashi", [
-        Layer("yt-jinza-kitchen", "place", "bed", windows=((391, 14), (1241, 14)), even=True),
-    ], note="Tempura-fryer kitchen and the counter hall with diners, from the shop's earlier Nishi-Shimbashi location (same brand and cook; the shop moved to the Tokyo Shiodome Building in June 2026)."),
+    Track("place:shibuya-scramble-crossing", [
+        Layer("yt-shibuya-walk", "place", "bed", windows=((36, 11), (84, 11)), af="highpass=f=100"),
+    ], note="On the crossing itself: crowd murmur, footsteps, traffic wash and distant crossing tones, from an uncut GoPro night walk (CC BY) with no voice-over or music."),
+    Track("place:the-sg-club", [
+        Layer("yt-sg-bartimes", "place", "bed", windows=((10, 12), (50, 12)), af="highpass=f=150,acompressor=threshold=0.02:ratio=4:attack=5:release=100"),
+        Layer("yt-sg-jinnan", "place", "bed", windows=((40, 24),), gain=-16, af="lowpass=f=3000"),
+    ], note="Foley from the bar counter of the exact bar (ice stirring, glass ticks, pouring) cut from a bartending film that has no room murmur, "
+            "with a faint Jinnan backstreet bed under it as room presence. Neither recording is a continuous recording of the room."),
+    Track("place:kitasando-coffee", [
+        Layer("yt-kitasando", "place", "bed", windows=((183, 11), (207, 11), (218, 11))),
+    ], note="Inside the shop: soft cafe murmur and room tone (no distinct espresso machine) under the interior shots of a GoPro neighbourhood walk. "
+            "The audio could be laid under the shots by the editor."),
+    Track("place:meiji-jingu", [
+        Layer("yt-meiji-sound-forest", "place", "bed", windows=((175, 11), (60, 11)), gain=0, af="acompressor=threshold=0.06:ratio=4:attack=8:release=150"),
+    ], note="The forest approach to the shrine on a cloudy day: birdsong, gravel footsteps, a JR train hum in the distance. "
+            "An uncut walk by a nature-sound channel, no voices, no music."),
+    Track("place:kyushu-jangara-harajuku", [
+        Layer("yt-jangara-counter", "place", "bed", windows=(("yt-jangara-counter", 1100, 11), ("yt-jangara-inusuke", 74.5, 11)), af="highpass=f=70"),
+    ], note="At the counter of the exact Harajuku shop: chopsticks, bowls, slurps and a steady exhaust hum, from two close-up eating videos "
+            "without narration (the second window is a separate shot in another visit)."),
+    Track("place:omoide-yokocho", [
+        Layer("yt-omoide-tokyohz", "place", "bed", windows=(("yt-omoide-tokyohz", 104, 11), ("yt-omoide-shiba", 292, 11))),
+    ], note="Inside the alley: crowd murmur, clinking glasses, the grill counters and a train rattling overhead, from two uncut daytime walks; "
+            "no foreground talking."),
+    Track("place:otemachi-station", [
+        Layer("yt-otemachi-calm", "place", "bed", windows=((5, 11), (30, 11), ("yt-otemachi-rail", 200, 11))),
+    ], note="Inside the station: a Hanzomon-line platform with a train arriving, a quiet platform with a guidance chirp, and a transfer passage "
+            "with footsteps, from uncut ASMR walks (no talking). They do not cover the 2-1-1 exit area itself."),
+    Track("place:ecute-ueno-tans-tantan", [
+        Layer("yt-tantan-2022", "place", "bed", windows=((174, 11), ("yt-tantan-2025", 286, 11)), af="highpass=f=70"),
+    ], note="At the counter of the shop inside JR Ueno Station: sparse bowl and chopstick clinks over a quiet room, from two uncut eating videos in the shop (2022 and 2025). "
+            "The recordings are very quiet, so the loop carries a lot of makeup gain."),
+    Track("place:jam-akihabara", [
+        Layer("yt-akiba-chuo", "place", "bed", windows=((60, 11), (190, 11))),
+    ], note="Street fallback: the Chuo-dori pedestrian paradise a few blocks south of the cafe (no usable interior video exists; the JAM videos have voice-over and music). "
+            "A voice-free CC BY walk."),
+    Track("place:senso-ji", [
+        Layer("yt-sensoji-ambient", "place", "bed", windows=((960, 12), (1136, 12))),
+    ], note="In the temple precinct: crowd murmur and footsteps around the incense burner and the main-hall courtyard, from an uncut binaural walk on a rainy day "
+            "(umbrellas and wet pavement); no talking, no music, no individually identified bells."),
+    Track("place:monja-kura-tsukishima", [
+        Layer("yt-monja-emily", "place", "bed", windows=((10, 11), ("yt-monja-shin", 150, 11), (56, 11)), af="highpass=f=70"),
+    ], note="Iron-griddle sizzle and spatula scraping at the shop's table, from two short visit videos titled for Monja Kura; the shop identity rests on the titles."),
+    Track("place:chen-kenichi-mapo-tofu-kiba", [
+        Layer("yt-chen-kiba", "place", "bed", windows=((60, 11), (104, 11), (252, 11))),
+        Layer("yt-chen-kitchen", "place", "bed", windows=((200, 24),), gain=-8),
+    ], note="The Kiba shop's dining room (quiet clinks and chatter) with wok and clatter sounds from the kitchen of the same chef's group, "
+            "since no video of the Kiba shop's own kitchen exists; the kitchen layer is not from the Kiba shop."),
+    Track("place:shelter-shimokitazawa", [
+        Layer("yt-shimokita-night", "place", "bed", windows=((266, 11), (318, 11)), af="highpass=f=80"),
+    ], note="Street fallback: Shimokitazawa's south shopping street at night (crowd hum, distant footsteps, faint shop clatter), from an uncut binaural walk. "
+            "Every video of the basement club is a live set, a narrated tour or has music, so no interior recording exists."),
+    Track("place:basement-bar-shimokitazawa", [
+        Layer("yt-daizawa-lane", "place", "bed", windows=((262, 11), (397, 11)), af="highpass=f=80"),
+        Layer("yt-kitazawa-side", "place", "bed", windows=((307, 22),), gain=-6, af="highpass=f=80"),
+    ], note="Neighbourhood fallback: quiet back lanes around Daizawa and the live-house side streets of Kitazawa in the daytime (distant traffic, birds, footsteps), "
+            "from uncut walks. Every interior video of the venue is a band set or has music or speech. The mood is far from the basement bar."),
+    Track("place:tokyo-saryo-kamiuma", [
+        Layer("yt-sangenjaya-ambient", "place", "bed", windows=((100, 11), (190, 11))),
+    ], note="Neighbourhood fallback: quiet residential side streets of Sangenjaya, a few minutes' walk from the tea cafe, from an uncut ambient walk. "
+            "The only real interior video has a quiet drum loop under it."),
 ]
 
 
@@ -457,7 +581,7 @@ def fetch_youtube(src: Source) -> Path:
     if existing and existing[0].stat().st_size > 10_000:
         return existing[0]
     for attempt in range(3):
-        done = subprocess.run([exe, "-f", "140/ba", "--no-warnings", "-q", "-o", str(CACHE / f"{src.key}.%(ext)s"), src.url],
+        done = subprocess.run([exe, "-4", "-f", "140/ba", "--no-warnings", "-q", "-o", str(CACHE / f"{src.key}.%(ext)s"), src.url],
                               capture_output=True, text=True)
         if done.returncode == 0:
             return sorted(CACHE.glob(f"{src.key}.*"))[0]

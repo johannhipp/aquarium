@@ -105,7 +105,7 @@ const START_POLAR = 0.95;
 const MOVE_SPEED = 30;
 const MOVE_EASE = 10;
 const FOLLOW_EASE = 5;
-const PREFETCH_SAMPLES = 28;
+const PREFETCH_SAMPLES = 40;
 /** The last stretch starts here; if the destination is still missing coarse chunks then, the flight crawls. */
 const STALL_FROM = 0.5;
 const STALL_RATE = 0.08;
@@ -139,7 +139,7 @@ export async function createStreamViewer(container: HTMLElement, options: Viewer
   const base = options.base.endsWith('/') ? options.base : `${options.base}/`;
   const manifest = (await (await fetch(`${base}manifest.json`)).json()) as Manifest;
   const dirBytes = new Uint8Array(await (await fetch(`${base}${manifest.files.dir}`)).arrayBuffer());
-  const dir = parseDirectory(await inflateRaw(dirBytes), manifest.levels);
+  const dir = parseDirectory(await inflateRaw(dirBytes), manifest);
   const worldSize = Math.max(manifest.frame.nx, manifest.frame.nz);
   if ('caches' in window) {
     // chunks of an older build of the archive are never read again
@@ -184,7 +184,7 @@ export async function createStreamViewer(container: HTMLElement, options: Viewer
   controls.update();
 
   const manager = new ChunkManager({
-    chunksUrl: `${base}${manifest.files.chunks}`,
+    chunkUrls: manifest.files.chunks.map((f) => `${base}${f}`),
     manifest,
     dir,
     material,
@@ -416,7 +416,12 @@ export async function createStreamViewer(container: HTMLElement, options: Viewer
   async function flyToPose(to: FlightPose, themeId: string, settleMs = 0): Promise<FlightReport> {
     cancelFlight();
     const from: FlightPose = { x: target.x, z: target.z, zoom: camera.zoom };
-    const plan = planFlight(from, to);
+    const plan = planFlight(from, to, {
+      aspect: container.clientWidth / Math.max(1, container.clientHeight),
+      azimuth: controls.getAzimuthalAngle(),
+      polar: controls.getPolarAngle(),
+      minZoom: controls.minZoom,
+    });
     const t0 = performance.now();
     const samples: ViewSample[] = [];
     for (let i = 0; i <= PREFETCH_SAMPLES; i++) {

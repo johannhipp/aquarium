@@ -6,7 +6,10 @@
     "address": "Roppongi 4-12-5, Minato, Tokyo",
     "lat": 35.6644501,
     "lon": 139.7315786,
-    "epsg6677": [-9212, -37223],
+    "epsg6677": [
+      -9212,
+      -37223
+    ],
     "sprite": "places/imakatsu-roppongi-gb.png"
   },
   {
@@ -16,7 +19,10 @@
     "address": "Azabudai Hills Garden Plaza B, B1, Toranomon 5-9, Minato, Tokyo",
     "lat": 35.6620689,
     "lon": 139.7432671,
-    "epsg6677": [-8154, -37488],
+    "epsg6677": [
+      -8154,
+      -37488
+    ],
     "sprite": "places/teamlab-borderless-gb.png"
   },
   {
@@ -26,7 +32,10 @@
     "address": "Shinbashi 3-3-8, Minato, Tokyo",
     "lat": 35.6655446,
     "lon": 139.7542485,
-    "epsg6677": [-7160, -37103],
+    "epsg6677": [
+      -7160,
+      -37103
+    ],
     "sprite": "places/perfect-beer-kitchen-gb.png"
   },
   {
@@ -36,7 +45,10 @@
     "address": "Shibuya 4-5-9 B1F, Tokyo (Aoyama)",
     "lat": 35.658641,
     "lon": 139.7092174,
-    "epsg6677": [-11238, -37865],
+    "epsg6677": [
+      -11238,
+      -37865
+    ],
     "sprite": "places/aoyama-tunnel-gb.png"
   },
   {
@@ -46,17 +58,205 @@
     "address": "Tsukiji 4-10-16, Chuo, Tokyo",
     "lat": 35.665628,
     "lon": 139.7703541,
-    "epsg6677": [-5702, -37095],
-    "sprite": "places/sushidokoro-unitora-gb.png",
-    "fallback": {
-      "id": "jinza-udon-shimbashi",
-      "name": "Jinza Udon Shimbashi",
-      "kind": "Udon restaurant",
-      "address": "Tokyo Shiodome Building 2F, Higashishinbashi 1-9-1, Minato, Tokyo",
-      "lat": 35.6629395,
-      "lon": 139.7612147,
-      "epsg6677": [-6529, -37393],
-      "sprite": "places/jinza-udon-shimbashi-gb.png"
-    }
+    "epsg6677": [
+      -5702,
+      -37095
+    ],
+    "sprite": "places/sushidokoro-unitora-gb.png"
+  },
+  {
+    "id": "shelter-shimokitazawa",
+    "name": "Shelter",
+    "kind": "Live music venue",
+    "address": "Kitazawa 2-6-10 B1F, Setagaya, Tokyo (Shimokitazawa)",
+    "lat": 35.661482,
+    "lon": 139.6694661,
+    "epsg6677": [
+      -14836,
+      -37544
+    ],
+    "sprite": "places/shelter-shimokitazawa-gb.png"
+  },
+  {
+    "id": "basement-bar-shimokitazawa",
+    "name": "BASEMENT BAR",
+    "kind": "Live music bar",
+    "address": "Daizawa 5-18-1, Setagaya, Tokyo (Shimokitazawa)",
+    "lat": 35.6568425,
+    "lon": 139.6675503,
+    "epsg6677": [
+      -15011,
+      -38059
+    ],
+    "sprite": "places/basement-bar-shimokitazawa-gb.png"
+  },
+  {
+    "id": "shibuya-scramble-crossing",
+    "name": "Shibuya Scramble Crossing",
+    "kind": "Crossing",
+    "address": "Shibuya, Tokyo (in front of Shibuya Station)",
+    "lat": 35.659482,
+    "lon": 139.7005596,
+    "epsg6677": [
+      -12021,
+      -37771
+    ],
+    "sprite": "places/shibuya-scramble-crossing-gb.png"
+  },
+  {
+    "id": "meiji-jingu",
+    "name": "Meiji Jingu",
+    "kind": "Shinto shrine",
+    "address": "Yoyogikamizonocho 1-1, Shibuya, Tokyo",
+    "lat": 35.6763976,
+    "lon": 139.6993259,
+    "epsg6677": [
+      -12131,
+      -35894
+    ],
+    "sprite": "places/meiji-jingu-gb.png"
+  },
+  {
+    "id": "kitasando-coffee",
+    "name": "Kitasando Coffee",
+    "kind": "Cafe",
+    "address": "Sendagaya 4-12-8 1F, Shibuya, Tokyo (Kitasando)",
+    "lat": 35.678944,
+    "lon": 139.7064308,
+    "epsg6677": [
+      -11487,
+      -35612
+    ],
+    "sprite": "places/kitasando-coffee-gb.png"
+  },
+  {
+    "id": "kyushu-jangara-harajuku",
+    "name": "Kyushu Jangara Ramen Harajuku",
+    "kind": "Ramen restaurant",
+    "address": "Jingumae 1-13-21, Shibuya, Tokyo (Harajuku)",
+    "lat": 35.6696379,
+    "lon": 139.7033883,
+    "epsg6677": [
+      -11764,
+      -36644
+    ],
+    "sprite": "places/kyushu-jangara-harajuku-gb.png"
+  },
+  {
+    "id": "the-sg-club",
+    "name": "The SG Club",
+    "kind": "Cocktail bar",
+    "address": "Jinnan 1-7-8, Shibuya, Tokyo",
+    "lat": 35.6642434,
+    "lon": 139.6992314,
+    "epsg6677": [
+      -12141,
+      -37242
+    ],
+    "sprite": "places/the-sg-club-gb.png"
+  },
+  {
+    "id": "omoide-yokocho",
+    "name": "Omoide Yokocho (Memory Lane)",
+    "kind": "Yokocho alley",
+    "address": "Nishishinjuku 1-2-2, Shinjuku, Tokyo",
+    "lat": 35.6927037,
+    "lon": 139.6995778,
+    "epsg6677": [
+      -12105,
+      -34085
+    ],
+    "sprite": "places/omoide-yokocho-gb.png"
+  },
+  {
+    "id": "tokyo-saryo-kamiuma",
+    "name": "Tokyo Saryo",
+    "kind": "Tea cafe",
+    "address": "Kamiuma 1-34-15, Setagaya, Tokyo",
+    "lat": 35.6392222,
+    "lon": 139.6699722,
+    "epsg6677": [
+      -14795,
+      -40014
+    ],
+    "sprite": "places/tokyo-saryo-kamiuma-gb.png"
+  },
+  {
+    "id": "otemachi-station",
+    "name": "Otemachi Station",
+    "kind": "Train station",
+    "address": "Otemachi 2-1-1, Chiyoda, Tokyo",
+    "lat": 35.6853494,
+    "lon": 139.7632784,
+    "epsg6677": [
+      -6341,
+      -34907
+    ],
+    "sprite": "places/otemachi-station-gb.png"
+  },
+  {
+    "id": "jam-akihabara",
+    "name": "JAM Akihabara",
+    "kind": "Cosplay cafe",
+    "address": "Sotokanda 3-2-13 B1F, Chiyoda, Tokyo (Akihabara)",
+    "lat": 35.7003901,
+    "lon": 139.7699082,
+    "epsg6677": [
+      -5740,
+      -33238
+    ],
+    "sprite": "places/jam-akihabara-gb.png"
+  },
+  {
+    "id": "ecute-ueno-tans-tantan",
+    "name": "T's TanTan Ecute Ueno",
+    "kind": "Ramen (inside Ueno Station)",
+    "address": "Ueno 7-1-1, Taito, Tokyo (JR Ueno Station, ecute)",
+    "lat": 35.71325,
+    "lon": 139.776788,
+    "epsg6677": [
+      -5116,
+      -31812
+    ],
+    "sprite": "places/ecute-ueno-tans-tantan-gb.png"
+  },
+  {
+    "id": "senso-ji",
+    "name": "Senso-ji",
+    "kind": "Buddhist temple",
+    "address": "Asakusa 2-3-1, Taito, Tokyo",
+    "lat": 35.7147651,
+    "lon": 139.7966553,
+    "epsg6677": [
+      -3319,
+      -31645
+    ],
+    "sprite": "places/senso-ji-gb.png"
+  },
+  {
+    "id": "monja-kura-tsukishima",
+    "name": "Monja Kura",
+    "kind": "Monjayaki restaurant",
+    "address": "Tsukishima 3-9-9, Chuo, Tokyo",
+    "lat": 35.6634258,
+    "lon": 139.7813679,
+    "epsg6677": [
+      -4705,
+      -37340
+    ],
+    "sprite": "places/monja-kura-tsukishima-gb.png"
+  },
+  {
+    "id": "chen-kenichi-mapo-tofu-kiba",
+    "name": "Chen Kenichi Mapo Tofu Kiba",
+    "kind": "Sichuan restaurant",
+    "address": "Kiba 1-5-10, Koto, Tokyo (Fukagawa Gathria)",
+    "lat": 35.6673571,
+    "lon": 139.8039562,
+    "epsg6677": [
+      -2660,
+      -36905
+    ],
+    "sprite": "places/chen-kenichi-mapo-tofu-kiba-gb.png"
   }
 ]

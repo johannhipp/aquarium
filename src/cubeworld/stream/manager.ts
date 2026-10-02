@@ -17,7 +17,7 @@ export interface ViewSample {
 }
 
 export interface ManagerOptions {
-  chunksUrl: string;
+  chunkUrls: string[];
   manifest: Manifest;
   dir: Directory;
   material: THREE.Material;
@@ -115,8 +115,8 @@ const MAX_INFLIGHT = 6;
 const WARM_SCORE = 1e9;
 /** Boosted chunks sort ahead of everything except the pinned coarsest level. */
 const BOOST_SCORE = -1e5;
-/** Pinned anchor chunks: just behind a boost, ahead of every view-driven request. */
-const PIN_SCORE = -5e4;
+/** Chunks that resolve a note's anchor: behind everything the current view and flight want, ahead of idle warm-up. */
+const PIN_SCORE = 2e3;
 /** How far from a street-level place its building is looked for, in metres. */
 const ANCHOR_RADIUS = 6;
 /** Levels up to this (4 m cubes) are fine enough to say whether something stands in the way of a note. */
@@ -136,7 +136,7 @@ export class ChunkManager {
   #planStart = 0;
   #demandKeys = new Map<ChunkKey, number>();
   #boost: readonly ChunkKey[] | null = null;
-  #pinned: readonly ChunkKey[] = [];
+  #pins: ReadonlyArray<{ x: number; z: number; keys: readonly ChunkKey[] }> = [];
   readonly #anchors = new Map<string, Anchor>();
   #warm = new Set<ChunkKey>();
   #shown = new Set<ChunkKey>();
@@ -168,7 +168,9 @@ export class ChunkManager {
       const slot: WorkerSlot = { worker, inflight: 0 };
       const init: ToWorker = {
         type: 'init',
-        chunksUrl: options.chunksUrl,
+        chunkUrls: options.chunkUrls,
+        shardBits: options.manifest.shardBits,
+        model: options.dir.model,
         hash: options.manifest.hash,
         paletteId: options.paletteId,
         useCache: options.useCache,
@@ -215,14 +217,16 @@ export class ChunkManager {
   }
 
   /**
-   * Keeps the finest (1 m) chunks around each point (within ANCHOR_RADIUS) built and never evicted, so a note
-   * anchored there has one position for good: coarse levels pool buildings over the ground, and their heights
-   * can be metres off.
+   * Registers the points notes will be anchored at. The 1 m chunks within ANCHOR_RADIUS of each are demanded
+   * (just behind a boost) until the anchor is read from them; the anchor is then remembered for good, so
+   * nothing needs to stay in memory and any number of places costs a few hundred bytes each. Coarse levels
+   * pool buildings over the ground and their heights can be metres off, which is why the anchor is read from
+   * the 1 m chunks only.
    */
   pin(points: ReadonlyArray<{ x: number; z: number }>): void {
-    const keys = new Set<ChunkKey>();
     const lv = this.#o.manifest.levels[0];
-    for (const p of points) {
+    this.#pins = points.map((p) => {
+      const keys = new Set<ChunkKey>();
       for (const gz of [p.z - ANCHOR_RADIUS, p.z + ANCHOR_RADIUS]) {
         for (const gx of [p.x - ANCHOR_RADIUS, p.x + ANCHOR_RADIUS]) {
           const cx = Math.floor(gx / CHUNK);
@@ -230,8 +234,8 @@ export class ChunkManager {
           if (cx >= 0 && cz >= 0 && cx < lv.ncx && cz < lv.ncz && this.#o.dir.lengths[0][cz * lv.ncx + cx] > 0) keys.add(chunkKey(0, cx, cz));
         }
       }
-    }
-    this.#pinned = [...keys];
+      return { x: p.x, z: p.z, keys: [...keys] };
+    });
     this.#anchors.clear();
   }
 
@@ -421,7 +425,10 @@ export class ChunkManager {
       }
     }
     if (this.#boost) this.#wantedWithAncestors(this.#boost, BOOST_SCORE, demand);
-    for (const key of this.#pinned) demand.set(key, PIN_SCORE);
+    for (const pin of this.#pins) {
+      if (this.#anchors.has(`${pin.x},${pin.z}`)) continue;
+      for (const key of pin.keys) demand.set(key, PIN_SCORE);
+    }
     const roots = this.#o.manifest.levels[this.#top];
     for (let cz = 0; cz < roots.ncz; cz++) {
       for (let cx = 0; cx < roots.ncx; cx++) {
@@ -632,6 +639,9 @@ export class ChunkManager {
     mesh.visible = false;
     this.#o.group.add(mesh);
     this.#resident.set(ref.key, { key: ref.key, mesh, bytes, faces: msg.faces, ground: msg.ground, top: msg.top, topClass: msg.topClass, lastUsed: performance.now(), uploaded: false });
+    if (ref.level === 0) {
+      for (const pin of this.#pins) if (pin.keys.includes(ref.key)) this.anchorAt(pin.x, pin.z);
+    }
     this.#cpuBytes += bytes;
     this.#quads += msg.faces;
     this.#stats.chunksBuilt++;
@@ -651,7 +661,6 @@ export class ChunkManager {
   #evict(wanted: readonly ChunkKey[]): void {
     if (this.#gpuBytes + this.#cpuBytes <= this.#o.gpuBudgetBytes) return;
     const keep = new Set<ChunkKey>(wanted);
-    for (const k of this.#pinned) keep.add(k);
     for (const k of this.#shown) keep.add(k);
     const candidates: Resident[] = [];
     for (const r of this.#resident.values()) {

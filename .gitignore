@@ -11,8 +11,7 @@ __pycache__/
 .DS_Store
 *.log
 
-# Streamed Tokyo cubeworld: the 71 MB chunk archive is rebuilt by pipeline/cubeworld/stream_build.py (see
-# research/cubeworld-streaming.md, "Rebuild"); manifest.json and dir.<hash>.bin stay in git. Build/swap staging dirs too.
-public/stream/chunks.*.bin
+# Streamed Tokyo cubeworld: public/stream/ (manifest, dir, 16 MiB chunk shards, 52 MB in all) IS committed, so the
+# site builds and deploys from git alone; only rebuild staging directories are ignored (research/cubeworld-webnative.md).
 public/stream-next/
 public/stream-old/

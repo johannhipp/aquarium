@@ -9,6 +9,7 @@ import { createGlobe, type Globe } from './globe';
 import { createGuide, type GuideItem } from './guide';
 import { createNote } from './note';
 import { loadPlaces } from './places';
+import { registerOffline } from './pwa';
 import { emitCreatureView } from './session';
 
 declare global {
@@ -98,4 +99,5 @@ async function main(): Promise<void> {
   cubeworld.reveal();
 }
 
+registerOffline();
 void main();

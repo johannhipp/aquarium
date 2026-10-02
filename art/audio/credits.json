@@ -710,25 +710,436 @@
       }
     ]
   },
-  "place:jinza-udon-shimbashi": {
-    "file": "audio/places/jinza-udon-shimbashi.mp3",
+  "place:shibuya-scramble-crossing": {
+    "file": "audio/places/shibuya-scramble-crossing.mp3",
     "durationSec": 18.0,
     "loop": true,
-    "note": "Tempura-fryer kitchen and the counter hall with diners, from the shop's earlier Nishi-Shimbashi location (same brand and cook; the shop moved to the Tokyo Shiodome Building in June 2026).",
+    "note": "On the crossing itself: crowd murmur, footsteps, traffic wash and distant crossing tones, from an uncut GoPro night walk (CC BY) with no voice-over or music.",
     "layers": [
       {
         "kind": "place",
-        "title": "注文90秒で出てくるうどん屋…420人のサラリーマンが昼に殺到する",
-        "source": "https://www.youtube.com/watch?v=gFOA1iAbG6o",
-        "author": "黙飯 MOKU MESHI TOKYO",
-        "channel": "黙飯 MOKU MESHI TOKYO",
+        "title": "[4K]NIGHT Walk in SHIBUYA 夜の渋谷を散歩 #4K",
+        "source": "https://www.youtube.com/watch?v=_q6XbuQzWP0",
+        "author": "Walking Japan TV",
+        "channel": "Walking Japan TV",
+        "license": "CC BY 3.0 (YouTube Creative Commons Attribution licence)",
+        "licenseUrl": "https://creativecommons.org/licenses/by/3.0/",
+        "ranges": [
+          "0:36.0-0:47.0",
+          "1:24.0-1:35.0"
+        ],
+        "note": "Uncut GoPro night walk across the Shibuya scramble crossing (uploaded 2019-12-28; the crossing is 0:12-1:48)."
+      }
+    ]
+  },
+  "place:the-sg-club": {
+    "file": "audio/places/the-sg-club.mp3",
+    "durationSec": 18.0,
+    "loop": true,
+    "note": "Foley from the bar counter of the exact bar (ice stirring, glass ticks, pouring) cut from a bartending film that has no room murmur, with a faint Jinnan backstreet bed under it as room presence. Neither recording is a continuous recording of the room.",
+    "layers": [
+      {
+        "kind": "place",
+        "title": "Syuichi Ofuchi（The SG Club／Tokyo）Black Bush Irish Coffee",
+        "source": "https://www.youtube.com/watch?v=v-n1CpepO3Q",
+        "author": "BAR TIMES",
+        "channel": "BAR TIMES",
         "license": "YouTube standard licence: private prototype only, not cleared for public release",
         "licenseUrl": "https://www.youtube.com/t/terms",
         "ranges": [
-          "6:31.0-6:45.0",
-          "20:41.0-20:55.0"
+          "0:10.0-0:22.0",
+          "0:50.0-1:02.0"
         ],
-        "note": "Silent-style documentary of the Jinza udon shop in Nishi-Shimbashi (uploaded 2024-01-31): fryer and boiling kitchen sounds, counter hall."
+        "note": "Bartending film shot at The SG Club bar counter (uploaded 2024-01-09): ice, glassware and pouring with almost no room sound."
+      },
+      {
+        "kind": "place",
+        "title": "東京夜散歩～渋谷 神南・宮下公園（Tokyo Night Walk: Jinnan & MIYASHITA PARK）",
+        "source": "https://www.youtube.com/watch?v=199lV8peIkU",
+        "author": "Tokyo Night Walk",
+        "channel": "Tokyo Night Walk",
+        "license": "YouTube standard licence: private prototype only, not cleared for public release",
+        "licenseUrl": "https://www.youtube.com/t/terms",
+        "ranges": [
+          "0:40.0-1:04.0"
+        ],
+        "note": "Night walk along a Jinnan backstreet (uploaded 2023-11-15): quiet traffic hum and footsteps."
+      }
+    ]
+  },
+  "place:kitasando-coffee": {
+    "file": "audio/places/kitasando-coffee.mp3",
+    "durationSec": 18.0,
+    "loop": true,
+    "note": "Inside the shop: soft cafe murmur and room tone (no distinct espresso machine) under the interior shots of a GoPro neighbourhood walk. The audio could be laid under the shots by the editor.",
+    "layers": [
+      {
+        "kind": "place",
+        "title": "話題のカフェ『KITASANDO COFFEE』。Walk along the Kitasando in Shibuya Ward, Tokyo, Japan。日本の東京、渋谷区北参道・千駄ヶ谷 (GoPro walk)",
+        "source": "https://www.youtube.com/watch?v=k5mplvvF_EM",
+        "author": "cinemafic-Café and camera moments",
+        "channel": "cinemafic-Café and camera moments",
+        "license": "YouTube standard licence: private prototype only, not cleared for public release",
+        "licenseUrl": "https://www.youtube.com/t/terms",
+        "ranges": [
+          "3:03.0-3:14.0",
+          "3:27.0-3:38.0",
+          "3:38.0-3:49.0"
+        ],
+        "note": "GoPro walk to KITASANDO COFFEE (uploaded 2020-11-07); the shop interior shots run 3:03-3:49."
+      }
+    ]
+  },
+  "place:meiji-jingu": {
+    "file": "audio/places/meiji-jingu.mp3",
+    "durationSec": 18.0,
+    "loop": true,
+    "note": "The forest approach to the shrine on a cloudy day: birdsong, gravel footsteps, a JR train hum in the distance. An uncut walk by a nature-sound channel, no voices, no music.",
+    "layers": [
+      {
+        "kind": "place",
+        "title": "曇天の明治神宮。都会の中の緑の社で癒される/#環境音#癒しの音#神社の音",
+        "source": "https://www.youtube.com/watch?v=MKATkzih5ek",
+        "author": "Sound Forest [landscape]",
+        "channel": "Sound Forest [landscape]",
+        "license": "YouTube standard licence: private prototype only, not cleared for public release",
+        "licenseUrl": "https://www.youtube.com/t/terms",
+        "ranges": [
+          "2:55.0-3:06.0",
+          "1:00.0-1:11.0"
+        ],
+        "note": "Cloudy-day walk from the sando to the shrine at Meiji Jingu (uploaded 2020-07-16): gravel, birds, a distant JR train."
+      }
+    ]
+  },
+  "place:kyushu-jangara-harajuku": {
+    "file": "audio/places/kyushu-jangara-harajuku.mp3",
+    "durationSec": 18.0,
+    "loop": true,
+    "note": "At the counter of the exact Harajuku shop: chopsticks, bowls, slurps and a steady exhaust hum, from two close-up eating videos without narration (the second window is a separate shot in another visit).",
+    "layers": [
+      {
+        "kind": "place",
+        "title": "【清正の井戸 明治神宮】パワースポット 幸運 開運 休日 一人散歩 飯 九州じゃんがららあめん 原宿",
+        "source": "https://www.youtube.com/watch?v=Ke97m0vHStU",
+        "author": "ぱいんちゃんねる",
+        "channel": "ぱいんちゃんねる",
+        "license": "YouTube standard licence: private prototype only, not cleared for public release",
+        "licenseUrl": "https://www.youtube.com/t/terms",
+        "ranges": [
+          "18:20.0-18:31.0"
+        ],
+        "note": "Counter POV inside Kyushu Jangara Ramen Harajuku (uploaded 2021-04-14); subtitles instead of narration in the shop part."
+      },
+      {
+        "kind": "place",
+        "title": "【原宿】「九州じゃんがららーめん」九州じゃんがら全部入り",
+        "source": "https://www.youtube.com/watch?v=xW3sGkAHhW0",
+        "author": "Inusuke Vlog Gourmet",
+        "channel": "Inusuke Vlog Gourmet",
+        "license": "YouTube standard licence: private prototype only, not cleared for public release",
+        "licenseUrl": "https://www.youtube.com/t/terms",
+        "ranges": [
+          "1:14.5-1:25.5"
+        ],
+        "note": "Eating shots inside Kyushu Jangara Ramen Harajuku (uploaded 2025-04-27)."
+      }
+    ]
+  },
+  "place:omoide-yokocho": {
+    "file": "audio/places/omoide-yokocho.mp3",
+    "durationSec": 18.0,
+    "loop": true,
+    "note": "Inside the alley: crowd murmur, clinking glasses, the grill counters and a train rattling overhead, from two uncut daytime walks; no foreground talking.",
+    "layers": [
+      {
+        "kind": "place",
+        "title": "4K 昼から大盛況の新宿西口思い出横丁 / Shinjuku Nishiguchi Omoide Yokocho in Shinjuku Tokyo Japn 4k 60fps",
+        "source": "https://www.youtube.com/watch?v=nShvOnTbHc0",
+        "author": "Tokyo Hz",
+        "channel": "Tokyo Hz",
+        "license": "YouTube standard licence: private prototype only, not cleared for public release",
+        "licenseUrl": "https://www.youtube.com/t/terms",
+        "ranges": [
+          "1:44.0-1:55.0"
+        ],
+        "note": "Saturday-afternoon walk through Omoide Yokocho (uploaded 2023-05-26), recorded on a Tascam field recorder."
+      },
+      {
+        "kind": "place",
+        "title": "[4K HDR] Omoide Yokocho, Shinjuku | Tokyo",
+        "source": "https://www.youtube.com/watch?v=5IKJZo-zyEE",
+        "author": "Walk with Shiba",
+        "channel": "Walk with Shiba",
+        "license": "YouTube standard licence: private prototype only, not cleared for public release",
+        "licenseUrl": "https://www.youtube.com/t/terms",
+        "ranges": [
+          "4:52.0-5:03.0"
+        ],
+        "note": "Walk through the grill counters of Omoide Yokocho (uploaded 2023-05-26)."
+      }
+    ]
+  },
+  "place:otemachi-station": {
+    "file": "audio/places/otemachi-station.mp3",
+    "durationSec": 18.0,
+    "loop": true,
+    "note": "Inside the station: a Hanzomon-line platform with a train arriving, a quiet platform with a guidance chirp, and a transfer passage with footsteps, from uncut ASMR walks (no talking). They do not cover the 2-1-1 exit area itself.",
+    "layers": [
+      {
+        "kind": "place",
+        "title": "Otemachi Station Z08 to M18 Walk | Tokyo Metro Exploration | Japan 4K",
+        "source": "https://www.youtube.com/watch?v=jhkAvfWQT2g",
+        "author": "Tokyo Calm Travels & Beyond",
+        "channel": "Tokyo Calm Travels & Beyond",
+        "license": "YouTube standard licence: private prototype only, not cleared for public release",
+        "licenseUrl": "https://www.youtube.com/t/terms",
+        "ranges": [
+          "0:05.0-0:16.0",
+          "0:30.0-0:41.0"
+        ],
+        "note": "Uncut walk through Otemachi Station (uploaded 2023-11-15): Hanzomon-line platform with a train, quiet platform, transfer passages."
+      },
+      {
+        "kind": "place",
+        "title": "Otemachi Station | 大手町駅 | Tokyo 4K ASMR",
+        "source": "https://www.youtube.com/watch?v=hvrGLBrcWuE",
+        "author": "Japan Railway Explorer",
+        "channel": "Japan Railway Explorer",
+        "license": "YouTube standard licence: private prototype only, not cleared for public release",
+        "licenseUrl": "https://www.youtube.com/t/terms",
+        "ranges": [
+          "3:20.0-3:31.0"
+        ],
+        "note": "Uncut ASMR walk through the Otemachi transfer passages (uploaded 2026-02-25)."
+      }
+    ]
+  },
+  "place:ecute-ueno-tans-tantan": {
+    "file": "audio/places/ecute-ueno-tans-tantan.mp3",
+    "durationSec": 18.0,
+    "loop": true,
+    "note": "At the counter of the shop inside JR Ueno Station: sparse bowl and chopstick clinks over a quiet room, from two uncut eating videos in the shop (2022 and 2025). The recordings are very quiet, so the loop carries a lot of makeup gain.",
+    "layers": [
+      {
+        "kind": "place",
+        "title": "T'sたんたん エキュート上野店 2022/2 白胡麻たんたん麺 880円。",
+        "source": "https://www.youtube.com/watch?v=Nj0Hote-cbo",
+        "author": "Kotaro's gourmet trip (にっぽんグルメ旅)",
+        "channel": "Kotaro's gourmet trip (にっぽんグルメ旅)",
+        "license": "YouTube standard licence: private prototype only, not cleared for public release",
+        "licenseUrl": "https://www.youtube.com/t/terms",
+        "ranges": [
+          "2:54.0-3:05.0"
+        ],
+        "note": "Eating at the counter of T's TanTan Ecute Ueno (uploaded 2022-03-04), no narration."
+      },
+      {
+        "kind": "place",
+        "title": "T'sたんたん エキュート上野店 2025/1 黒胡麻たんたん麺 1200円。T'sベジ餃子(3個) 350円。",
+        "source": "https://www.youtube.com/watch?v=pEK5BG-rRDw",
+        "author": "Kotaro's gourmet trip (にっぽんグルメ旅)",
+        "channel": "Kotaro's gourmet trip (にっぽんグルメ旅)",
+        "license": "YouTube standard licence: private prototype only, not cleared for public release",
+        "licenseUrl": "https://www.youtube.com/t/terms",
+        "ranges": [
+          "4:46.0-4:57.0"
+        ],
+        "note": "Eating at the counter of T's TanTan Ecute Ueno (uploaded 2025-01-25), no narration."
+      }
+    ]
+  },
+  "place:jam-akihabara": {
+    "file": "audio/places/jam-akihabara.mp3",
+    "durationSec": 18.0,
+    "loop": true,
+    "note": "Street fallback: the Chuo-dori pedestrian paradise a few blocks south of the cafe (no usable interior video exists; the JAM videos have voice-over and music). A voice-free CC BY walk.",
+    "layers": [
+      {
+        "kind": "place",
+        "title": "【4K HDR JAPAN】DJI pocket 3 POV Tokyo Akihabara pedestrian paradise.秋葉原歩行者天国",
+        "source": "https://www.youtube.com/watch?v=tTaL2-H2hJg",
+        "author": "POV JAPAN",
+        "channel": "POV JAPAN",
+        "license": "CC BY 3.0 (YouTube Creative Commons Attribution licence)",
+        "licenseUrl": "https://creativecommons.org/licenses/by/3.0/",
+        "ranges": [
+          "1:00.0-1:11.0",
+          "3:10.0-3:21.0"
+        ],
+        "note": "Uncut walk along Chuo-dori on a pedestrian-paradise day (uploaded 2024-01-17): crowd murmur, footsteps, distant traffic."
+      }
+    ]
+  },
+  "place:senso-ji": {
+    "file": "audio/places/senso-ji.mp3",
+    "durationSec": 18.0,
+    "loop": true,
+    "note": "In the temple precinct: crowd murmur and footsteps around the incense burner and the main-hall courtyard, from an uncut binaural walk on a rainy day (umbrellas and wet pavement); no talking, no music, no individually identified bells.",
+    "layers": [
+      {
+        "kind": "place",
+        "title": "Walking ASAKUSA, Tokyo | Real Japan in 4K with 3D Binaural 浅草/浅草寺 | Audio",
+        "source": "https://www.youtube.com/watch?v=XrOt7LnTayk",
+        "author": "Tokyo Ambient Walk & Drive.official",
+        "channel": "Tokyo Ambient Walk & Drive.official",
+        "license": "YouTube standard licence: private prototype only, not cleared for public release",
+        "licenseUrl": "https://www.youtube.com/t/terms",
+        "ranges": [
+          "16:00.0-16:12.0",
+          "18:56.0-19:08.0"
+        ],
+        "note": "Rainy-day binaural walk through Asakusa and Senso-ji (uploaded 2026-08-16); the precinct and incense burner are at 13:00-19:00."
+      }
+    ]
+  },
+  "place:monja-kura-tsukishima": {
+    "file": "audio/places/monja-kura-tsukishima.mp3",
+    "durationSec": 18.0,
+    "loop": true,
+    "note": "Iron-griddle sizzle and spatula scraping at the shop's table, from two short visit videos titled for Monja Kura; the shop identity rests on the titles.",
+    "layers": [
+      {
+        "kind": "place",
+        "title": "【もんじゃ蔵】【月島】【本場】【東京】【もんじゃ焼き】",
+        "source": "https://www.youtube.com/watch?v=o5Wjf2lRXiI",
+        "author": "emily",
+        "channel": "emily",
+        "license": "YouTube standard licence: private prototype only, not cleared for public release",
+        "licenseUrl": "https://www.youtube.com/t/terms",
+        "ranges": [
+          "0:10.0-0:21.0",
+          "0:56.0-1:07.0"
+        ],
+        "note": "Short video of monjayaki cooking on the iron griddle at Monja Kura, Tsukishima (uploaded 2022-09-16)."
+      },
+      {
+        "kind": "place",
+        "title": "【月島もんじゃ】大人気 蔵さん①",
+        "source": "https://www.youtube.com/watch?v=5jU-YQCoqH4",
+        "author": "しん散歩",
+        "channel": "しん散歩",
+        "license": "YouTube standard licence: private prototype only, not cleared for public release",
+        "licenseUrl": "https://www.youtube.com/t/terms",
+        "ranges": [
+          "2:30.0-2:41.0"
+        ],
+        "note": "Griddle with spatula scrapes at Monja Kura, Tsukishima (uploaded 2024-03-10)."
+      }
+    ]
+  },
+  "place:chen-kenichi-mapo-tofu-kiba": {
+    "file": "audio/places/chen-kenichi-mapo-tofu-kiba.mp3",
+    "durationSec": 18.0,
+    "loop": true,
+    "note": "The Kiba shop's dining room (quiet clinks and chatter) with wok and clatter sounds from the kitchen of the same chef's group, since no video of the Kiba shop's own kitchen exists; the kitchen layer is not from the Kiba shop.",
+    "layers": [
+      {
+        "kind": "place",
+        "title": "行列のできる担々麺と麻婆豆腐【陳建一麻婆豆腐店】東京都江東区",
+        "source": "https://www.youtube.com/watch?v=QBipw2cVhJ0",
+        "author": "ニカタツBLOG (Nikatatsu BLOG)",
+        "channel": "ニカタツBLOG (Nikatatsu BLOG)",
+        "license": "YouTube standard licence: private prototype only, not cleared for public release",
+        "licenseUrl": "https://www.youtube.com/t/terms",
+        "ranges": [
+          "1:00.0-1:11.0",
+          "1:44.0-1:55.0",
+          "4:12.0-4:23.0"
+        ],
+        "note": "Eating in the dining room of Chen Kenichi Mapo Tofu Kiba (uploaded 2021-12-21); on-screen captions, no commentary."
+      },
+      {
+        "kind": "place",
+        "title": "お店を代表する3品(俯瞰カメラ)陳建一 四川飯店グループ オーナー:中華料理",
+        "source": "https://www.youtube.com/watch?v=ltuRMWEiWyg",
+        "author": "Share Spirits",
+        "channel": "Share Spirits",
+        "license": "YouTube standard licence: private prototype only, not cleared for public release",
+        "licenseUrl": "https://www.youtube.com/t/terms",
+        "ranges": [
+          "3:20.0-3:44.0"
+        ],
+        "note": "Overhead-camera film of Chen Kenichi cooking in his Sichuan Hanten group kitchen (uploaded 2021-03-03): wok roar, clatter, spatula and ladle clinks."
+      }
+    ]
+  },
+  "place:shelter-shimokitazawa": {
+    "file": "audio/places/shelter-shimokitazawa.mp3",
+    "durationSec": 18.0,
+    "loop": true,
+    "note": "Street fallback: Shimokitazawa's south shopping street at night (crowd hum, distant footsteps, faint shop clatter), from an uncut binaural walk. Every video of the basement club is a live set, a narrated tour or has music, so no interior recording exists.",
+    "layers": [
+      {
+        "kind": "place",
+        "title": "JAPAN WALK, Tokyo's Adult night time, Shimokitazawa｜下北沢 東京 4K 60fps Binaural",
+        "source": "https://www.youtube.com/watch?v=4Jd4BoaF3k4",
+        "author": "Night Walk in JAPAN Ambience",
+        "channel": "Night Walk in JAPAN Ambience",
+        "license": "YouTube standard licence: private prototype only, not cleared for public release",
+        "licenseUrl": "https://www.youtube.com/t/terms",
+        "ranges": [
+          "4:26.0-4:37.0",
+          "5:18.0-5:29.0"
+        ],
+        "note": "Binaural night walk on the Shimokitazawa south shopping street (uploaded 2022-06-23); the street chapter starts at 3:39."
+      }
+    ]
+  },
+  "place:basement-bar-shimokitazawa": {
+    "file": "audio/places/basement-bar-shimokitazawa.mp3",
+    "durationSec": 18.0,
+    "loop": true,
+    "note": "Neighbourhood fallback: quiet back lanes around Daizawa and the live-house side streets of Kitazawa in the daytime (distant traffic, birds, footsteps), from uncut walks. Every interior video of the venue is a band set or has music or speech. The mood is far from the basement bar.",
+    "layers": [
+      {
+        "kind": "place",
+        "title": "[4K] Tokyo Walk - Hidden Shimokitazawa: Shrine to Station",
+        "source": "https://www.youtube.com/watch?v=gfvt-AoPc0w",
+        "author": "NARI JAPAN WALK",
+        "channel": "NARI JAPAN WALK",
+        "license": "YouTube standard licence: private prototype only, not cleared for public release",
+        "licenseUrl": "https://www.youtube.com/t/terms",
+        "ranges": [
+          "4:22.0-4:33.0",
+          "6:37.0-6:48.0"
+        ],
+        "note": "Uncut walk through quiet lanes to Daizawa Inari Shrine (uploaded 2025-09-23); very quiet, distant birds and insects."
+      },
+      {
+        "kind": "place",
+        "title": "下北沢駅　ライブハウス散策　下北沢SHELTER（シェルター）下北沢LIVEHOLIC（ライブホリック）その他",
+        "source": "https://www.youtube.com/watch?v=IQVOkvrSKEY",
+        "author": "鈴みの街歩き記録",
+        "channel": "鈴みの街歩き記録",
+        "license": "YouTube standard licence: private prototype only, not cleared for public release",
+        "licenseUrl": "https://www.youtube.com/t/terms",
+        "ranges": [
+          "5:07.0-5:29.0"
+        ],
+        "note": "Daytime walk along the side streets near the Shimokitazawa live houses (uploaded 2026-03-29): soft traffic hum and footsteps."
+      }
+    ]
+  },
+  "place:tokyo-saryo-kamiuma": {
+    "file": "audio/places/tokyo-saryo-kamiuma.mp3",
+    "durationSec": 18.0,
+    "loop": true,
+    "note": "Neighbourhood fallback: quiet residential side streets of Sangenjaya, a few minutes' walk from the tea cafe, from an uncut ambient walk. The only real interior video has a quiet drum loop under it.",
+    "layers": [
+      {
+        "kind": "place",
+        "title": "Exploring Sangenjaya, Tokyo || [4K] Ambient Walk",
+        "source": "https://www.youtube.com/watch?v=E8xdeyogvoI",
+        "author": "Tea Tree Explorer",
+        "channel": "Tea Tree Explorer",
+        "license": "YouTube standard licence: private prototype only, not cleared for public release",
+        "licenseUrl": "https://www.youtube.com/t/terms",
+        "ranges": [
+          "1:40.0-1:51.0",
+          "3:10.0-3:21.0"
+        ],
+        "note": "Ambient walk through the quiet side streets of Sangenjaya (uploaded 2023-10-20), stated to have no music."
       }
     ]
   }

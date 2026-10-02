@@ -2,9 +2,9 @@
  "_comment": "Area of the streamed Tokyo cubeworld. frame: EPSG:6677 metres, gx0 = easting of cell x=0, gtop = northing of cell z=0, nx/nz cells (1 m, multiples of 512). Every PLATEAU CityGML 3rd mesh that touches the frame is taken from every ward below that carries it (a mesh on a ward boundary appears in both wards' zips; features are merged by gml:id). Urls are the FY2025 (spec 5.0) CityGML zips from the PLATEAU data catalog.",
  "frame": {
   "gx0": -16800,
-  "gtop": -31533,
+  "gtop": -29997,
   "nx": 16384,
-  "nz": 11264
+  "nz": 12800
  },
  "wards": [
   {
@@ -119,6 +119,20 @@
    "ja": "江戸川区",
    "year": 2025,
    "url": "https://assets.cms.plateau.reearth.io/assets/e6/75f5f9-3352-4d80-a79c-3a2421f75d5a/13123_edogawa-ku_pref_2025_citygml_1_op.zip"
+  },
+  {
+   "code": "13116",
+   "name": "toshima-ku",
+   "ja": "豊島区",
+   "year": 2025,
+   "url": "https://assets.cms.plateau.reearth.io/assets/cc/d90677-ae87-4718-8899-f6131004cfa5/13116_toshima-ku_pref_2025_citygml_1_op.zip"
+  },
+  {
+   "code": "13118",
+   "name": "arakawa-ku",
+   "ja": "荒川区",
+   "year": 2025,
+   "url": "https://assets.cms.plateau.reearth.io/assets/a1/351cc4-8dfa-4825-b22f-a55a7fe09125/13118_arakawa-ku_pref_2025_citygml_1_op.zip"
   }
  ]
 }

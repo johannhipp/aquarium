@@ -2,12 +2,12 @@ import type * as THREE from 'three';
 import { buildWorldMesh } from '../mesh';
 import { paletteById, type Palette } from '../palettes';
 import { TERRAIN_CLASSES, type VoxelGrid } from '../voxels';
-import { CHUNK, PAD, SPAN, decodeChunk, inflateRaw } from './format';
+import { CHUNK, PAD, SPAN, decodeChunk } from './format';
 import type { AttributeData, ChunkMesh, ChunkRef, FromWorker, LoadRequest, ToWorker, TypedArray, WorkerInit } from './protocol';
 
 /**
  * Everything that costs time happens here, off the main thread: the range request (or Cache Storage hit),
- * inflate, run-length decode, face-culled meshing through the palette-aware mesh builder. Only finished typed
+ * entropy decode, face-culled meshing through the palette-aware mesh builder. Only finished typed
  * arrays travel back, as transferables, so the main thread's share is wrapping them in a BufferGeometry.
  */
 
@@ -69,19 +69,29 @@ async function fetchBlobs(req: LoadRequest, signal: AbortSignal): Promise<{ blob
   }));
   let net = 0;
   let requests = 0;
-  if (missing.length > 0) {
-    const lo = Math.min(...missing.map((r) => r.offset));
-    const hi = Math.max(...missing.map((r) => r.offset + r.length));
-    const res = await fetch(init.chunksUrl, { headers: { Range: `bytes=${lo}-${hi - 1}` }, signal });
-    if (!res.ok) throw new Error(`range ${lo}-${hi - 1}: HTTP ${res.status}`);
+  const shardSize = 2 ** init.shardBits;
+  const byShard = new Map<number, ChunkRef[]>();
+  for (const ref of missing) {
+    const shard = Math.floor(ref.offset / shardSize);
+    const list = byShard.get(shard);
+    if (list) list.push(ref);
+    else byShard.set(shard, [ref]);
+  }
+  for (const [shard, refs] of byShard) {
+    const first = shard * shardSize;
+    const lo = Math.min(...refs.map((r) => r.offset)) - first;
+    const hi = Math.max(...refs.map((r) => r.offset + r.length)) - first;
+    const res = await fetch(init.chunkUrls[shard], { headers: { Range: `bytes=${lo}-${hi - 1}` }, signal });
+    if (!res.ok) throw new Error(`range ${lo}-${hi - 1} of shard ${shard}: HTTP ${res.status}`);
     const body = new Uint8Array(await res.arrayBuffer());
-    net = body.byteLength;
-    requests = 1;
-    await throttle(net, signal);
+    net += body.byteLength;
+    requests++;
+    await throttle(body.byteLength, signal);
     const base = res.status === 206 ? lo : 0;
     const puts: Promise<void>[] = [];
-    for (const ref of missing) {
-      const blob = body.slice(ref.offset - base, ref.offset - base + ref.length);
+    for (const ref of refs) {
+      const at = ref.offset - first - base;
+      const blob = body.slice(at, at + ref.length);
       blobs.set(ref.key, blob);
       if (cache) puts.push(cache.put(cacheRequest(ref), new Response(blob.slice())));
     }
@@ -90,8 +100,35 @@ async function fetchBlobs(req: LoadRequest, signal: AbortSignal): Promise<{ blob
   return { blobs, net, hits, requests };
 }
 
+/**
+ * The mesher emits float32 for everything. Each attribute's real domain is tiny, so it travels and lives on the GPU
+ * in the smallest exact type (the shader still reads floats: WebGL converts non-normalised integers):
+ * positions are integer grid coordinates (u16), uv and the outline flags are 0/1 (u8), ambient occlusion takes the
+ * values k/3 and the lamp light is 0..1 (u8 normalised, k/3 is exact in 1/255 steps). `aInfo` keeps float32: its
+ * last component is a per-cube hash in [0, 1). 60 bytes per vertex become 30.
+ */
+function compactAttribute(name: string, a: THREE.BufferAttribute): AttributeData {
+  const src = a.array as Float32Array;
+  switch (name) {
+    case 'position':
+      return { name, itemSize: a.itemSize, normalized: false, array: Uint16Array.from(src) };
+    case 'uv':
+    case 'aEdge':
+      return { name, itemSize: a.itemSize, normalized: false, array: Uint8Array.from(src) };
+    case 'aAo':
+    case 'aLight': {
+      const out = new Uint8Array(src.length);
+      for (let i = 0; i < src.length; i++) out[i] = Math.round(src[i] * 255);
+      return { name, itemSize: a.itemSize, normalized: true, array: out };
+    }
+    default:
+      return { name, itemSize: a.itemSize, normalized: a.normalized, array: src };
+  }
+}
+
 function buildChunk(id: number, ref: ChunkRef, raw: Uint8Array<ArrayBuffer>): ChunkMesh {
-  const { cells, ny } = decodeChunk(raw);
+  if (!init) throw new Error('worker not initialised');
+  const { cells, ny } = decodeChunk(raw, ref.level, init.model);
   const grid: VoxelGrid = { cells, nx: SPAN, ny, nz: SPAN };
   const world = buildWorldMesh(grid, palette ?? paletteById('mono'), { x0: PAD, x1: PAD + CHUNK, y0: 0, y1: ny, z0: PAD, z1: PAD + CHUNK });
   const geometry: THREE.BufferGeometry = world.geometry;
@@ -121,7 +158,7 @@ function buildChunk(id: number, ref: ChunkRef, raw: Uint8Array<ArrayBuffer>): Ch
   const attributes: AttributeData[] = [];
   for (const name of Object.keys(geometry.attributes)) {
     const a = geometry.attributes[name] as THREE.BufferAttribute;
-    attributes.push({ name, itemSize: a.itemSize, normalized: a.normalized, array: a.array as TypedArray });
+    attributes.push(compactAttribute(name, a));
   }
   const index = geometry.index ? (geometry.index.array as Uint16Array | Uint32Array) : null;
   const bb = geometry.boundingBox;
@@ -146,7 +183,7 @@ async function handleLoad(req: LoadRequest): Promise<void> {
         if (ac.signal.aborted) throw ac.signal.reason;
         const blob = got.blobs.get(ref.key);
         if (!blob) continue;
-        const mesh = buildChunk(req.id, ref, await inflateRaw(blob));
+        const mesh = buildChunk(req.id, ref, blob);
         const transfer: Transferable[] = mesh.attributes.map((a) => a.array.buffer);
         if (mesh.index) transfer.push(mesh.index.buffer);
         transfer.push(mesh.ground.buffer, mesh.top.buffer, mesh.topClass.buffer);

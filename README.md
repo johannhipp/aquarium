@@ -209,26 +209,44 @@ Portuguese, Spanish, Quechua; Ganges: Hindi, Bengali, Urdu).
 ## Places on the Tokyo map
 
 *Cubeworld* (the cube in the wallet) is a streamed voxel map of Tokyo drawn in the `foam` palette
-(`src/cubeworld/palettes.ts`). It has its own index of five places the author bookmarked, in the same
+(`src/cubeworld/palettes.ts`). It has its own index of twenty places the author bookmarked, in the same
 look and with the same behaviour as the creature index: click a sprite and its recording crossfades in
-(same player, same sound gate and sound-loss rules) while the camera hops there (zoom out, glide, zoom
-in, with the destination's chunks fetched along the path); when it lands, the place's Japanese name
+(same player, same sound gate and sound-loss rules) while the camera hops there (the optimal zoom-and-pan path of van Wijk and Nuij: a short move is a pan with a small
+arc, a long one rises just far enough to hold both ends, with the chunks fetched along the path); when it lands, the place's Japanese name
 appears in the same note component beside a dot on the spot. Click it again, or press Esc, to stop.
 No other text is drawn. The fish-to-cube iris transition and the `?` are unchanged; the map and its
 data are only fetched when the cube is entered (`import('./cubeworld')`, then the module worker and
 range requests into `public/stream/`).
 
-| id | place | where |
+| id | place | kind |
 | --- | --- | --- |
-| `imakatsu-roppongi` | Imakatsu Roppongi, tonkatsu | Roppongi |
-| `teamlab-borderless` | teamLab Borderless, digital art museum | Azabudai Hills |
-| `perfect-beer-kitchen` | Perfect Beer Kitchen, craft beer bar | Shimbashi |
-| `aoyama-tunnel` | Aoyama Tunnel, bar | Aoyama (Shibuya 4-chome) |
-| `sushidokoro-unitora` | Sushidokoro Unitora, sushi | Tsukiji |
+| `imakatsu-roppongi` | Imakatsu Roppongi | Tonkatsu restaurant |
+| `teamlab-borderless` | teamLab Borderless: MORI Building DIGITAL ART MUSEUM | Art museum |
+| `perfect-beer-kitchen` | PERFECT BEER KITCHEN SHIMBASHI (PBK) | Bar |
+| `aoyama-tunnel` | Aoyama Tunnel | Bar |
+| `sushidokoro-unitora` | Sushidokoro Unitora | Sushi restaurant |
+| `shelter-shimokitazawa` | Shelter | Live music venue |
+| `basement-bar-shimokitazawa` | BASEMENT BAR | Live music bar |
+| `shibuya-scramble-crossing` | Shibuya Scramble Crossing | Crossing |
+| `meiji-jingu` | Meiji Jingu | Shinto shrine |
+| `kitasando-coffee` | Kitasando Coffee | Cafe |
+| `kyushu-jangara-harajuku` | Kyushu Jangara Ramen Harajuku | Ramen restaurant |
+| `the-sg-club` | The SG Club | Cocktail bar |
+| `omoide-yokocho` | Omoide Yokocho (Memory Lane) | Yokocho alley |
+| `tokyo-saryo-kamiuma` | Tokyo Saryo | Tea cafe |
+| `otemachi-station` | Otemachi Station | Train station |
+| `jam-akihabara` | JAM Akihabara | Cosplay cafe |
+| `ecute-ueno-tans-tantan` | T's TanTan Ecute Ueno | Ramen (inside Ueno Station) |
+| `senso-ji` | Senso-ji | Buddhist temple |
+| `monja-kura-tsukishima` | Monja Kura | Monjayaki restaurant |
+| `chen-kenichi-mapo-tofu-kiba` | Chen Kenichi Mapo Tofu Kiba | Sichuan restaurant |
 
-Tsukiji is Chuo-ku, but the PLATEAU Minato-ku data reaches across the ward line and renders
-buildings and streets there, so it needed no fallback (`jinza-udon-shimbashi`, Shiodome, was prepared
-as one and is not shown). Aoyama Tunnel sits about 1 km inside the western edge of the data.
+The places are the author's bookmarks (Google Maps list "Japo") that fall inside the map frame and have buildings
+rendered at the spot, picked at least ~500 m apart and across kinds (cafes, bars, live-music venues, ramen, shrines and
+temples, a crossing, an alley, stations, a market-side sushi counter). Several are outside Minato-ku (Shimokitazawa,
+Harajuku, Shinjuku, Akihabara, Ueno, Asakusa, Tsukishima, Kiba): the map covers Minato-ku and its surroundings from
+Shimokitazawa in the west to Kiba in the east. Where a place is a street or a station rather than a building, the note
+is anchored on the ground there (and dims when something stands in front of it).
 
 | file | content |
 | --- | --- |
@@ -237,20 +255,24 @@ as one and is not shown). Aoyama Tunnel sits about 1 km inside the western edge 
 | `public/places/place-names.json` | `id` → `{lang, name}`: the name as on the shop's signage / Tabelog (second entry only when the brand is written in Latin) |
 | `public/audio/places/<id>.mp3`, `audio.json` key `place:<id>` | one 18 s seamless loop per place, the same encoding as the creatures |
 | `art/places/` | full-size images and `places.full.json` (not served) |
-| `public/stream/` | the map: `manifest.json`, `dir.<hash>.bin`, `chunks.<hash>.bin` |
+| `public/stream/` | the map: `manifest.json`, `dir.<hash>.bin`, `chunks.<hash>-<n>.bin` (16 MiB shards) |
 
-**The map data.** PLATEAU 3D city model, FY2025, 16 central wards from Setagaya (Shimokitazawa) to Koto
-and Sumida (Morishita, Kinshicho, Tatekawa), a 16.4 x 11.3 km frame (CityGML 2.0): buildings LOD1-3 (LOD2/3 in the centre, LOD1 in the
-west), roads LOD1-3 (carriageway, sidewalk, island), city furniture and vegetation (poles and trees where
-the wards publish them, Shimbashi/Toranomon), bridges, water, and the DEM TIN. The 104 MB `chunks.<hash>.bin`
-is not in git: rebuild it with `pipeline/cubeworld/stream_build.py` (`research/cubeworld-streaming.md`, section 9;
-the area is `pipeline/cubeworld/stream_area.json`). The script fetches
+**The map data.** PLATEAU 3D city model, FY2025, 18 central wards from Setagaya (Shimokitazawa) to Koto
+and Sumida (Morishita, Kinshicho, Tatekawa) and Taito (Asakusa, Ueno), a 16.4 x 12.8 km frame (CityGML 2.0):
+buildings LOD1-3 (LOD2/3 in the centre, LOD1 in the west), roads LOD1-3 (carriageway, sidewalk, island), city
+furniture and vegetation (poles and trees where the wards publish them, Shimbashi/Toranomon), bridges, water,
+and the DEM TIN. The 52 MB archive (`public/stream/`: four 16 MiB `chunks.<hash>-<n>.bin` shards, a directory
+and the manifest) is committed, so `npm run build` needs no data download; rebuild it with
+`pipeline/cubeworld/stream_build.py` (`research/cubeworld-streaming.md` section 9; the area is
+`pipeline/cubeworld/stream_area.json`; the format, hosting and offline decisions are in
+`research/cubeworld-webnative.md`). The script fetches
 only the needed CityGML members by HTTP range request, rasterises 1 m layers, and packs a 7-level
-pyramid (1, 2, 4, 8, 16, 32, 64 m cubes) of 32x32-column chunks, run-length encoded and `deflate-raw`
-compressed, into one range-readable `chunks.<hash>.bin` plus a directory. The viewer (`src/cubeworld/stream/`)
+pyramid (1, 2, 4, 8, 16, 32, 64 m cubes) of 32x32-column chunks, each coded as 2.5D columns with a static
+rANS model (`pipeline/cubeworld/stream_codec.py`), into range-readable shards plus a directory. The viewer (`src/cubeworld/stream/`)
 picks levels by on-screen cube size, draws a coarser stand-in until all children of a chunk are ready,
-prefetches along the flight path, caches chunks in Cache Storage (and warms the five destinations at
-idle), and keeps GPU memory under a budget. Rebuild and measurements: `pipeline/cubeworld/stream_build.py`
+prefetches along the flight path, caches chunks in Cache Storage (and warms the destinations at
+idle), and keeps GPU memory under a budget. A service worker (`public/sw.js`, production builds) makes the shell work
+offline after the first visit. Rebuild and measurements: `pipeline/cubeworld/stream_build.py`
 (docstring) and `research/cubeworld-streaming.md`. The dev-only page `stream.html` (`STREAM=1 vite build`
 bundles it) shows the same map with theme buttons and the flight metrics.
 
@@ -261,26 +283,40 @@ sleep (silence, note hidden, selection kept) and wakes the other, so returning r
 
 ### Place credits
 
-Map: 出典：国土交通省 3D都市モデル（Project PLATEAU）東京都（千代田区・中央区・港区・新宿区・文京区・台東区・墨田区・江東区・品川区・目黒区・大田区・世田谷区・渋谷区・中野区・杉並区・江戸川区、令和7年度）を加工して作成 / Source: MLIT Project
-PLATEAU, FY2025 3D city models of 16 Tokyo wards, processed into voxels (Public Data License v1.0, CC BY 4.0
-compatible). The app draws no text but the place names, so this notice lives here and bottom-right on `stream.html`.
-Place sprites were generated like the creatures' (see *Credits* above).
+Map: 出典：国土交通省 3D都市モデル（Project PLATEAU）東京都港区ほか（令和7年度）を加工して作成 / Source: MLIT Project
+PLATEAU, Minato-ku FY2025 3D city model and the surrounding wards, processed into voxels (Public Data License v1.0,
+CC BY 4.0 compatible). The app draws no text but the place names, so this notice lives here and bottom-right on
+`stream.html`. Place sprites were generated like the creatures' (see *Credits* above).
 
-Place sounds are 18 s loops cut by `pipeline/audio.py` from YouTube recordings (downloaded with yt-dlp; per-layer
-URLs, channels, licences and time ranges in `art/audio/credits.json`). **Only the teamLab loop is
-Creative Commons (CC BY). The other four are under YouTube's standard licence: private prototype only, not
-cleared for public release; replace them (or get permission) before the site goes public.**
+Place sounds are 18 s loops cut by `pipeline/audio.py` from YouTube recordings (downloaded with yt-dlp; per-layer URLs,
+channels, licences and time ranges in `art/audio/credits.json`). **Only three loops are Creative Commons (CC BY):
+teamLab Borderless, Shibuya Scramble Crossing and JAM Akihabara. The other seventeen are under YouTube's standard
+licence: private prototype only, not cleared for public release; replace them (or get permission) before the site goes
+public.** Where no interior or on-the-spot recording exists the loop is the street or neighbourhood next to the place
+(noted in `credits.json`).
 
-| place | recording | licence |
+| place | recording(s) | licence |
 | --- | --- | --- |
-| teamLab Borderless | [Teamlab Borderless Tokyo Japan 2024 walkthrough](https://www.youtube.com/watch?v=_ExKTkNFepE) by Traveling with Sochi, inside the museum (waterfall room) | CC BY 3.0 (YouTube Creative Commons Attribution) |
-| Perfect Beer Kitchen | room tone from two bar-hopping vlogs filmed in the shop: [なおたか酒場](https://www.youtube.com/watch?v=n3WFAKnQPsc), [PERFECT BEER](https://www.youtube.com/watch?v=pBzMJAJzEHc) | YouTube standard licence |
-| Imakatsu Roppongi | dining room of the honten: [一口だけ東京](https://www.youtube.com/watch?v=xGjUPqv1VMc), [백백백 backback100](https://www.youtube.com/watch?v=WhHnreFxLEY) | YouTube standard licence |
-| Sushidokoro Unitora | counter of the shop (then Tsukiji Itadori Bekkan): [MySX30](https://www.youtube.com/watch?v=JoORdqFUz7M) | YouTube standard licence |
-| Aoyama Tunnel | **street fallback**, no usable interior recording exists: dusk traffic on Aoyama-dori near Miyamasuzaka, [akkz01](https://www.youtube.com/watch?v=1Wxz7KvrHrw) | YouTube standard licence |
-
-Approximations are noted per place in `credits.json` (Imakatsu has no isolated fryer sizzle; the unused Jinza
-Udon fallback loop comes from the shop's earlier location).
+| Imakatsu Roppongi | [イマカツ추성훈돈카츠#도쿄돈카츠#일본돈카츠](https://www.youtube.com/watch?v=xGjUPqv1VMc) by 一口だけ東京한입만도쿄; [(일본) 도쿄 롯폰기 추성훈 이마카츠 본점 닭가슴살카츠 멘치카츠 새우카츠 히레카츠 나마비루 미쉐린](https://www.youtube.com/watch?v=WhHnreFxLEY) by 백백백 backback100 | YouTube standard licence |
+| teamLab Borderless: MORI Building DIGITAL ART MUSEUM | [Teamlab Borderless Tokyo Japan 2024 walkthrough and magical cafe](https://www.youtube.com/watch?v=_ExKTkNFepE) by Traveling with Sochi | CC BY |
+| PERFECT BEER KITCHEN SHIMBASHI (PBK) | [【1人1万円】新橋で限界はしご酒！とんかつに沖縄料理にハラミにハンバーグ！肉肉肉とビールでキマる](https://www.youtube.com/watch?v=n3WFAKnQPsc) by なおたか酒場 / NAOTAKA IZAKAYA; [【新橋はしご酒前編】32杯飲み放題チャレンジしたら限界超えてベロベロに](https://www.youtube.com/watch?v=pBzMJAJzEHc) by PERFECT BEER - Numa's Bar Hopping Chronicles | YouTube standard licence |
+| Aoyama Tunnel | [【東京夜散歩】青山通り宮益坂の夕暮れから夜 4K Aoyama street Miyamasuzaka](https://www.youtube.com/watch?v=1Wxz7KvrHrw) by akkz01 | YouTube standard licence |
+| Sushidokoro Unitora | [Tsukiji Itadori Bekkan / Freshest Sushi & Seafood in Tokyo’s Famous…](https://www.youtube.com/watch?v=JoORdqFUz7M) by MySX30 | YouTube standard licence |
+| Shelter | [JAPAN WALK, Tokyo's Adult night time, Shimokitazawa｜下北沢 東京 4K 60fps…](https://www.youtube.com/watch?v=4Jd4BoaF3k4) by Night Walk in JAPAN Ambience | YouTube standard licence |
+| BASEMENT BAR | [(4K) Tokyo Walk - Hidden Shimokitazawa: Shrine to Station](https://www.youtube.com/watch?v=gfvt-AoPc0w) by NARI JAPAN WALK; [下北沢駅　ライブハウス散策　下北沢SHELTER（シェルター）下北沢LIVEHOLIC（ライブホリック）その他](https://www.youtube.com/watch?v=IQVOkvrSKEY) by 鈴みの街歩き記録 | YouTube standard licence |
+| Shibuya Scramble Crossing | [(4K)NIGHT Walk in SHIBUYA 夜の渋谷を散歩 #4K](https://www.youtube.com/watch?v=_q6XbuQzWP0) by Walking Japan TV | CC BY |
+| Meiji Jingu | [曇天の明治神宮。都会の中の緑の社で癒される/#環境音#癒しの音#神社の音](https://www.youtube.com/watch?v=MKATkzih5ek) by Sound Forest [landscape] | YouTube standard licence |
+| Kitasando Coffee | [話題のカフェ『KITASANDO COFFEE』。Walk along the Kitasando in Shibuya Ward, …](https://www.youtube.com/watch?v=k5mplvvF_EM) by cinemafic-Café and camera moments | YouTube standard licence |
+| Kyushu Jangara Ramen Harajuku | [【清正の井戸 明治神宮】パワースポット 幸運 開運 休日 一人散歩 飯 九州じゃんがららあめん 原宿](https://www.youtube.com/watch?v=Ke97m0vHStU) by ぱいんちゃんねる; [【原宿】「九州じゃんがららーめん」九州じゃんがら全部入り](https://www.youtube.com/watch?v=xW3sGkAHhW0) by Inusuke Vlog Gourmet | YouTube standard licence |
+| The SG Club | [Syuichi Ofuchi（The SG Club／Tokyo）Black Bush Irish Coffee](https://www.youtube.com/watch?v=v-n1CpepO3Q) by BAR TIMES; [東京夜散歩～渋谷 神南・宮下公園（Tokyo Night Walk: Jinnan & MIYASHITA PARK）](https://www.youtube.com/watch?v=199lV8peIkU) by Tokyo Night Walk | YouTube standard licence |
+| Omoide Yokocho (Memory Lane) | [4K 昼から大盛況の新宿西口思い出横丁 / Shinjuku Nishiguchi Omoide Yokocho in Shinjuk…](https://www.youtube.com/watch?v=nShvOnTbHc0) by Tokyo Hz; [(4K HDR) Omoide Yokocho, Shinjuku / Tokyo](https://www.youtube.com/watch?v=5IKJZo-zyEE) by Walk with Shiba | YouTube standard licence |
+| Tokyo Saryo | [Exploring Sangenjaya, Tokyo // (4K) Ambient Walk](https://www.youtube.com/watch?v=E8xdeyogvoI) by Tea Tree Explorer | YouTube standard licence |
+| Otemachi Station | [Otemachi Station Z08 to M18 Walk / Tokyo Metro Exploration / Japan 4K](https://www.youtube.com/watch?v=jhkAvfWQT2g) by Tokyo Calm Travels & Beyond; [Otemachi Station / 大手町駅 / Tokyo 4K ASMR](https://www.youtube.com/watch?v=hvrGLBrcWuE) by Japan Railway Explorer | YouTube standard licence |
+| JAM Akihabara | [【4K HDR JAPAN】DJI pocket 3 POV Tokyo Akihabara pedestrian paradise.…](https://www.youtube.com/watch?v=tTaL2-H2hJg) by POV JAPAN | CC BY |
+| T's TanTan Ecute Ueno | [T'sたんたん エキュート上野店 2022/2 白胡麻たんたん麺 880円。](https://www.youtube.com/watch?v=Nj0Hote-cbo) by Kotaro's gourmet trip (にっぽんグルメ旅); [T'sたんたん エキュート上野店 2025/1 黒胡麻たんたん麺 1200円。T'sベジ餃子(3個) 350円。](https://www.youtube.com/watch?v=pEK5BG-rRDw) by Kotaro's gourmet trip (にっぽんグルメ旅) | YouTube standard licence |
+| Senso-ji | [Walking ASAKUSA, Tokyo / Real Japan in 4K with 3D Binaural 浅草/浅草寺 /…](https://www.youtube.com/watch?v=XrOt7LnTayk) by Tokyo Ambient Walk & Drive.official | YouTube standard licence |
+| Monja Kura | [【もんじゃ蔵】【月島】【本場】【東京】【もんじゃ焼き】](https://www.youtube.com/watch?v=o5Wjf2lRXiI) by emily; [【月島もんじゃ】大人気 蔵さん①](https://www.youtube.com/watch?v=5jU-YQCoqH4) by しん散歩 | YouTube standard licence |
+| Chen Kenichi Mapo Tofu Kiba | [行列のできる担々麺と麻婆豆腐【陳建一麻婆豆腐店】東京都江東区](https://www.youtube.com/watch?v=QBipw2cVhJ0) by ニカタツBLOG (Nikatatsu BLOG); [お店を代表する3品(俯瞰カメラ)陳建一 四川飯店グループ オーナー:中華料理](https://www.youtube.com/watch?v=ltuRMWEiWyg) by Share Spirits | YouTube standard licence |
 
 ### Rebuilding the map data
 

@@ -7,11 +7,14 @@ The area (EPSG:6677 frame and the wards that fill it) is pipeline/cubeworld/stre
     $V pipeline/cubeworld/stream_build.py prep       # DEM triangle caches (parses the 0.2-1 GB TIN files) + water triangles
     $V pipeline/cubeworld/stream_build.py raster     # per 3rd-mesh tile (10 processes): DEM, roads, water, buildings, objects
     $V pipeline/cubeworld/stream_build.py merge      # paste the tiles into frame-sized global layers (+ `preview` writes a PNG of them)
-    $V pipeline/cubeworld/stream_build.py pack [--out DIR]   # supertiles -> 7-level pyramid -> public/stream-next/ (default)
+    $V pipeline/cubeworld/stream_build.py pack [--out DIR]   # train the codec, supertiles -> 7-level pyramid -> public/stream-next/
 
-Output: manifest.json, dir.<hash>.bin (deflate-raw chunk directory), chunks.<hash>.bin (every chunk its own deflate-raw
-blob, read with HTTP range requests). Wire format: src/cubeworld/stream/format.ts. `pack` writes to public/stream-next/
-so a running dev page keeps working; swap it in with `mv public/stream public/stream-old && mv public/stream-next public/stream`.
+Output: manifest.json, dir.<hash>.bin (deflate-raw: the chunk codec's frequency tables, then each chunk's length and
+height), chunks.<hash>-<n>.bin (16 MiB shards; every chunk one blob, read with HTTP range requests). The chunk codec is
+stream_codec.py; the wire format is documented in src/cubeworld/stream/format.ts. `pack` takes about 7 minutes (the
+entropy coder is plain Python on 10 cores) and writes to public/stream-next/, so a running dev page keeps working; the
+dev server reloads on any write below public/, so build with `--out pipeline/cache/cubeworld/out-next` and swap with
+`mv public/stream public/stream-old && cp -R pipeline/cache/cubeworld/out-next public/stream`.
 
 The whole area is rasterised once into 2.5D layers at 1 m (DEM height, surface class, building roof height, water)
 plus sparse voxels for thin things (trees, poles, bridge decks). Chunks are cut from those layers; coarser LODs are
@@ -27,7 +30,6 @@ import functools
 import hashlib
 import json
 import math
-import struct
 import sys
 import threading
 import time
@@ -41,6 +43,8 @@ import numpy as np
 
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
+
+import stream_codec as sc  # noqa: E402
 
 ROOT = HERE.parents[1]
 CACHE = ROOT / "pipeline" / "cache" / "cubeworld"
@@ -711,33 +715,35 @@ def compose_region(sx: int, sz: int) -> np.ndarray | None:
     return grid
 
 
-def encode_chunk(win: np.ndarray) -> tuple[bytes, int] | None:
-    """(ny, SPAN, SPAN) cells -> (deflate-raw blob, height in cells); None when the 32 x 32 interior is all air.
-    Blob layout is documented in src/cubeworld/stream/format.ts decodeChunk."""
-    ny = win.shape[0]
-    if not win[:, 1:CHUNK + 1, 1:CHUNK + 1].any():
+_MODEL: sc.Model | None = None       # set in every worker by _set_model
+_TRAIN: sc.Counts | None = None      # when set, encode_chunk only counts symbols (the training pass)
+
+
+def _set_model(model_bytes: bytes) -> None:
+    global _MODEL
+    _MODEL = sc.Model.from_bytes(model_bytes)
+
+
+def encode_chunk(win: np.ndarray, level: int) -> tuple[bytes, int] | None:
+    """(ny, SPAN, SPAN) cells -> (blob, height in cells); None when the 32 x 32 interior is all air.
+    Blob layout and model: stream_codec.py; decoder: src/cubeworld/stream/format.ts decodeChunk."""
+    if not win[:, PAD:CHUNK + PAD, PAD:CHUNK + PAD].any():
         return None
-    top = int(np.nonzero(win.reshape(ny, -1).any(axis=1))[0].max()) + 1
-    cols = np.ascontiguousarray(win[:top].reshape(top, -1).T)          # (SPAN*SPAN, top): one row per column
-    nonair = cols != 0
-    last = top - np.argmax(nonair[:, ::-1], axis=1)                     # one past the highest solid cell
-    last[~nonair.any(axis=1)] = 0
-    start = np.empty(cols.shape, bool)
-    start[:, 0] = True
-    start[:, 1:] = cols[:, 1:] != cols[:, :-1]
-    start &= np.arange(top)[None, :] < last[:, None]
-    counts = start.sum(axis=1)
-    assert counts.max() < 256
-    pos = np.nonzero(start.ravel())[0]
-    col, y = pos // top, pos % top
-    cls = cols.ravel()[pos]
-    same = np.r_[col[1:] == col[:-1], False]
-    length = np.where(same, np.r_[y[1:], 0], last[col]) - y
-    wide = int(length.max()) > 255 if len(length) else False
-    head = struct.pack("<BBHI", 1, 1 if wide else 0, top, len(pos))
-    raw = head + counts.astype(np.uint8).tobytes() + cls.astype(np.uint8).tobytes() + length.astype("<u2" if wide else np.uint8).tobytes()
-    co = zlib.compressobj(9, zlib.DEFLATED, -15)
-    return co.compress(raw) + co.flush(), top
+    if _TRAIN is not None:
+        _TRAIN.add(level, sc.symbolize(win)[1])
+        return None
+    assert _MODEL is not None
+    return sc.encode_blob(win, _MODEL, level)
+
+
+def train_supertile(job: tuple[int, int]) -> sc.Counts:
+    global _TRAIN
+    _TRAIN = sc.Counts()
+    try:
+        pack_supertile(job)
+        return _TRAIN
+    finally:
+        _TRAIN = None
 
 
 def pack_supertile(job: tuple[int, int]) -> tuple[list[tuple[int, int, int, int, bytes]], np.ndarray | None]:
@@ -757,7 +763,7 @@ def pack_supertile(job: tuple[int, int]) -> tuple[list[tuple[int, int, int, int,
         for lz in range(per):
             for lx in range(per):
                 x0, z0 = off + lx * CHUNK - PAD, off + lz * CHUNK - PAD
-                enc = encode_chunk(grid[:, z0:z0 + SPAN, x0:x0 + SPAN])
+                enc = encode_chunk(grid[:, z0:z0 + SPAN, x0:x0 + SPAN], level)
                 if enc is not None:
                     out.append((level, sx * per + lx, sz * per + lz, enc[1], enc[0]))
         if level == FINE_LEVELS - 1:
@@ -781,7 +787,7 @@ def coarse_levels(core4: dict[tuple[int, int], np.ndarray], f: Frame) -> list[tu
         padded = np.pad(w, ((0, 0), (PAD, CHUNK), (PAD, CHUNK)))
         for cz in range(-(-w.shape[1] // CHUNK)):
             for cx in range(-(-w.shape[2] // CHUNK)):
-                enc = encode_chunk(padded[:, cz * CHUNK:cz * CHUNK + SPAN, cx * CHUNK:cx * CHUNK + SPAN])
+                enc = encode_chunk(padded[:, cz * CHUNK:cz * CHUNK + SPAN, cx * CHUNK:cx * CHUNK + SPAN], level)
                 if enc is not None:
                     out.append((level, cx, cz, enc[1], enc[0]))
     return out
@@ -817,6 +823,23 @@ def theme_defs() -> list[dict]:
     return out
 
 
+SHARD_BITS = 24       # 16 MiB shard files: under every static host's per-file limit (Cloudflare Pages 25 MiB)
+
+
+def slot_order(levels: list[dict]) -> list[tuple[int, int, int]]:
+    """Every chunk slot (level, cx, cz) in file order; src/cubeworld/stream/format.ts parseDirectory walks the same order."""
+    out: list[tuple[int, int, int]] = []
+    for level in range(LEVELS - 1, FINE_LEVELS - 1, -1):
+        lv = levels[level]
+        out += [(level, cx, cz) for _, cx, cz in sorted((morton(cx, cz), cx, cz) for cz in range(lv["ncz"]) for cx in range(lv["ncx"]))]
+    nsx, nsz = levels[0]["ncx"] // (SUPER // CHUNK), levels[0]["ncz"] // (SUPER // CHUNK)
+    for _, sx, sz in sorted((morton(sx, sz), sx, sz) for sz in range(nsz) for sx in range(nsx)):
+        for level in range(FINE_LEVELS - 1, -1, -1):
+            per = (SUPER // CHUNK) >> level
+            out += [(level, sx * per + lx, sz * per + lz) for _, lx, lz in sorted((morton(lx, lz), lx, lz) for lz in range(per) for lx in range(per))]
+    return out
+
+
 def cmd_pack(args: list[str]) -> None:
     global OUT
     if "--out" in args:
@@ -829,61 +852,65 @@ def cmd_pack(args: list[str]) -> None:
     if only:
         jobs = [(int(a), int(b)) for a, b in (s.split(",") for s in only)]
     t0 = time.time()
-    per_super: dict[tuple[int, int], list] = {}
-    core4: dict[tuple[int, int], np.ndarray] = {}
-    with ProcessPoolExecutor(10) as ex:
-        for n, (job, res) in enumerate(zip(jobs, ex.map(pack_supertile, jobs, chunksize=1)), 1):
-            per_super[job], core = res
-            if core is not None:
-                core4[job] = core
-            if n % 20 == 0 or n == len(jobs):
-                print(f"  {n}/{len(jobs)} supertiles, {time.time() - t0:.0f}s", flush=True)
 
-    top_chunks = coarse_levels(core4, f)
+    # pass 1: the codec's frequency tables, trained on every fourth supertile (they are static, shipped in dir.bin)
+    counts = sc.Counts()
+    with ProcessPoolExecutor(10) as ex:
+        for c in ex.map(train_supertile, jobs[::4], chunksize=1):
+            counts.merge(c)
+    model_bytes = counts.model().to_bytes()
+    _set_model(model_bytes)
+    print(f"  trained codec tables on {len(jobs[::4])} supertiles, {time.time() - t0:.0f}s", flush=True)
+
+    # pass 2: every chunk
+    chunks: dict[tuple[int, int, int], tuple[int, bytes]] = {}
+    core4: dict[tuple[int, int], np.ndarray] = {}
+    with ProcessPoolExecutor(10, initializer=_set_model, initargs=(model_bytes,)) as ex:
+        for n, (job, res) in enumerate(zip(jobs, ex.map(pack_supertile, jobs, chunksize=1)), 1):
+            for level, cx, cz, h, blob in res[0]:
+                chunks[(level, cx, cz)] = (h, blob)
+            if res[1] is not None:
+                core4[job] = res[1]
+            if n % 100 == 0 or n == len(jobs):
+                print(f"  {n}/{len(jobs)} supertiles, {time.time() - t0:.0f}s", flush=True)
+    for level, cx, cz, h, blob in coarse_levels(core4, f):
+        chunks[(level, cx, cz)] = (h, blob)
+
+    levels = [{"level": lv, "cell": 1 << lv, "ncx": -(-f.nx // (CHUNK << lv)), "ncz": -(-f.nz // (CHUNK << lv))} for lv in range(LEVELS)]
+    order = slot_order(levels)
+    assert set(chunks) <= set(order), "a chunk outside the slot grid"
+    shard = 1 << SHARD_BITS
+    shards = [bytearray()]
+    lengths = np.zeros(len(order), np.uint16)
+    heights = np.zeros(len(order), np.uint16)
+    by_level = [0] * LEVELS
+    for k, key in enumerate(order):
+        item = chunks.get(key)
+        if item is None:
+            continue
+        h, blob = item
+        assert len(blob) < 65536 and h < 65536
+        if len(shards[-1]) + len(blob) > shard:
+            shards.append(bytearray())
+        shards[-1] += blob
+        lengths[k], heights[k] = len(blob), h
+        by_level[key[0]] += 1
+    planes = b"".join(a.astype(t).tobytes() for a, t in ((lengths & 255, np.uint8), (lengths >> 8, np.uint8), (heights & 255, np.uint8), (heights >> 8, np.uint8)))
+    co = zlib.compressobj(9, zlib.DEFLATED, -15)
+    dir_blob = co.compress(model_bytes + planes) + co.flush()
+    h = hashlib.sha1(dir_blob)
+    for sh in shards:
+        h.update(sh)
+    digest = h.hexdigest()[:10]
     OUT.mkdir(parents=True, exist_ok=True)
     for old in OUT.glob("*"):
         old.unlink()
-    levels = [{"level": lv, "cell": 1 << lv, "ncx": -(-f.nx // (CHUNK << lv)), "ncz": -(-f.nz // (CHUNK << lv))} for lv in range(LEVELS)]
-    offsets = [np.zeros(lv["ncx"] * lv["ncz"], np.uint32) for lv in levels]
-    lengths = [np.zeros(lv["ncx"] * lv["ncz"], np.uint32) for lv in levels]
-    heights = [np.zeros(lv["ncx"] * lv["ncz"], np.uint16) for lv in levels]
-    seen: dict[bytes, tuple[int, int]] = {}
-    total = unique = 0
-    by_level = [0] * LEVELS
-    cursor = 0
-    chunks_tmp = OUT / "chunks.tmp"
-    with open(chunks_tmp, "wb") as fh:
-        ordered = sorted(top_chunks, key=lambda r: (-r[0], morton(r[1], r[2])))
-        for job in sorted(per_super, key=lambda j: morton(*j)):
-            # coarse first inside a supertile, so the first bytes of a region are the cheap overview
-            ordered += sorted(per_super[job], key=lambda r: (-r[0], morton(r[1], r[2])))
-        for level, cx, cz, h, blob in ordered:
-            if blob not in seen:
-                seen[blob] = (cursor, len(blob))
-                fh.write(blob)
-                cursor += len(blob)
-                unique += 1
-            o, n = seen[blob]
-            i = cz * levels[level]["ncx"] + cx
-            offsets[level][i], lengths[level][i], heights[level][i] = o, n, h
-            total += 1
-            by_level[level] += 1
-    dir_raw = bytearray()
-    for lv in range(LEVELS):
-        for arr in (offsets[lv], lengths[lv], heights[lv]):
-            dir_raw += arr.astype("<u4" if arr.dtype == np.uint32 else "<u2").tobytes()
-            dir_raw += b"\0" * (-len(dir_raw) % 4)
-    co = zlib.compressobj(9, zlib.DEFLATED, -15)
-    dir_blob = co.compress(bytes(dir_raw)) + co.flush()
-    h = hashlib.sha1(dir_blob)
-    with open(chunks_tmp, "rb") as fh:
-        for block in iter(lambda: fh.read(1 << 20), b""):
-            h.update(block)
-    digest = h.hexdigest()[:10]
-    chunks_tmp.rename(OUT / f"chunks.{digest}.bin")
+    for n, sh in enumerate(shards):
+        (OUT / f"chunks.{digest}-{n}.bin").write_bytes(sh)
     (OUT / f"dir.{digest}.bin").write_bytes(dir_blob)
+    total = sum(by_level)
     manifest = {
-        "format": 1, "hash": digest,
+        "format": 2, "hash": digest,
         "source": f"PLATEAU 3D city model FY2025 (CityGML 2.0, spec v5), {len(WARDS)} Tokyo wards ("
                   + ", ".join(w["name"].removesuffix("-ku") for w in WARDS) + "): bldg LOD1-3, tran LOD1-3, frn/veg/brid, wtr, dem",
         "attribution": "出典：国土交通省 3D都市モデル（Project PLATEAU）東京都" + "・".join(w["ja"] for w in WARDS) + "（令和7年度）を加工して作成 / "
@@ -891,13 +918,16 @@ def cmd_pack(args: list[str]) -> None:
                        + " wards, processed into voxels (PDL 1.0 / CC BY 4.0)",
         "frame": {"epsg": 6677, "gx0": f.gx0, "gtop": f.gtop, "nx": f.nx, "nz": f.nz, "gz": GZ},
         "chunk": CHUNK, "levels": levels,
-        "files": {"dir": f"dir.{digest}.bin", "chunks": f"chunks.{digest}.bin"},
-        "bytes": {"dir": len(dir_blob), "chunks": cursor},
-        "counts": {"chunks": total, "uniqueChunks": unique, "byLevel": by_level},
+        "files": {"dir": f"dir.{digest}.bin", "chunks": [f"chunks.{digest}-{n}.bin" for n in range(len(shards))]},
+        "shardBits": SHARD_BITS,
+        "bytes": {"dir": len(dir_blob), "chunks": sum(len(sh) for sh in shards)},
+        "counts": {"chunks": total, "byLevel": by_level},
         "themes": theme_defs(),
     }
     (OUT / "manifest.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=1))
-    print(f"packed {total} chunks ({unique} unique) {by_level}: chunks {cursor / 1e6:.1f} MB, dir {len(dir_blob) / 1e3:.0f} KB, {time.time() - t0:.0f}s")
+    per_level = [sum(len(chunks[k][1]) for k in chunks if k[0] == lv) for lv in range(LEVELS)]
+    print(f"packed {total} chunks {by_level}: chunks {manifest['bytes']['chunks'] / 1e6:.1f} MB in {len(shards)} shards (per level MB "
+          f"{[round(x / 1e6, 1) for x in per_level]}), dir {len(dir_blob) / 1e3:.0f} KB (model {len(model_bytes) / 1e3:.0f} KB raw), {time.time() - t0:.0f}s")
 
 
 if __name__ == "__main__":

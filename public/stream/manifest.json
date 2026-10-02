@@ -1,14 +1,14 @@
 {
- "format": 1,
- "hash": "3e4bfb692b",
- "source": "PLATEAU 3D city model FY2025 (CityGML 2.0, spec v5), 16 Tokyo wards (chiyoda, chuo, minato, shinjuku, bunkyo, taito, sumida, koto, shinagawa, meguro, ota, setagaya, shibuya, nakano, suginami, edogawa): bldg LOD1-3, tran LOD1-3, frn/veg/brid, wtr, dem",
- "attribution": "出典：国土交通省 3D都市モデル（Project PLATEAU）東京都千代田区・中央区・港区・新宿区・文京区・台東区・墨田区・江東区・品川区・目黒区・大田区・世田谷区・渋谷区・中野区・杉並区・江戸川区（令和7年度）を加工して作成 / Source: MLIT Project PLATEAU, FY2025 3D city models of Chiyoda, Chuo, Minato, Shinjuku, Bunkyo, Taito, Sumida, Koto, Shinagawa, Meguro, Ota, Setagaya, Shibuya, Nakano, Suginami, Edogawa wards, processed into voxels (PDL 1.0 / CC BY 4.0)",
+ "format": 2,
+ "hash": "c635427333",
+ "source": "PLATEAU 3D city model FY2025 (CityGML 2.0, spec v5), 18 Tokyo wards (chiyoda, chuo, minato, shinjuku, bunkyo, taito, sumida, koto, shinagawa, meguro, ota, setagaya, shibuya, nakano, suginami, edogawa, toshima, arakawa): bldg LOD1-3, tran LOD1-3, frn/veg/brid, wtr, dem",
+ "attribution": "出典：国土交通省 3D都市モデル（Project PLATEAU）東京都千代田区・中央区・港区・新宿区・文京区・台東区・墨田区・江東区・品川区・目黒区・大田区・世田谷区・渋谷区・中野区・杉並区・江戸川区・豊島区・荒川区（令和7年度）を加工して作成 / Source: MLIT Project PLATEAU, FY2025 3D city models of Chiyoda, Chuo, Minato, Shinjuku, Bunkyo, Taito, Sumida, Koto, Shinagawa, Meguro, Ota, Setagaya, Shibuya, Nakano, Suginami, Edogawa, Toshima, Arakawa wards, processed into voxels (PDL 1.0 / CC BY 4.0)",
  "frame": {
   "epsg": 6677,
   "gx0": -16800,
-  "gtop": -31533,
+  "gtop": -29997,
   "nx": 16384,
-  "nz": 11264,
+  "nz": 12800,
   "gz": -12
  },
  "chunk": 32,
@@ -17,64 +17,69 @@
    "level": 0,
    "cell": 1,
    "ncx": 512,
-   "ncz": 352
+   "ncz": 400
   },
   {
    "level": 1,
    "cell": 2,
    "ncx": 256,
-   "ncz": 176
+   "ncz": 200
   },
   {
    "level": 2,
    "cell": 4,
    "ncx": 128,
-   "ncz": 88
+   "ncz": 100
   },
   {
    "level": 3,
    "cell": 8,
    "ncx": 64,
-   "ncz": 44
+   "ncz": 50
   },
   {
    "level": 4,
    "cell": 16,
    "ncx": 32,
-   "ncz": 22
+   "ncz": 25
   },
   {
    "level": 5,
    "cell": 32,
    "ncx": 16,
-   "ncz": 11
+   "ncz": 13
   },
   {
    "level": 6,
    "cell": 64,
    "ncx": 8,
-   "ncz": 6
+   "ncz": 7
   }
  ],
  "files": {
-  "dir": "dir.3e4bfb692b.bin",
-  "chunks": "chunks.3e4bfb692b.bin"
+  "dir": "dir.c635427333.bin",
+  "chunks": [
+   "chunks.c635427333-0.bin",
+   "chunks.c635427333-1.bin",
+   "chunks.c635427333-2.bin",
+   "chunks.c635427333-3.bin"
+  ]
  },
+ "shardBits": 24,
  "bytes": {
-  "dir": 1298485,
-  "chunks": 103671346
+  "dir": 498214,
+  "chunks": 52181706
  },
  "counts": {
-  "chunks": 239073,
-  "uniqueChunks": 218844,
+  "chunks": 271849,
   "byLevel": [
-   179272,
-   44848,
-   11216,
-   2810,
-   703,
-   176,
-   48
+   203848,
+   50992,
+   12752,
+   3194,
+   799,
+   208,
+   56
   ]
  },
  "themes": [
@@ -83,7 +88,7 @@
    "icon": "pole",
    "name": "Shimbashi LOD3 avenue, poles and trees",
    "x": 9680.0,
-   "z": 5667.0,
+   "z": 7203.0,
    "zoom": 1.3
   },
   {
@@ -91,7 +96,7 @@
    "icon": "tower",
    "name": "Tokyo Tower, Shiba Park",
    "x": 8842.0,
-   "z": 6338.9,
+   "z": 7874.9,
    "zoom": 0.5
   },
   {
@@ -99,7 +104,7 @@
    "icon": "house",
    "name": "Yakkozaka (奴坂), a slope in Minami-Azabu",
    "x": 7518.0,
-   "z": 7278.0,
+   "z": 8814.0,
    "zoom": 1.2
   },
   {
@@ -107,7 +112,7 @@
    "icon": "hill",
    "name": "Roppongi Hills and Mori Tower",
    "x": 7386.3,
-   "z": 6133.3,
+   "z": 7669.3,
    "zoom": 0.7
   },
   {
@@ -115,7 +120,7 @@
    "icon": "water",
    "name": "Rainbow Bridge and the Odaiba waterfront",
    "x": 10457.3,
-   "z": 8804.2,
+   "z": 10340.2,
    "zoom": 0.3
   },
   {
@@ -123,7 +128,7 @@
    "icon": "house",
    "name": "Shimokitazawa station, the dense low-rise grid (世田谷区)",
    "x": 1842.7,
-   "z": 6033.6,
+   "z": 7569.6,
    "zoom": 1.0
   },
   {
@@ -131,7 +136,7 @@
    "icon": "pole",
    "name": "Morishita station, Koto-ku (east end of the map)",
    "x": 13556.8,
-   "z": 3081.3,
+   "z": 4617.3,
    "zoom": 1.0
   }
  ]

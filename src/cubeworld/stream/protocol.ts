@@ -1,4 +1,4 @@
-import type { ChunkKey } from './format';
+import type { ChunkKey, ChunkModel } from './format';
 
 /** A simulated link, for `?throttle=`: every response is held back as if it crossed a pipe this slow. */
 export interface Throttle {
@@ -10,7 +10,11 @@ export interface Throttle {
 
 export interface WorkerInit {
   type: 'init';
-  chunksUrl: string;
+  /** the archive's shard files, in order: a chunk at offset `o` is in `chunkUrls[o >>> shardBits]` */
+  chunkUrls: string[];
+  shardBits: number;
+  /** static entropy-coder tables of the chunk codec (from the directory) */
+  model: ChunkModel;
   /** manifest.hash: part of every cache key, so a rebuilt archive never serves stale chunks */
   hash: string;
   paletteId: string;

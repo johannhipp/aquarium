@@ -1,22 +1,134 @@
 {
   "imakatsu-roppongi": [
-    { "lang": "ja", "name": "イマカツ 六本木本店" }
+    {
+      "lang": "ja",
+      "name": "イマカツ 六本木本店"
+    }
   ],
   "teamlab-borderless": [
-    { "lang": "ja", "name": "チームラボボーダレス" },
-    { "lang": "ja-Latn", "name": "teamLab Borderless" }
+    {
+      "lang": "ja",
+      "name": "チームラボボーダレス"
+    },
+    {
+      "lang": "ja-Latn",
+      "name": "teamLab Borderless"
+    }
   ],
   "perfect-beer-kitchen": [
-    { "lang": "ja", "name": "PERFECT BEER KITCHEN 新橋" }
+    {
+      "lang": "ja",
+      "name": "PERFECT BEER KITCHEN 新橋"
+    }
   ],
   "aoyama-tunnel": [
-    { "lang": "ja", "name": "青山トンネル" },
-    { "lang": "ja-Latn", "name": "AOYAMA TUNNEL" }
+    {
+      "lang": "ja",
+      "name": "青山トンネル"
+    },
+    {
+      "lang": "ja-Latn",
+      "name": "AOYAMA TUNNEL"
+    }
   ],
   "sushidokoro-unitora": [
-    { "lang": "ja", "name": "寿司処 うに虎" }
+    {
+      "lang": "ja",
+      "name": "寿司処 うに虎"
+    }
   ],
-  "jinza-udon-shimbashi": [
-    { "lang": "ja", "name": "新橋甚三" }
+  "shelter-shimokitazawa": [
+    {
+      "lang": "ja",
+      "name": "下北沢SHELTER"
+    }
+  ],
+  "basement-bar-shimokitazawa": [
+    {
+      "lang": "ja",
+      "name": "下北沢 BASEMENTBAR"
+    }
+  ],
+  "shibuya-scramble-crossing": [
+    {
+      "lang": "ja",
+      "name": "渋谷スクランブル交差点"
+    }
+  ],
+  "meiji-jingu": [
+    {
+      "lang": "ja",
+      "name": "明治神宮"
+    }
+  ],
+  "kitasando-coffee": [
+    {
+      "lang": "ja",
+      "name": "キタサンドウコーヒー"
+    },
+    {
+      "lang": "ja-Latn",
+      "name": "KITASANDO COFFEE"
+    }
+  ],
+  "kyushu-jangara-harajuku": [
+    {
+      "lang": "ja",
+      "name": "九州じゃんがら 原宿店"
+    }
+  ],
+  "the-sg-club": [
+    {
+      "lang": "ja",
+      "name": "The SG Club"
+    }
+  ],
+  "omoide-yokocho": [
+    {
+      "lang": "ja",
+      "name": "思い出横丁"
+    }
+  ],
+  "tokyo-saryo-kamiuma": [
+    {
+      "lang": "ja",
+      "name": "東京茶寮"
+    }
+  ],
+  "otemachi-station": [
+    {
+      "lang": "ja",
+      "name": "大手町駅"
+    }
+  ],
+  "jam-akihabara": [
+    {
+      "lang": "ja",
+      "name": "JAM Akihabara"
+    }
+  ],
+  "ecute-ueno-tans-tantan": [
+    {
+      "lang": "ja",
+      "name": "T'sたんたん エキュート上野店"
+    }
+  ],
+  "senso-ji": [
+    {
+      "lang": "ja",
+      "name": "浅草寺"
+    }
+  ],
+  "monja-kura-tsukishima": [
+    {
+      "lang": "ja",
+      "name": "もんじゃ蔵"
+    }
+  ],
+  "chen-kenichi-mapo-tofu-kiba": [
+    {
+      "lang": "ja",
+      "name": "陳建一麻婆豆腐店 木場店"
+    }
   ]
 }
