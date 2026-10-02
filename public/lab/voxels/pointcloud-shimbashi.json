@@ -1,0 +1,37 @@
+{
+  "source": "Tokyo Metropolitan Government Digital Twin aerial LiDAR point cloud, 23-ku (2023) + OpenStreetMap",
+  "license": "CC BY 4.0 (point cloud, Tokyo Metropolitan Government) + ODbL (OpenStreetMap footprints/roads)",
+  "attribution": "東京都デジタルツイン実現プロジェクト 区部点群データ (Tokyo Metropolitan Government, CC BY 4.0); © OpenStreetMap contributors (ODbL)",
+  "method": "aerial LiDAR ~48 pts/m2 binned at 1 m; ground = LAS class 2 median DEM; buildings = OSM footprints filled to cloud roof height; vegetation = non-last returns / green RGB; no poles (not resolvable in aerial LiDAR); roads/sidewalks from OSM highway buffers",
+  "metersPerCube": 1,
+  "origin": {
+    "lat": 35.66467244078629,
+    "lon": 139.75468954682054,
+    "epsg": 6677,
+    "x": -7200,
+    "y": -37280,
+    "groundZ": 2.0
+  },
+  "notes": "Terrain is solid below the surface (class 1). Aerial LiDAR cannot resolve poles (only wires show as horizontal lines) and cannot see walls or tree trunks; trunks are synthesised below canopies. Anything above the 100 m box is clipped. voxel z grows southward.",
+  "id": "pointcloud-shimbashi",
+  "dims": [
+    160,
+    100,
+    160
+  ],
+  "classCounts": {
+    "air": 2131864,
+    "ground": 16469,
+    "road": 8416,
+    "sidewalk": 1412,
+    "building": 370157,
+    "roof": 10989,
+    "vegetation": 15892,
+    "pole": 0,
+    "water": 0,
+    "rail": 0,
+    "bridge": 0,
+    "furniture": 2987,
+    "wall": 1814
+  }
+}

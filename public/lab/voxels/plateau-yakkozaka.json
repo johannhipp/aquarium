@@ -1,0 +1,77 @@
+{
+  "id": "plateau-yakkozaka",
+  "source": "PLATEAU 3D city model Minato-ku FY2025 (spec v5, CityGML 2.0, built by Tokyo Metropolitan Government): bldg + tran + dem, plus frn/veg/brid where the mesh has them",
+  "license": "PLATEAU Site Policy art. 3 = Public Data License v1.0 (PDL1.0), CC BY 4.0 compatible; free incl. commercial use, attribution + 'modified' notice required; copyright held by the local government (Tokyo / Minato-ku)",
+  "attribution": "出典：国土交通省 3D都市モデル（Project PLATEAU）東京都港区（令和7年度） (https://www.geospatial.jp/ckan/dataset/plateau-13103-minato-ku-2025) を加工して作成 / Source: MLIT Project PLATEAU, Minato-ku FY2025 3D city model, processed into voxels",
+  "method": "pipeline/cubeworld/plateau_voxelize.py: lxml CityGML parse -> EPSG:6677; DEM TIN interpolation; tran polygons rasterised at cell centres; building roof z-buffer filled to terrain; frn/veg/brid surface-sampled to voxels",
+  "metersPerCube": 1,
+  "dims": [
+    160,
+    100,
+    160
+  ],
+  "origin": {
+    "lat": 35.650133,
+    "lon": 139.730828,
+    "epsg": 6677,
+    "x": -9362,
+    "y": -38891,
+    "groundZ": 13,
+    "centre": true,
+    "note": "lat/lon is the box centre; x/y the projected SW corner"
+  },
+  "classCounts": {
+    "air": 2180778,
+    "ground": 265671,
+    "road": 3183,
+    "sidewalk": 0,
+    "wall": 98895,
+    "roof": 11473,
+    "vegetation": 0,
+    "pole": 0,
+    "water": 0,
+    "rail": 0,
+    "bridge": 0,
+    "furniture": 0,
+    "fence": 0
+  },
+  "notes": {
+    "timings_s": {
+      "terrain": 0.1,
+      "roads": 0.2,
+      "buildings": 1.3,
+      "objects": 1.1,
+      "total": 2.8
+    },
+    "pitfalls": {
+      "building_bottom_minus_dem_m": {
+        "median": -0.34,
+        "p10": -1.85,
+        "p90": -0.12
+      }
+    },
+    "road_features_in_box": {
+      "road_lod1": 27,
+      "area_lod2": 0,
+      "area_lod3": 0
+    },
+    "buildings_in_box": {
+      "lod1": 141,
+      "lod2": 0,
+      "lod3": 0
+    },
+    "building_columns_clipped_to_ny": 0,
+    "objects_in_box": {
+      "bridge": 0,
+      "tree": 0,
+      "plantcover": 0,
+      "pole": 0,
+      "furniture": 0,
+      "fence": 0,
+      "skipped_flat": 0
+    },
+    "frn_function_histogram_in_box": {},
+    "groundZ": 13,
+    "terrain_relief_m": 15.0
+  }
+}

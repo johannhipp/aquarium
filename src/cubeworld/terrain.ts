@@ -1,23 +1,10 @@
+import { Class, type VoxelGrid } from './voxels';
+
 /** A 50 x 50 footprint, up to 100 cubes high: 250,000 potential cubes in one flat byte array. */
 export const WORLD_W = 50;
 export const WORLD_D = 50;
 export const WORLD_H = 100;
 export const WATER_LEVEL = 8;
-
-export const AIR = 0;
-export const GROUND = 1;
-export const WATER = 2;
-
-export interface Voxels {
-  /** x + WORLD_W * (z + WORLD_D * y); AIR, GROUND or WATER */
-  readonly cells: Uint8Array;
-  /** Per column (x + WORLD_W * z): y of the highest solid or water cube, plus one (the surface level). */
-  readonly surface: Uint8Array;
-}
-
-export function cellIndex(x: number, y: number, z: number): number {
-  return x + WORLD_W * (z + WORLD_D * y);
-}
 
 /** Deterministic lattice hash in [0, 1). */
 export function hash2(ix: number, iz: number, seed: number): number {
@@ -76,16 +63,14 @@ function columnHeight(x: number, z: number, seed: number): number {
   return Math.min(WORLD_H, Math.max(1, Math.round(h)));
 }
 
-export function generateTerrain(seed: number): Voxels {
+export function generateTerrain(seed: number): VoxelGrid {
   const cells = new Uint8Array(WORLD_W * WORLD_D * WORLD_H);
-  const surface = new Uint8Array(WORLD_W * WORLD_D);
   for (let z = 0; z < WORLD_D; z++) {
     for (let x = 0; x < WORLD_W; x++) {
       const h = columnHeight(x, z, seed);
-      for (let y = 0; y < h; y++) cells[cellIndex(x, y, z)] = GROUND;
-      for (let y = h; y < WATER_LEVEL; y++) cells[cellIndex(x, y, z)] = WATER;
-      surface[x + WORLD_W * z] = Math.max(h, WATER_LEVEL);
+      for (let y = 0; y < h; y++) cells[x + WORLD_W * (z + WORLD_D * y)] = Class.GROUND;
+      for (let y = h; y < WATER_LEVEL; y++) cells[x + WORLD_W * (z + WORLD_D * y)] = Class.WATER;
     }
   }
-  return { cells, surface };
+  return { cells, nx: WORLD_W, ny: WORLD_H, nz: WORLD_D };
 }

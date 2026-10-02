@@ -1,0 +1,43 @@
+{
+  "id": "arnis-yakkozaka",
+  "source": "Arnis v3.2.0 (OSM + Overture buildings + Mapterhorn elevation + Meta canopy height), Minecraft world converted by block name",
+  "license": "ODbL 1.0 (OpenStreetMap), Overture Maps (per-source), Mapterhorn / canopy data terms; Arnis itself Apache-2.0",
+  "attribution": "© OpenStreetMap contributors; Overture Maps Foundation; Arnis by louis-e",
+  "method": "arnis --bbox <WGS84 bbox of area.json> --no-3d (objects) and --mode terrain-only (bare ground heights); blocks mapped to lab classes by name, see pipeline/cubeworld/arnis_voxelize.py",
+  "metersPerCube": 1,
+  "dims": [
+    160,
+    35,
+    160
+  ],
+  "origin": {
+    "lat": 35.65013,
+    "lon": 139.73083,
+    "epsg": 6677,
+    "x": -9362,
+    "y": -38891,
+    "groundZ": null
+  },
+  "classCounts": {
+    "air": 611944,
+    "ground": 178737,
+    "road": 2916,
+    "sidewalk": 2855,
+    "wall": 75439,
+    "roof": 17154,
+    "vegetation": 1782,
+    "pole": 11,
+    "water": 0,
+    "rail": 0,
+    "bridge": 0,
+    "furniture": 0,
+    "fence": 5162
+  },
+  "notes": [
+    "Minecraft ground tops span y=-62..-53 (Arnis scales relief to its own range; absolute elevation is not preserved, groundZ is null).",
+    "Roads are recognised by Arnis' asphalt block mix; alleys and footways share one block (class 3).",
+    "Street lamps are inferred by Arnis along lit=yes ways every 25 m (not mapped objects).",
+    "Trees come from the Meta/WRI canopy height map, not from OSM nodes.",
+    "Ground plants are dropped; building interiors are empty shells in Arnis and are not distinguished here."
+  ]
+}

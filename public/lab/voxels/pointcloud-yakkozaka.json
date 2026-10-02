@@ -1,0 +1,37 @@
+{
+  "source": "Tokyo Metropolitan Government Digital Twin aerial LiDAR point cloud, 23-ku (2023) + OpenStreetMap",
+  "license": "CC BY 4.0 (point cloud, Tokyo Metropolitan Government) + ODbL (OpenStreetMap footprints/roads)",
+  "attribution": "東京都デジタルツイン実現プロジェクト 区部点群データ (Tokyo Metropolitan Government, CC BY 4.0); © OpenStreetMap contributors (ODbL)",
+  "method": "aerial LiDAR ~48 pts/m2 binned at 1 m; ground = LAS class 2 median DEM; buildings = OSM footprints filled to cloud roof height; vegetation = non-last returns / green RGB; no poles (not resolvable in aerial LiDAR); roads/sidewalks from OSM highway buffers",
+  "metersPerCube": 1,
+  "origin": {
+    "lat": 35.65013,
+    "lon": 139.73083,
+    "epsg": 6677,
+    "x": -9362,
+    "y": -38891,
+    "groundZ": 13.0
+  },
+  "notes": "Terrain is solid below the surface (class 1). Aerial LiDAR cannot resolve poles (only wires show as horizontal lines) and cannot see walls or tree trunks; trunks are synthesised below canopies. Anything above the 100 m box is clipped. voxel z grows southward.",
+  "id": "pointcloud-yakkozaka",
+  "dims": [
+    160,
+    100,
+    160
+  ],
+  "classCounts": {
+    "air": 2131389,
+    "ground": 277546,
+    "road": 3193,
+    "sidewalk": 116,
+    "building": 109434,
+    "roof": 14091,
+    "vegetation": 19902,
+    "pole": 0,
+    "water": 95,
+    "rail": 0,
+    "bridge": 0,
+    "furniture": 907,
+    "wall": 3327
+  }
+}

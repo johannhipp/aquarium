@@ -1,0 +1,39 @@
+{
+  "source": "VIRTUAL SHIZUOKA 2019 MMS point cloud (Shizuoka Prefecture), mesh 08NE3830, Numazu + OpenStreetMap",
+  "license": "CC BY 4.0 / ODbL dual licence (Shizuoka Prefecture) + ODbL (OpenStreetMap footprints/roads)",
+  "attribution": "静岡県 VIRTUAL SHIZUOKA 点群データ (Shizuoka Prefecture, CC BY 4.0 / ODbL); © OpenStreetMap contributors (ODbL)",
+  "method": "MMS ~7000 pts/m2 thinned 1/3; LAS classes are height bins only; ground = class 2 median DEM; poles = 0.25 m grid isolated vertical columns >=4 m; trees = green RGB voxels with synthesised trunk; buildings = 3-D connected facade components >=4 m tall, extruded to OSM footprints; roads/sidewalks from OSM",
+  "metersPerCube": 1,
+  "origin": {
+    "lat": 35.097382142160356,
+    "lon": 138.8509882563967,
+    "epsg": 6676,
+    "x": 31999.93682653729,
+    "y": -100079.68100149342,
+    "groundZ": 2.0,
+    "rotationDeg": -39.07769879004515,
+    "rotationNote": "voxel x runs along the street direction (angle rotationDeg CCW from east); voxel z = right-hand side; (x,y) = projected position of voxel (0,0) corner; EPSG:6676 JGD2011 / Japan Plane Rectangular CS VIII"
+  },
+  "notes": "Corridor-shaped: MMS only covers the street and its frontage (~30 m wide). Terrain is solid and only present near scanned ground.",
+  "id": "pointcloud-numazu",
+  "dims": [
+    191,
+    40,
+    35
+  ],
+  "classCounts": {
+    "air": 241109,
+    "ground": 13583,
+    "road": 1817,
+    "sidewalk": 443,
+    "building": 8049,
+    "roof": 718,
+    "vegetation": 987,
+    "pole": 235,
+    "water": 0,
+    "rail": 0,
+    "bridge": 0,
+    "furniture": 75,
+    "wall": 384
+  }
+}

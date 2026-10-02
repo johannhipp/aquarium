@@ -1,0 +1,45 @@
+{
+  "id": "osm-yakkozaka-synth",
+  "source": "OSM + SYNTHETIC street furniture (not real data)",
+  "license": "ODbL 1.0 (OpenStreetMap) + 国土地理院 tile terms (DEM)",
+  "attribution": "© OpenStreetMap contributors; 国土地理院タイル (dem5a)",
+  "method": "2.5D extrusion: OSM ways/relations -> shapely polygons in EPSG:6677, rasterised by cell-centre tests per bbox window. Terrain columns from GSI dem5a (class 1, top cell = surface class, priority vegetation < water < sidewalk < rail < road < bridge). Roads = centrelines buffered by width/2 (flat caps); buildings extruded from terrain to a flat roof at round(min footprint ground - groundZ) + max(2, round(height_m)) with top cell = roof; height_m = height tag, else building:levels*3, else default levels (apartments 5, school 3, otherwise 2 or 3 by crc32 of the way id) * 3 m. Plus synthetic items: 6 m class-7 street lamps every 25 m (alternating sides, just outside the carriageway) along highways tagged lit=yes, and class-6 trees (3 m trunk + radius-2 canopy) on a hashed ~1/40 of cemetery/religious/vegetation cells and ~1/150 of building-free open ground cells.",
+  "metersPerCube": 1,
+  "dims": [
+    160,
+    100,
+    160
+  ],
+  "origin": {
+    "lat": 35.65013,
+    "lon": 139.73083,
+    "epsg": 6677,
+    "x": -9362,
+    "y": -38891,
+    "groundZ": 13
+  },
+  "classCounts": {
+    "air": 2207447,
+    "ground": 261865,
+    "road": 2814,
+    "sidewalk": 115,
+    "wall": 72499,
+    "roof": 11343,
+    "vegetation": 3810,
+    "pole": 12,
+    "water": 95,
+    "rail": 0,
+    "bridge": 0,
+    "furniture": 0,
+    "fence": 0
+  },
+  "notes": [
+    "WARNING: the street lamps and trees in this variant are fabricated for visual testing of how poles and trees read in the viewer; they are not OpenStreetMap data (2 lamps, 45 trees on vegetation cells, 20 trees on open-ground cells).",
+    "143 buildings extruded; only 1 (0.7%) carry height info (0 height, 1 building:levels); the rest use default heights (apartments 15 m, school 9 m, others 6 or 9 m by id hash) so roof heights are largely guesses.",
+    "No natural=tree, highway=street_lamp, power=pole or man_made=utility_pole objects exist in this OSM extract (real trees: 0, real poles: 0): the main output contains no trees or poles.",
+    "Vegetation ground cover comes only from landuse cemetery/religious (painted on a hashed 50% of cells), grass/forest/etc. and park/garden polygons; most gardens and trees are not mapped in OSM.",
+    "Terrain: GSI dem5a at z15 (~3.9 m/px at this latitude, ~5 m source mesh) bilinearly sampled at 1 m cell centres, nodata filled from neighbours (0.32% of mosaic), 3x3 box smoothed; elevation 14.1..28.3 m, so 1 m terraces are DEM artefacts, not real steps.",
+    "Buildings are flat-roofed prisms (2.5D): no roof shapes, overhangs, bridges lifted off the ground or underpasses; walls reach down to the terrain on slopes. Bridge=yes only repaints the surface as class 10.",
+    "Classes 11 (other furniture) and 12 (wall/fence) are unused: barrier ways are not voxelised in this baseline. Roads are fixed-width buffers (tag width or class default), not true carriageway geometry; tunnels and building:location=underground are skipped."
+  ]
+}

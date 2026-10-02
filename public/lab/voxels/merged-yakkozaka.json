@@ -1,0 +1,44 @@
+{
+  "id": "merged-yakkozaka",
+  "source": "COMPOSITE: PLATEAU Minato-ku FY2025 (ground, measured building heights) + OpenStreetMap (road, sidewalk, water) + Arnis v3.2.0 (trees from canopy-height map, inferred lamps)",
+  "license": "PDL1.0 / CC BY 4.0-compatible (PLATEAU) + ODbL 1.0 (OpenStreetMap) + Arnis inputs (Overture, Mapterhorn, Meta canopy height) terms",
+  "attribution": "出典：国土交通省 3D都市モデル（Project PLATEAU）東京都港区（令和7年度） (https://www.geospatial.jp/ckan/dataset/plateau-13103-minato-ku-2025) を加工して作成 / Source: MLIT Project PLATEAU, Minato-ku FY2025 3D city model, processed into voxels ; © OpenStreetMap contributors; Arnis by louis-e",
+  "method": "pipeline/cubeworld/merge_layers.py: per-cell layer choice on the shared 160 m grid; Arnis objects shifted in height to the PLATEAU ground",
+  "metersPerCube": 1,
+  "dims": [
+    160,
+    100,
+    160
+  ],
+  "origin": {
+    "lat": 35.650133,
+    "lon": 139.730828,
+    "epsg": 6677,
+    "x": -9362,
+    "y": -38891,
+    "groundZ": 13,
+    "centre": true,
+    "note": "lat/lon is the box centre; x/y the projected SW corner"
+  },
+  "classCounts": {
+    "air": 2179055,
+    "ground": 265236,
+    "road": 3408,
+    "sidewalk": 115,
+    "wall": 98895,
+    "roof": 11473,
+    "vegetation": 1712,
+    "pole": 11,
+    "water": 95,
+    "rail": 0,
+    "bridge": 0,
+    "furniture": 0,
+    "fence": 0
+  },
+  "notes": [
+    "Measured: terrain and building heights (PLATEAU LOD1 boxes, flat roofs).",
+    "OSM: roads, alleys, footways, pond, painted onto the PLATEAU ground wherever no building stands.",
+    "Inferred, not observed: 1712 vegetation cells and 11 pole cells come from Arnis (canopy-height model, lamps every 25 m along lit=yes ways).",
+    "Layers come from different DEMs (GSI dem5a vs PLATEAU TIN); heights agree to about a metre, so painted surfaces may sit a cube off on steep bits."
+  ]
+}

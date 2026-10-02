@@ -1,0 +1,104 @@
+{
+  "id": "plateau-shimbashi-lod3",
+  "source": "PLATEAU 3D city model Minato-ku FY2025 (spec v5, CityGML 2.0, built by Tokyo Metropolitan Government): bldg + tran + dem, plus frn/veg/brid where the mesh has them",
+  "license": "PLATEAU Site Policy art. 3 = Public Data License v1.0 (PDL1.0), CC BY 4.0 compatible; free incl. commercial use, attribution + 'modified' notice required; copyright held by the local government (Tokyo / Minato-ku)",
+  "attribution": "出典：国土交通省 3D都市モデル（Project PLATEAU）東京都港区（令和7年度） (https://www.geospatial.jp/ckan/dataset/plateau-13103-minato-ku-2025) を加工して作成 / Source: MLIT Project PLATEAU, Minato-ku FY2025 3D city model, processed into voxels",
+  "method": "pipeline/cubeworld/plateau_voxelize.py: lxml CityGML parse -> EPSG:6677; DEM TIN interpolation; tran polygons rasterised at cell centres; building roof z-buffer filled to terrain; frn/veg/brid surface-sampled to voxels",
+  "metersPerCube": 1,
+  "dims": [
+    160,
+    100,
+    160
+  ],
+  "origin": {
+    "lat": 35.664672,
+    "lon": 139.75469,
+    "epsg": 6677,
+    "x": -7200.0,
+    "y": -37280.0,
+    "groundZ": 2,
+    "centre": true,
+    "note": "lat/lon is the box centre; x/y the projected SW corner"
+  },
+  "classCounts": {
+    "air": 2182132,
+    "ground": 4200,
+    "road": 7344,
+    "sidewalk": 4251,
+    "wall": 346653,
+    "roof": 8943,
+    "vegetation": 4824,
+    "pole": 856,
+    "water": 0,
+    "rail": 0,
+    "bridge": 0,
+    "furniture": 220,
+    "fence": 577
+  },
+  "notes": {
+    "timings_s": {
+      "terrain": 0.1,
+      "roads": 1.4,
+      "buildings": 2.6,
+      "objects": 4.2,
+      "total": 8.3
+    },
+    "pitfalls": {
+      "building_bottom_minus_dem_m": {
+        "median": -0.13,
+        "p10": -0.26,
+        "p90": -0.02
+      }
+    },
+    "road_features_in_box": {
+      "road_lod1": 2,
+      "area_lod2": 119,
+      "area_lod3": 86
+    },
+    "buildings_in_box": {
+      "lod1": 0,
+      "lod2": 48,
+      "lod3": 15
+    },
+    "building_columns_clipped_to_ny": 0,
+    "objects_in_box": {
+      "bridge": 0,
+      "tree": 41,
+      "plantcover": 38,
+      "pole": 91,
+      "furniture": 112,
+      "fence": 101,
+      "skipped_flat": 209
+    },
+    "frn_function_histogram_in_box": {
+      "2000": 101,
+      "5610": 97,
+      "3130": 54,
+      "3150": 36,
+      "4200": 34,
+      "1100": 24,
+      "4810": 24,
+      "5620": 24,
+      "7100": 22,
+      "4900": 19,
+      "9000": 14,
+      "4800": 10,
+      "1020": 7,
+      "1110": 7,
+      "3110": 7,
+      "1040": 6,
+      "8150": 5,
+      "1120": 4,
+      "1200": 4,
+      "7300": 4,
+      "1030": 3,
+      "4300": 3,
+      "1010": 1,
+      "4100": 1,
+      "4820": 1,
+      "6000": 1
+    },
+    "groundZ": 2,
+    "terrain_relief_m": 1.4
+  }
+}

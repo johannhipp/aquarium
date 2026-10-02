@@ -1,0 +1,28 @@
+{
+  "id": "yakkozaka",
+  "name": "奴坂 Yakkozaka, 南麻布三丁目, 港区 Tokyo",
+  "center": {
+    "lat": 35.65013,
+    "lon": 139.73083
+  },
+  "epsg": 6677,
+  "epsgNote": "JGD2011 / Japan Plane Rectangular CS IX. x = easting (m), y = northing (m).",
+  "sw": {
+    "x": -9362,
+    "y": -38891
+  },
+  "sizeM": 160,
+  "metersPerCube": 1,
+  "dims": [
+    160,
+    100,
+    160
+  ],
+  "axes": "voxel x = east (x - sw.x), voxel z = south (sw.y + sizeM - y), voxel y = up (z - groundZ)",
+  "bboxWGS84": {
+    "west": 139.72994340033543,
+    "south": 35.64941149100998,
+    "east": 139.73171219611828,
+    "north": 35.65085519490491
+  }
+}
