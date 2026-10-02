@@ -1,6 +1,15 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { STYLES, buildWorldMesh, createWorldMaterial, type ClassStyle, type EdgeMode } from './mesh';
+import { buildWorldMesh } from './mesh';
+import {
+  createBackdrop,
+  createGlowPoints,
+  createWorldMaterial,
+  setGlowScale,
+  setWorldFocus,
+  wantsAntialias,
+} from './material';
+import { DEFAULT_PALETTE, forCubeSize, rgb, type Palette } from './palettes';
 import { terrainSurface, type VoxelGrid } from './voxels';
 
 /** Cube counts the scene was tuned on: a 50-wide world. Everything below scales with the grid's width. */
@@ -26,6 +35,8 @@ export interface SceneStats {
   facesByClass: number[];
   drawCalls: number;
   triangles: number;
+  /** time spent building the merged geometry, in ms */
+  buildMs: number;
 }
 
 /** A camera pose in units of the world's width, so differently sized grids can follow each other. */
@@ -36,9 +47,10 @@ export interface View {
 }
 
 export interface SceneOptions {
-  styles?: readonly ClassStyle[];
-  /** 'cube' outlines every cube (default); 'outline' only creases, steps and class borders. */
-  edges?: EdgeMode;
+  /** The look: colours, light, outlines, sky. Defaults to DEFAULT_PALETTE. */
+  palette?: Palette;
+  /** Size of a cube in metres (default 1); scales lamp halos and light pools. */
+  metersPerCube?: number;
   /** Zoom at the start: 1 fits the whole landscape. */
   startZoom?: number;
   /** The view's centre rides `eyeBase + eyeFollow * ground height` (in cubes at the reference size). */
@@ -49,6 +61,8 @@ export interface SceneOptions {
 }
 
 export interface VoxelScene {
+  /** The look this scene was built with. */
+  readonly palette: Palette;
   /** Show the scene and run the render loop (it only draws when something changed). */
   start(): void;
   /** Stop the loop and the key listeners; the camera stays where it was. */
@@ -94,9 +108,10 @@ function groundAt(surface: Uint8Array, nx: number, nz: number, x: number, z: num
 }
 
 /**
- * A voxel grid drawn as black-and-white dithered cubes with outlined edges. One draw call: only
- * the faces you can see are in the geometry, and the edge lines and shading come from a shader,
- * not from line meshes. Drag orbits, the wheel zooms, arrow keys glide the view across the ground.
+ * A voxel grid drawn as shaded cubes in the look of a palette (see palettes.ts). One draw call
+ * for the world: only the faces you can see are in the geometry, and the shading, ambient
+ * occlusion and outlines come from a shader and per-vertex attributes, not from line meshes. Drag
+ * orbits, the wheel zooms, arrow keys glide the view across the ground.
  */
 export function createVoxelScene(container: HTMLElement, grid: VoxelGrid, options: SceneOptions = {}): VoxelScene {
   const { nx, ny, nz } = grid;
@@ -107,18 +122,24 @@ export function createVoxelScene(container: HTMLElement, grid: VoxelGrid, option
   const listenKeys = options.keys ?? true;
 
   const pixelRatio = Math.min(window.devicePixelRatio, 2);
-  const renderer = new THREE.WebGLRenderer({ antialias: false, preserveDrawingBuffer: false });
+  const palette = forCubeSize(options.palette ?? DEFAULT_PALETTE, options.metersPerCube ?? 1);
+  const renderer = new THREE.WebGLRenderer({ antialias: wantsAntialias(palette), preserveDrawingBuffer: false });
   renderer.setPixelRatio(pixelRatio);
-  renderer.setClearColor(0xffffff, 1);
+  renderer.setClearColor(new THREE.Color(...rgb(palette.background.bottom)), 1);
   container.appendChild(renderer.domElement);
 
   const surface = terrainSurface(grid);
-  const world = buildWorldMesh(grid, options.styles ?? STYLES, options.edges ?? 'cube');
-  const material = createWorldMaterial(pixelRatio, options.edges === 'outline' ? 1.1 : 0.55);
+  const t0 = performance.now();
+  const world = buildWorldMesh(grid, palette);
+  const buildMs = performance.now() - t0;
+  const material = createWorldMaterial(palette, pixelRatio, size);
   const mesh = new THREE.Mesh(world.geometry, material);
   mesh.frustumCulled = false;
+  const backdrop = createBackdrop(palette);
+  const glow = createGlowPoints(palette, world.glows);
   const scene = new THREE.Scene();
-  scene.add(mesh);
+  scene.add(backdrop, mesh);
+  if (glow) scene.add(glow);
 
   const distance = CAMERA_DISTANCE * k;
   const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 1, distance * 3);
@@ -232,6 +253,8 @@ export function createVoxelScene(container: HTMLElement, grid: VoxelGrid, option
   }
 
   function draw(): void {
+    setWorldFocus(material, camera.position.distanceTo(target));
+    if (glow) setGlowScale(glow, renderer.domElement.height / ((camera.top - camera.bottom) / camera.zoom));
     renderer.render(scene, camera);
     drawCalls = renderer.info.render.calls;
     triangles = renderer.info.render.triangles;
@@ -250,6 +273,7 @@ export function createVoxelScene(container: HTMLElement, grid: VoxelGrid, option
   }
 
   return {
+    palette,
     start() {
       if (running) return;
       running = true;
@@ -277,12 +301,18 @@ export function createVoxelScene(container: HTMLElement, grid: VoxelGrid, option
       controls.dispose();
       world.geometry.dispose();
       material.dispose();
+      backdrop.geometry.dispose();
+      (backdrop.material as THREE.Material).dispose();
+      if (glow) {
+        glow.geometry.dispose();
+        (glow.material as THREE.Material).dispose();
+      }
       renderer.dispose();
       renderer.forceContextLoss();
       renderer.domElement.remove();
     },
     stats() {
-      return { cubes: world.cubes, faces: world.faces, facesByClass: world.facesByClass, drawCalls, triangles };
+      return { cubes: world.cubes, faces: world.faces, facesByClass: world.facesByClass, drawCalls, triangles, buildMs };
     },
     getView() {
       return {

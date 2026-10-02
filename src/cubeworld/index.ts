@@ -1,7 +1,11 @@
+import { paletteById } from './palettes';
 import { createVoxelScene, type SceneStats } from './scene';
 import { generateTerrain } from './terrain';
 
 const SEED = 64;
+
+/** The look of the prototype world: one of mono, gameboy, washi, night, foam (see palettes.ts). */
+const PALETTE_ID = 'foam';
 
 export type CubeworldStats = SceneStats;
 
@@ -17,5 +21,5 @@ export interface Cubeworld {
 
 /** The prototype landscape: a 50 x 50 voxel world, up to 100 cubes high. */
 export function createCubeworld(container: HTMLElement): Cubeworld {
-  return createVoxelScene(container, generateTerrain(SEED), { eyeBase: 14, eyeFollow: 0.5 });
+  return createVoxelScene(container, generateTerrain(SEED), { palette: paletteById(PALETTE_ID), eyeBase: 14, eyeFollow: 0.5 });
 }

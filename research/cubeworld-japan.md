@@ -30,7 +30,7 @@ Status: investigation with runnable prototypes, nothing here is a production fea
 | Real LiDAR poles, a Shizuoka street | `http://localhost:5199/lab.html?v=pointcloud-numazu` |
 | Pooled preview of anything | add `&scale=3`; add `&edges=cube` to outline every cube |
 
-Screenshots: `research/img/` (`lab-*.png` from the viewer, `plateau-*.png` and the point-cloud ones from the other agents).
+Screenshots: `research/img/` (`lab-*.webp` from the viewer, `plateau-*.webp` and the point-cloud ones from the other agents).
 
 <!-- owner: CubeWorld -->
 ## Test area and lab
@@ -88,7 +88,7 @@ The cheapest baseline, built here from scratch (about 800 lines of Python includ
 <!-- owner: PlateauVoxels -->
 ## PLATEAU (MLIT open CityGML)
 
-Outputs: `plateau-yakkozaka` (the test box), `plateau-shimbashi-lod3` (best-case ceiling, same data source, ~2 km away) and `plateau-shimbashi-lod3-cap18` (same, towers cut at 18 m so the street level is visible). Script: `pipeline/cubeworld/plateau_voxelize.py` + `plateau_citygml.py` (`plateau_topdown.py` writes a debug top view). Screenshots: `research/img/plateau-*.png`.
+Outputs: `plateau-yakkozaka` (the test box), `plateau-shimbashi-lod3` (best-case ceiling, same data source, ~2 km away) and `plateau-shimbashi-lod3-cap18` (same, towers cut at 18 m so the street level is visible). Script: `pipeline/cubeworld/plateau_voxelize.py` + `plateau_citygml.py` (`plateau_topdown.py` writes a debug top view). Screenshots: `research/img/plateau-*.webp`.
 
 ### What PLATEAU has for the box
 
@@ -136,8 +136,8 @@ Voxelization (everything is 2.5D on purpose; `trimesh.voxelized().fill()` would 
 
 What it looks like in the lab viewer:
 
-* **Yakkozaka** (`plateau-yakkozaka-iso.png`, `-scale3.png`, `-vs-pointcloud-vs-arnis.png`): the street pattern, the building blocks and the 15 m slope are right; a top-down comparison with the OSM baseline shows the same streets and footprints cell for cell, with PLATEAU missing a couple of dead-end lanes and OSM missing a few buildings. Buildings are bare flat boxes with true heights (more trustworthy than the OSM guessed ones). There are no trees, no poles and one flat road colour, so it reads as "a model of a city district" rather than a lived-in street. At `?scale=3` (54 x 54 cubes) the main roads and block structure survive, narrow lanes break up.
-* **Shimbashi LOD3** (`plateau-shimbashi-lod3-iso.png`, `-cap18.png`, `-cap18-scale3.png`): streets, sidewalk bands, tree rows (stipple), 10 m solid-black poles and signals, fences and buildings with real roof steps are all distinguishable at 1 m. At `?scale=3` poles pool into 3 x 3 black slabs and the sidewalks thin out, but road, sidewalk, tree row and building still tell apart. This is the ceiling of what PLATEAU gives, and it is exactly what the Yakkozaka box lacks.
+* **Yakkozaka** (`plateau-yakkozaka-iso.webp`, `-scale3.webp`, `-vs-pointcloud-vs-arnis.webp`): the street pattern, the building blocks and the 15 m slope are right; a top-down comparison with the OSM baseline shows the same streets and footprints cell for cell, with PLATEAU missing a couple of dead-end lanes and OSM missing a few buildings. Buildings are bare flat boxes with true heights (more trustworthy than the OSM guessed ones). There are no trees, no poles and one flat road colour, so it reads as "a model of a city district" rather than a lived-in street. At `?scale=3` (54 x 54 cubes) the main roads and block structure survive, narrow lanes break up.
+* **Shimbashi LOD3** (`plateau-shimbashi-lod3-iso.webp`, `-cap18.webp`, `-cap18-scale3.webp`): streets, sidewalk bands, tree rows (stipple), 10 m solid-black poles and signals, fences and buildings with real roof steps are all distinguishable at 1 m. At `?scale=3` poles pool into 3 x 3 black slabs and the sidewalks thin out, but road, sidewalk, tree row and building still tell apart. This is the ceiling of what PLATEAU gives, and it is exactly what the Yakkozaka box lacks.
 
 ### Pitfalls
 
@@ -164,7 +164,7 @@ PLATEAU Site Policy, art. 3: content is usable under the **Public Data License v
 <!-- owner: PointCloudVoxels -->
 ## Point clouds (Tokyo digital twin, Mapillary, OSM poles)
 
-Outputs: `pointcloud-yakkozaka` (the test box, Tokyo aerial LiDAR + OSM), `pointcloud-shimbashi` (same recipe on PlateauVoxels' LOD3 best-case box, so the two can be compared side by side: `/lab.html?v=pointcloud-shimbashi,plateau-shimbashi-lod3`) and `pointcloud-numazu` (Shizuoka MMS street, **rotated corridor** 191 x 40 x 35, the only real poles). Scripts: `pipeline/cubeworld/pointcloud_tokyo.py [yakkozaka|shimbashi]`, `pointcloud_mms.py`, `pointcloud_streetlevel.py` (OSM counts, Mapillary), `pointcloud_preview.py` (matplotlib top/side check), shared `pointcloud_common.py`. Downloads land in `pipeline/cache/cubeworld/{tokyo,shizuoka}` (gitignored; zips + thinned crops 1.4 GB, the scripts re-extract the LAS on demand). Screenshots: `research/img/pointcloud-*.png`. Every run takes about 2 s on the cached crop.
+Outputs: `pointcloud-yakkozaka` (the test box, Tokyo aerial LiDAR + OSM), `pointcloud-shimbashi` (same recipe on PlateauVoxels' LOD3 best-case box, so the two can be compared side by side: `/lab.html?v=pointcloud-shimbashi,plateau-shimbashi-lod3`) and `pointcloud-numazu` (Shizuoka MMS street, **rotated corridor** 191 x 40 x 35, the only real poles). Scripts: `pipeline/cubeworld/pointcloud_tokyo.py [yakkozaka|shimbashi]`, `pointcloud_mms.py`, `pointcloud_streetlevel.py` (OSM counts, Mapillary), `pointcloud_preview.py` (matplotlib top/side check), shared `pointcloud_common.py`. Downloads land in `pipeline/cache/cubeworld/{tokyo,shizuoka}` (gitignored; zips + thinned crops 1.4 GB, the scripts re-extract the LAS on demand). Screenshots: `research/img/pointcloud-*.webp`. Every run takes about 2 s on the cached crop.
 
 ### Which open point clouds exist, and do they cover the box?
 
@@ -272,3 +272,27 @@ Surveyed with the GitHub API on 2026-10-02 (stars, licence, last push are from t
 * **To verify before committing to a street:** that the chosen block really has the layers we need (PLATEAU: check the CityGML mesh codes for `frn`/`veg` and LOD2/3 buildings before downloading; point cloud: check the mesh exists), and attribution wording per source (each voxel json carries it; the app has no text, so the credit needs a home in the `?` dialog).
 * **Suggested next step if you pick the Shimbashi route:** voxelize an actual 2-3 street corridor (not a 160 m square) from `plateau_voxelize.py`, pool it to the 50 x 50 x 100 world (about 3 m per cube, `?scale=3` is the preview) or keep 1 m cubes and stream 50 x 50 chunks (see `research/cubeworld.md` for the chunk plan).
 * **Known weak spots of the lab itself:** the viewer is orthographic and iso only (no street-level camera). Pooling keeps thin classes alive (pole, furniture, fence, vegetation and sidewalk outrank road and ground), but a 1 m pole becomes a 3 m wide column at `?scale=3`, so pooled previews show where things are, not how thin they are.
+
+<!-- owner: Palettes -->
+## Visual styles
+
+The dithered 1-bit look was busy (everywhere stipple, harsh black roads). Colour is now a **palette** (`src/cubeworld/palettes.ts`): per-class colours, per-face light, outline mode, sky, fog and a few extras. A palette never changes which cubes or quads exist: the mesh builder emits the same geometry for all five (Shimbashi: **183,500 cubes, 79,753 quads** in every style; `merged-yakkozaka`: 380,945 cubes, 82,870 quads). Everything stays in one merged geometry, vertex attributes and one shader:
+
+* **Corner AO** from neighbour occupancy, computed in the mesh builder (`aAo`, quad split along the darker diagonal so no seams). Strength and tint are per palette.
+* **Outlines in the fragment shader** (no line geometry): per palette none / every cube / only silhouettes and creases, with width, opacity and a tint mode. Roads never get lines, so a street stays one ribbon.
+* **Extras by uniform:** depth fade to a haze colour, screen-space paper grain, a wall gradient towards the ground, wavy water bands, lit-window speckle hashed per cube, lamp tips with an additive halo and a pool of light baked per vertex, a 4-colour quantiser with 2 px pixel snapping.
+* **Cost** (median of 5, 160 x 100 x 160 grids, desktop Chrome): mesh build 49-67 ms, night 95-99 ms (lamp-pool lighting); the world is **1 draw call**, plus 1 for the full-screen sky and, in the night style only, 1 for the halo sprites. About 160k triangles.
+
+Open the lab with `?style=1..5` (id also works: `mono`, `gameboy`, `washi`, `night`, `foam`); keys **1-5** switch live, `?style=1,2` puts styles side by side, `?grid=1` shows all five in a 3+2 grid with synced cameras and a summary cell (keys 1-5 solo a style, 0 or G back to the grid). `?ui=0` hides the labels for screenshots, `?scale=3` previews the 50 x 50 budget. The main app's prototype world uses `PALETTE_ID` in `src/cubeworld/index.ts` (now `'foam'`: the heightfield reads as a white card model on the white-ish page, and its white sky blends into the iris transition).
+
+| # | Style | Idea | Lab URL (Shimbashi, 1 m) | Images |
+|---|-------|------|--------------------------|--------|
+| 1 | **Refined mono** | The brand black and white, calmed: white sky, soft greys, strong AO, grey hairlines on silhouettes and creases only, mid-grey roads, near-black poles. | `/lab.html?v=plateau-shimbashi-lod3-cap18&zoom=2&style=1` | `research/img/palette-1-*.webp` |
+| 2 | **Game Boy DMG** | Four olive greens (`#0f380f #306230 #8bac0f #cadc9f`), 2 px pixel snapping, 1 px hard outlines, no antialiasing. Classes pick a ramp step, walls step down with the light, AO only as a faint contact shadow. | `...&style=2` | `palette-2-*.webp` |
+| 3 | **Washi & sumi** | Warm paper with grain and vignette, sumi-ink outlines and trees, indigo (藍) water and roofs, vermilion (朱) lamp tips as the one accent, wash gradient on the walls. | `...&style=3` | `palette-3-*.webp` |
+| 4 | **Tokyo night** | Blue-black sky with stars and haze, dark towers with hash-lit windows, sodium-tinted roads, glowing lamp tips with halo and a light pool on the street, cool rim lines. | `...&style=4` | `palette-4-*.webp` |
+| 5 | **Foam-core model** | White card blocks on a pale warm board, sage trees, light warm grey roads, soft AO, pencil edges (tinted lines), coral lamp pins as the one accent. | `...&style=5` | `palette-5-*.webp` |
+
+For each style: `palette-<n>-shimbashi.webp` (1 m), `palette-<n>-shimbashi-scale3.webp` (`&scale=3`) and `palette-<n>-yakkozaka.webp` (`merged-yakkozaka`), all at the same camera (`zoom=2`, default heading). Contact sheet: `research/img/palettes-sheet.webp`. Grid: `/lab.html?v=plateau-shimbashi-lod3-cap18&zoom=2&grid=1`.
+
+Notes: lamp halos and pools are authored in metres and shrink in cubes with `?scale=k` (`forCubeSize`), so the night style stays readable pooled. Poles are single-cube accents at 3 m cubes, so the accent colour shows on every pole there.

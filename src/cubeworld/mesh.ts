@@ -1,58 +1,21 @@
 import * as THREE from 'three';
+import { DEFAULT_PALETTE, type Palette } from './palettes';
 import { hash2 } from './terrain';
 import { CLASS_COUNT, Class, type VoxelGrid } from './voxels';
 
-/** How a face's tone becomes black and white dots (the shader switches on this). */
-export type Pattern = 'dither' | 'water' | 'solid' | 'stipple' | 'stripes';
-
-export interface ClassStyle {
-  /** 0 white .. 1 black: dot density of the top face */
-  top: number;
-  /** same for the sides, before the light-direction offsets */
-  side: number;
-  pattern: Pattern;
-  /** draw each cube's outline */
-  edges: boolean;
-  /** random per-cube tone variation, 0..1 of the range */
-  jitter: number;
-}
-
-const PATTERN_CODE: Record<Pattern, number> = { dither: 0, water: 1, solid: 2, stipple: 3, stripes: 4 };
-
-/**
- * The 1-bit look of each class. Ground, buildings and roofs are shaded dither with outlined cubes;
- * roads are a dark flat with no outline so the street reads as one ribbon; poles are solid ink so a
- * one-cube column still reads; vegetation is a random stipple, water dashes, rail stripes.
- */
-export const STYLES: readonly ClassStyle[] = (() => {
-  const table: ClassStyle[] = Array.from({ length: CLASS_COUNT }, () => ({
-    top: 0.2, side: 0.3, pattern: 'dither', edges: true, jitter: 0.05,
-  }));
-  table[Class.GROUND] = { top: 0.12, side: 0.26, pattern: 'dither', edges: true, jitter: 0.03 };
-  table[Class.ROAD] = { top: 0.82, side: 0.82, pattern: 'dither', edges: false, jitter: 0 };
-  table[Class.SIDEWALK] = { top: 0.04, side: 0.2, pattern: 'dither', edges: true, jitter: 0 };
-  table[Class.BUILDING] = { top: 0, side: 0.2, pattern: 'dither', edges: true, jitter: 0 };
-  table[Class.ROOF] = { top: 0, side: 0.2, pattern: 'dither', edges: true, jitter: 0 };
-  table[Class.VEGETATION] = { top: 0.5, side: 0.5, pattern: 'stipple', edges: false, jitter: 0.08 };
-  table[Class.POLE] = { top: 1, side: 1, pattern: 'solid', edges: false, jitter: 0 };
-  table[Class.WATER] = { top: 0, side: 0.5, pattern: 'water', edges: true, jitter: 0 };
-  table[Class.RAIL] = { top: 0.6, side: 0.6, pattern: 'stripes', edges: false, jitter: 0 };
-  table[Class.BRIDGE] = { top: 0.5, side: 0.5, pattern: 'dither', edges: true, jitter: 0 };
-  table[Class.FURNITURE] = { top: 0.7, side: 0.7, pattern: 'dither', edges: true, jitter: 0 };
-  table[Class.FENCE] = { top: 0.35, side: 0.35, pattern: 'dither', edges: true, jitter: 0 };
-  return table;
-})();
+/** Face orientation ids, as the world shader reads them from `aInfo.y`. */
+export const ORIENT = { EAST: 0, WEST: 1, TOP: 2, SOUTH: 3, NORTH: 4 } as const;
 
 interface FaceDef {
   /** neighbour offset the face looks toward */
   d: readonly [number, number, number];
   /** four corners, counter-clockwise seen from outside */
   corners: readonly [number, number, number][];
-  /** tone offset from the class's side tone: light comes from the upper left, so +x is darker */
-  delta: number;
-  top: boolean;
+  orient: number;
   /** in-plane step to the neighbouring cell across each side of the quad (u=0, u=1, v=0, v=1) */
   sides: readonly (readonly [number, number, number])[];
+  /** per corner: the three cells that occlude it (two edge neighbours, then the diagonal), as 9 ints, relative to the cube */
+  aoCells: Int8Array;
 }
 
 /** Unit step in the plane for the quad's sides in UV order: u=0, u=1, v=0, v=1. */
@@ -68,44 +31,91 @@ function planeSides(corners: readonly [number, number, number][]): [number, numb
   ];
 }
 
-const FACE_TABLE: readonly Omit<FaceDef, 'sides'>[] = [
-  { d: [1, 0, 0], delta: 0.14, top: false, corners: [[1, 0, 1], [1, 0, 0], [1, 1, 0], [1, 1, 1]] },
-  { d: [-1, 0, 0], delta: -0.08, top: false, corners: [[0, 0, 0], [0, 0, 1], [0, 1, 1], [0, 1, 0]] },
-  { d: [0, 1, 0], delta: 0, top: true, corners: [[0, 1, 1], [1, 1, 1], [1, 1, 0], [0, 1, 0]] },
-  { d: [0, 0, 1], delta: 0.06, top: false, corners: [[0, 0, 1], [1, 0, 1], [1, 1, 1], [0, 1, 1]] },
-  { d: [0, 0, -1], delta: -0.02, top: false, corners: [[1, 0, 0], [0, 0, 0], [0, 1, 0], [1, 1, 0]] },
+/**
+ * The classic voxel-AO neighbourhood: a corner of a face is darkened by the two cells beside it
+ * and the one diagonal to it, all in the layer just in front of the face.
+ */
+function aoNeighbours(d: readonly [number, number, number], corners: readonly [number, number, number][]): Int8Array {
+  const out = new Int8Array(36);
+  const axes = [0, 1, 2].filter((i) => d[i] === 0);
+  const [a, b] = axes;
+  corners.forEach((p, k) => {
+    const sa = p[a] * 2 - 1;
+    const sb = p[b] * 2 - 1;
+    const cell = (da: number, db: number): [number, number, number] => {
+      const v: [number, number, number] = [d[0], d[1], d[2]];
+      v[a] += da;
+      v[b] += db;
+      return v;
+    };
+    const cells = [cell(sa, 0), cell(0, sb), cell(sa, sb)];
+    cells.forEach((v, i) => out.set(v, k * 9 + i * 3));
+  });
+  return out;
+}
+
+const FACE_TABLE: readonly Omit<FaceDef, 'sides' | 'aoCells'>[] = [
+  { d: [1, 0, 0], orient: ORIENT.EAST, corners: [[1, 0, 1], [1, 0, 0], [1, 1, 0], [1, 1, 1]] },
+  { d: [-1, 0, 0], orient: ORIENT.WEST, corners: [[0, 0, 0], [0, 0, 1], [0, 1, 1], [0, 1, 0]] },
+  { d: [0, 1, 0], orient: ORIENT.TOP, corners: [[0, 1, 1], [1, 1, 1], [1, 1, 0], [0, 1, 0]] },
+  { d: [0, 0, 1], orient: ORIENT.SOUTH, corners: [[0, 0, 1], [1, 0, 1], [1, 1, 1], [0, 1, 1]] },
+  { d: [0, 0, -1], orient: ORIENT.NORTH, corners: [[1, 0, 0], [0, 0, 0], [0, 1, 0], [1, 1, 0]] },
 ];
-const FACES: readonly FaceDef[] = FACE_TABLE.map((f) => ({ ...f, sides: planeSides(f.corners) }));
+const FACES: readonly FaceDef[] = FACE_TABLE.map((f) => ({
+  ...f,
+  sides: planeSides(f.corners),
+  aoCells: aoNeighbours(f.d, f.corners),
+}));
 const CORNER_UV: readonly (readonly [number, number])[] = [[0, 0], [1, 0], [1, 1], [0, 1]];
 const ALL_SIDES = new Float32Array([1, 1, 1, 1]);
+const NO_AO = new Float32Array([1, 1, 1, 1]);
 
-/** 'cube': outline every cube; 'outline': only where the surface is not flat across a side. */
-export type EdgeMode = 'cube' | 'outline';
+/** A half-open box of cells, in grid coordinates. */
+export interface MeshRegion {
+  x0: number;
+  y0: number;
+  z0: number;
+  x1: number;
+  y1: number;
+  z1: number;
+}
 
 export interface WorldMesh {
   geometry: THREE.BufferGeometry;
-  /** non-air cells */
+  /** non-air cells in the region */
   cubes: number;
   /** quads in the geometry after hidden-face culling */
   faces: number;
   /** quads per class, to see what the budget is spent on */
   facesByClass: number[];
+  /** xyz (grid coordinates) of the centre of every lamp tip in the region, for the halo sprites */
+  glows: Float32Array;
 }
 
 /**
  * One merged geometry of only the faces that can be seen: every solid cube whose neighbour is air
  * contributes that face as a unit quad; faces between touching cubes and on the floor are never
- * emitted. In 'cube' mode every quad gets its own outline (individual cubes read), in 'outline'
- * mode only creases, steps and class borders do (big areas stay clean). The grid is scanned twice
+ * emitted. The palette decides only what is stored per vertex, never which quads exist: whether
+ * each quad's sides carry an outline flag ('cube' every side, 'outline' only creases and steps),
+ * the corner AO values, and the lamp-pool light. Colours themselves live in the shader.
+ *
+ * `region` limits the output to a box of cells while still reading neighbours outside it (but
+ * inside `grid`) for culling, AO and outline flags, so separately built chunks stitch seamlessly.
+ * Positions are in grid coordinates. Cells beyond the grid count as air. The grid is scanned twice
  * (count, then fill) so the typed arrays are allocated once at their exact size.
+ *
+ * Attributes: position, uv (quad corners, for outlines), aInfo = (class, orientation, lamp tip,
+ * per-cube hash), aAo (1 clear .. 0 fully occluded), aEdge (outline flag per quad side), aLight.
  */
-export function buildWorldMesh(
-  grid: VoxelGrid,
-  styles: readonly ClassStyle[] = STYLES,
-  edgeMode: EdgeMode = 'cube',
-): WorldMesh {
+export function buildWorldMesh(grid: VoxelGrid, palette: Palette = DEFAULT_PALETTE, region?: MeshRegion): WorldMesh {
   const { cells, nx, ny, nz } = grid;
   const layer = nx * nz;
+  const bx0 = Math.max(0, region?.x0 ?? 0);
+  const by0 = Math.max(0, region?.y0 ?? 0);
+  const bz0 = Math.max(0, region?.z0 ?? 0);
+  const bx1 = Math.min(nx, region?.x1 ?? nx);
+  const by1 = Math.min(ny, region?.y1 ?? ny);
+  const bz1 = Math.min(nz, region?.z1 ?? nz);
   const facesByClass = new Array<number>(CLASS_COUNT).fill(0);
   let faces = 0;
   let cubes = 0;
@@ -119,12 +129,15 @@ export function buildWorldMesh(
     return cells[ax + nx * az + layer * ay] === Class.AIR;
   };
 
+  const solid = (x: number, y: number, z: number): number =>
+    x >= 0 && z >= 0 && y >= 0 && x < nx && z < nz && y < ny && cells[x + nx * z + layer * y] !== Class.AIR ? 1 : 0;
+
   /**
    * Outline mode: a side of a quad gets a line unless the quad continues flat across it, i.e. the
    * neighbouring cell in the plane has the same class and shows its face in the same direction.
    * Flat ground and flat walls stay clean; creases, steps and class borders are drawn.
    */
-  const outline = edgeMode === 'outline';
+  const outline = palette.outline.mode === 'outline';
   const flags = new Float32Array(4);
   const sideFlags = (c: number, x: number, y: number, z: number, f: FaceDef): Float32Array => {
     for (let s = 0; s < 4; s++) {
@@ -141,9 +154,28 @@ export function buildWorldMesh(
     return flags;
   };
 
-  for (let y = 0; y < ny; y++) {
-    for (let z = 0; z < nz; z++) {
-      for (let x = 0; x < nx; x++) {
+  /** 1 clear .. 0 fully enclosed per corner. */
+  const useAo = palette.ao.strength > 0;
+  const ao = new Float32Array(4);
+  const cornerAo = (x: number, y: number, z: number, f: FaceDef): Float32Array => {
+    const t = f.aoCells;
+    for (let k = 0; k < 4; k++) {
+      const o = k * 9;
+      const s1 = solid(x + t[o], y + t[o + 1], z + t[o + 2]);
+      const s2 = solid(x + t[o + 3], y + t[o + 4], z + t[o + 5]);
+      const c = solid(x + t[o + 6], y + t[o + 7], z + t[o + 8]);
+      ao[k] = (s1 && s2 ? 0 : 3 - (s1 + s2 + c)) / 3;
+    }
+    return ao;
+  };
+
+  /** A lamp tip is a pole cube with nothing above it. */
+  const isTip = (c: number, x: number, y: number, z: number): boolean =>
+    c === Class.POLE && (y + 1 >= ny || cells[x + nx * z + layer * (y + 1)] === Class.AIR);
+
+  for (let y = by0; y < by1; y++) {
+    for (let z = bz0; z < bz1; z++) {
+      for (let x = bx0; x < bx1; x++) {
         const c = cells[x + nx * z + layer * y];
         if (c === Class.AIR) continue;
         cubes++;
@@ -156,25 +188,86 @@ export function buildWorldMesh(
     }
   }
 
+  // Lamps for the light pool (and the halo list): tips inside the region, plus a margin of
+  // pool radius so chunk borders light up the same on both sides.
+  const lamp = palette.lamp;
+  const radius = lamp?.pool ?? 0;
+  const lampXyz: number[] = [];
+  const glowXyz: number[] = [];
+  if (lamp) {
+    const m = Math.ceil(radius);
+    const sx0 = Math.max(0, bx0 - m);
+    const sy0 = Math.max(0, by0 - m);
+    const sz0 = Math.max(0, bz0 - m);
+    const sx1 = Math.min(nx, bx1 + m);
+    const sy1 = Math.min(ny, by1 + m);
+    const sz1 = Math.min(nz, bz1 + m);
+    for (let y = radius > 0 ? sy0 : by0; y < (radius > 0 ? sy1 : by1); y++) {
+      for (let z = radius > 0 ? sz0 : bz0; z < (radius > 0 ? sz1 : bz1); z++) {
+        for (let x = radius > 0 ? sx0 : bx0; x < (radius > 0 ? sx1 : bx1); x++) {
+          if (!isTip(cells[x + nx * z + layer * y], x, y, z)) continue;
+          lampXyz.push(x + 0.5, y + 0.5, z + 0.5);
+          if (x >= bx0 && x < bx1 && y >= by0 && y < by1 && z >= bz0 && z < bz1) glowXyz.push(x + 0.5, y + 0.5, z + 0.5);
+        }
+      }
+    }
+  }
+  const bins = new Map<number, number[]>();
+  const binKey = (i: number, k: number): number => i * 65536 + k;
+  if (radius > 0) {
+    for (let i = 0; i < lampXyz.length; i += 3) {
+      const key = binKey(Math.floor(lampXyz[i] / radius), Math.floor(lampXyz[i + 2] / radius));
+      const list = bins.get(key);
+      if (list) list.push(i);
+      else bins.set(key, [i]);
+    }
+  }
+  /** Light pool at a vertex: each lamp within `radius` adds a squared falloff, scaled by how squarely the face looks at it. */
+  const poolAt = (px: number, py: number, pz: number, f: FaceDef): number => {
+    const bi = Math.floor(px / radius);
+    const bk = Math.floor(pz / radius);
+    let sum = 0;
+    for (let di = -1; di <= 1; di++) {
+      for (let dk = -1; dk <= 1; dk++) {
+        const list = bins.get(binKey(bi + di, bk + dk));
+        if (!list) continue;
+        for (const i of list) {
+          const dx = lampXyz[i] - px;
+          const dy = lampXyz[i + 1] - py;
+          const dz = lampXyz[i + 2] - pz;
+          const dist = Math.hypot(dx, dy, dz);
+          if (dist >= radius) continue;
+          const facing = dist < 1e-4 ? 1 : (dx * f.d[0] + dy * f.d[1] + dz * f.d[2]) / dist;
+          const w = Math.min(1, Math.max(0, facing * 0.8 + 0.35));
+          const a = 1 - dist / radius;
+          sum += a * a * w;
+        }
+      }
+    }
+    return Math.min(1, sum);
+  };
+
   const position = new Float32Array(faces * 12);
   const uv = new Float32Array(faces * 8);
-  const shade = new Float32Array(faces * 12); // (tone, pattern, edges) per vertex
+  const info = new Float32Array(faces * 16); // (class, orientation, lamp tip, hash) per vertex
+  const aoAttr = new Float32Array(faces * 4);
+  const light = new Float32Array(faces * 4);
   const edge = new Float32Array(faces * 16); // which of the quad's four sides get a line
   const index = faces * 4 > 65535 ? new Uint32Array(faces * 6) : new Uint16Array(faces * 6);
   let q = 0;
-  for (let y = 0; y < ny; y++) {
-    for (let z = 0; z < nz; z++) {
-      for (let x = 0; x < nx; x++) {
+  for (let y = by0; y < by1; y++) {
+    for (let z = bz0; z < bz1; z++) {
+      for (let x = bx0; x < bx1; x++) {
         const c = cells[x + nx * z + layer * y];
         if (c === Class.AIR) continue;
-        const style = styles[c < CLASS_COUNT ? c : Class.FURNITURE];
-        const jitter = (hash2(x * 131 + y, z, 5) - 0.5) * 2 * style.jitter;
-        for (const f of FACES) {
+        const cls = c < CLASS_COUNT ? c : Class.FURNITURE;
+        const tip = isTip(c, x, y, z) ? 1 : 0;
+        const hash = hash2(x * 131 + y, z, 5);
+        for (let fi = 0; fi < FACES.length; fi++) {
+          const f = FACES[fi];
           if (!exposed(x, y, z, f)) continue;
-          let tone = f.top ? style.top : style.side + f.delta;
-          tone = Math.min(0.95, Math.max(0, tone + jitter));
-          if (style.pattern === 'solid') tone = 1;
           const flags = outline ? sideFlags(c, x, y, z, f) : ALL_SIDES;
+          const corner = useAo ? cornerAo(x, y, z, f) : NO_AO;
           const v = q * 4;
           for (let k = 0; k < 4; k++) {
             const [cx, cy, cz] = f.corners[k];
@@ -185,22 +278,35 @@ export function buildWorldMesh(
             const t = (v + k) * 2;
             uv[t] = CORNER_UV[k][0];
             uv[t + 1] = CORNER_UV[k][1];
-            shade[p] = tone;
-            shade[p + 1] = PATTERN_CODE[style.pattern];
-            shade[p + 2] = style.edges ? 1 : 0;
-            const e = (v + k) * 4;
-            edge[e] = flags[0];
-            edge[e + 1] = flags[1];
-            edge[e + 2] = flags[2];
-            edge[e + 3] = flags[3];
+            const s = (v + k) * 4;
+            info[s] = cls;
+            info[s + 1] = f.orient;
+            info[s + 2] = tip;
+            info[s + 3] = hash;
+            aoAttr[v + k] = corner[k];
+            if (radius > 0) light[v + k] = poolAt(x + cx, y + cy, z + cz, f);
+            edge[s] = flags[0];
+            edge[s + 1] = flags[1];
+            edge[s + 2] = flags[2];
+            edge[s + 3] = flags[3];
           }
           const i = q * 6;
-          index[i] = v;
-          index[i + 1] = v + 1;
-          index[i + 2] = v + 2;
-          index[i + 3] = v;
-          index[i + 4] = v + 2;
-          index[i + 5] = v + 3;
+          // split along the diagonal through the darker pair of corners, so AO never shows a seam
+          if (corner[0] + corner[2] > corner[1] + corner[3]) {
+            index[i] = v + 1;
+            index[i + 1] = v + 2;
+            index[i + 2] = v + 3;
+            index[i + 3] = v + 1;
+            index[i + 4] = v + 3;
+            index[i + 5] = v;
+          } else {
+            index[i] = v;
+            index[i + 1] = v + 1;
+            index[i + 2] = v + 2;
+            index[i + 3] = v;
+            index[i + 4] = v + 2;
+            index[i + 5] = v + 3;
+          }
           q++;
         }
       }
@@ -210,94 +316,13 @@ export function buildWorldMesh(
   const geometry = new THREE.BufferGeometry();
   geometry.setAttribute('position', new THREE.BufferAttribute(position, 3));
   geometry.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
-  geometry.setAttribute('aShade', new THREE.BufferAttribute(shade, 3));
+  geometry.setAttribute('aInfo', new THREE.BufferAttribute(info, 4));
+  geometry.setAttribute('aAo', new THREE.BufferAttribute(aoAttr, 1));
+  geometry.setAttribute('aLight', new THREE.BufferAttribute(light, 1));
   geometry.setAttribute('aEdge', new THREE.BufferAttribute(edge, 4));
   geometry.setIndex(new THREE.BufferAttribute(index, 1));
   // fixed bounds: the world never changes, so culling needs no per-frame work
-  geometry.boundingBox = new THREE.Box3(new THREE.Vector3(0, 0, 0), new THREE.Vector3(nx, ny, nz));
+  geometry.boundingBox = new THREE.Box3(new THREE.Vector3(bx0, by0, bz0), new THREE.Vector3(bx1, by1, bz1));
   geometry.boundingSphere = geometry.boundingBox.getBoundingSphere(new THREE.Sphere());
-  return { geometry, cubes, faces, facesByClass };
-}
-
-/**
- * The 1-bit look, all in the fragment shader (no line geometry): every face's tone is thresholded
- * against an ordered 4x4 Bayer matrix in screen space, so shading is pure black and white dots like
- * a Game Boy screen; each cube's edge is drawn from the face UVs as a line about one CSS pixel
- * wide, and fades out when cubes shrink below a few pixels so far-away terrain turns to dither
- * instead of a black smear. Per class the pattern switches: water gets dashed rows, vegetation a
- * random stipple, rail horizontal stripes, poles solid ink.
- */
-export function createWorldMaterial(pixelRatio: number, lineCssPx = 0.55): THREE.ShaderMaterial {
-  return new THREE.ShaderMaterial({
-    uniforms: {
-      // dither cell, in device pixels: 2 CSS px keeps the dots chunky and crisp
-      uCell: { value: 2 * pixelRatio },
-      // edge half-width in device pixels
-      uLine: { value: lineCssPx * pixelRatio },
-      uInk: { value: new THREE.Vector3(11 / 255, 11 / 255, 11 / 255) },
-    },
-    vertexShader: /* glsl */ `
-      attribute vec3 aShade;
-      attribute vec4 aEdge;
-      varying vec2 vUv;
-      varying vec3 vShade;
-      varying vec4 vEdge;
-      void main() {
-        vUv = uv;
-        vShade = aShade;
-        vEdge = aEdge;
-        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-      }
-    `,
-    fragmentShader: /* glsl */ `
-      uniform float uCell;
-      uniform float uLine;
-      uniform vec3 uInk;
-      varying vec2 vUv;
-      varying vec3 vShade;
-      varying vec4 vEdge;
-
-      float b2(vec2 p) {
-        p = mod(p, 2.0);
-        return mod(2.0 * p.x + 3.0 * p.y, 4.0);
-      }
-      float bayer4(vec2 p) {
-        return (4.0 * b2(p) + b2(floor(p / 2.0)) + 0.5) / 16.0;
-      }
-      float hash(vec2 p) {
-        return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453);
-      }
-
-      void main() {
-        vec2 cell = floor(gl_FragCoord.xy / uCell);
-        float tone = vShade.x;
-        float pattern = vShade.y;
-        bool ink;
-        if (pattern > 3.5) {
-          // rail: ties and rails, horizontal stripes
-          ink = mod(cell.y, 3.0) < 1.5 && tone > 0.2;
-        } else if (pattern > 2.5) {
-          // vegetation: random stipple, no regular grid, so it reads as foliage
-          ink = tone > hash(cell);
-        } else if (pattern > 1.5) {
-          ink = true;
-        } else if (pattern > 0.5) {
-          // water: brick-offset dashes
-          float row = mod(cell.y, 2.0);
-          float col = mod(cell.x + 2.0 * mod(floor(cell.y / 2.0), 2.0), 4.0);
-          ink = row < 0.5 && col < 2.0;
-        } else {
-          ink = tone > bayer4(cell);
-        }
-        // distance to each side of the quad, in device pixels; only flagged sides are drawn
-        vec2 fw = max(fwidth(vUv), vec2(1e-5));
-        vec4 side = vec4(vUv.x / fw.x, (1.0 - vUv.x) / fw.x, vUv.y / fw.y, (1.0 - vUv.y) / fw.y);
-        vec4 drawn = mix(vec4(1e6), side, step(0.5, vEdge));
-        float edgePx = min(min(drawn.x, drawn.y), min(drawn.z, drawn.w));
-        float cellPx = 1.0 / max(fw.x, fw.y);
-        if (vShade.z > 0.5 && edgePx < uLine && cellPx > 3.0 * uLine * 2.0) ink = true;
-        gl_FragColor = ink ? vec4(uInk, 1.0) : vec4(1.0);
-      }
-    `,
-  });
+  return { geometry, cubes, faces, facesByClass, glows: new Float32Array(glowXyz) };
 }

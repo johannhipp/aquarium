@@ -1,0 +1,122 @@
+{
+ "format": 1,
+ "hash": "0d3c4b8900",
+ "source": "PLATEAU 3D city model Minato-ku FY2025 (CityGML 2.0, spec v5): bldg LOD1-3, tran LOD1-3, frn/veg/brid, wtr, dem",
+ "attribution": "出典：国土交通省 3D都市モデル（Project PLATEAU）東京都港区（令和7年度）を加工して作成 / Source: MLIT Project PLATEAU, Minato-ku FY2025 3D city model, processed into voxels (PDL 1.0 / CC BY 4.0)",
+ "frame": {
+  "epsg": 6677,
+  "gx0": -12081,
+  "gtop": -35117,
+  "nx": 8192,
+  "nz": 7680,
+  "gz": -12
+ },
+ "chunk": 32,
+ "levels": [
+  {
+   "level": 0,
+   "cell": 1,
+   "ncx": 256,
+   "ncz": 240
+  },
+  {
+   "level": 1,
+   "cell": 2,
+   "ncx": 128,
+   "ncz": 120
+  },
+  {
+   "level": 2,
+   "cell": 4,
+   "ncx": 64,
+   "ncz": 60
+  },
+  {
+   "level": 3,
+   "cell": 8,
+   "ncx": 32,
+   "ncz": 30
+  },
+  {
+   "level": 4,
+   "cell": 16,
+   "ncx": 16,
+   "ncz": 15
+  },
+  {
+   "level": 5,
+   "cell": 32,
+   "ncx": 8,
+   "ncz": 8
+  },
+  {
+   "level": 6,
+   "cell": 64,
+   "ncx": 4,
+   "ncz": 4
+  }
+ ],
+ "files": {
+  "dir": "dir.0d3c4b8900.bin",
+  "chunks": "chunks.0d3c4b8900.bin"
+ },
+ "bytes": {
+  "dir": 293863,
+  "chunks": 20136166
+ },
+ "counts": {
+  "chunks": 54237,
+  "uniqueChunks": 48148,
+  "byLevel": [
+   40478,
+   10226,
+   2615,
+   668,
+   183,
+   52,
+   15
+  ]
+ },
+ "themes": [
+  {
+   "id": "shimbashi",
+   "icon": "pole",
+   "name": "Shimbashi LOD3 avenue, poles and trees",
+   "x": 4961.0,
+   "z": 2083.0,
+   "zoom": 1.3
+  },
+  {
+   "id": "tower",
+   "icon": "tower",
+   "name": "Tokyo Tower, Shiba Park",
+   "x": 4123.0,
+   "z": 2754.9,
+   "zoom": 0.5
+  },
+  {
+   "id": "yakkozaka",
+   "icon": "house",
+   "name": "Yakkozaka (奴坂), a slope in Minami-Azabu",
+   "x": 2799.0,
+   "z": 3694.0,
+   "zoom": 1.2
+  },
+  {
+   "id": "hills",
+   "icon": "hill",
+   "name": "Roppongi Hills and Mori Tower",
+   "x": 2667.3,
+   "z": 2549.3,
+   "zoom": 0.7
+  },
+  {
+   "id": "waterfront",
+   "icon": "water",
+   "name": "Rainbow Bridge and the Odaiba waterfront",
+   "x": 5738.3,
+   "z": 5220.2,
+   "zoom": 0.3
+  }
+ ]
+}
