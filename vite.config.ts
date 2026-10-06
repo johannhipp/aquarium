@@ -43,6 +43,8 @@ export default defineConfig({
   plugins: [requireMap(), dropLabData()],
   // module workers (new Worker(new URL(...), { type: 'module' })) bundle as ES modules, sharing chunks with the page
   worker: { format: 'es' },
+  // The pipeline cache holds a Python venv and ~50 GB of CityGML; watching it reloads pages for nothing.
+  server: { watch: { ignored: ['**/pipeline/cache/**', '**/art/**', '**/research/**'] } },
   build: {
     rollupOptions: {
       input: {
